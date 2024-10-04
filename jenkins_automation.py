@@ -143,7 +143,7 @@ class JenkinsInstaller:
 
         # Java installieren
         self.ssh_manager.execute_command(
-            "DEBIAN_FRONTEND=noninteractive apt-get install openjdk-11-jdk -y")
+            "DEBIAN_FRONTEND=noninteractive apt-get install openjdk-17-jdk -y")
 
         # Jenkins GPG-Schlüssel hinzufügen
         self.ssh_manager.execute_command(
