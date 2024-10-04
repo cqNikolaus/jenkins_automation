@@ -85,23 +85,29 @@ class SSHManager:
     def __init__(self, ip_address, ssh_key_path):
         self.ip_address = ip_address
         self.ssh_key_path = ssh_key_path
+        self.ssh = None
 
     def connect(self):
+        if self.ssh is not None:
+            return self.ssh
         print(f"Connecting to {self.ip_address} with {self.ssh_key_path}")
         try:
             ssh_key_path_expanded = os.path.expanduser(self.ssh_key_path)
             key = paramiko.RSAKey.from_private_key_file(ssh_key_path_expanded)
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(self.ip_address, username='root', pkey=key)
+            self.ssh = paramiko.SSHClient()
+            self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.ssh.connect(self.ip_address, username='root', pkey=key)
             print("Connected successfully")
-            return ssh
+            return self.ssh
         except Exception as e:
             print(f"Failed to connect: {e}")
             return None
 
-    def execute_command(self, ssh, command, environment=None):
+    def execute_command(self, command, environment=None):
         try:
+            ssh = self.connect()
+            if ssh is None:
+                return False
             stdin, stdout, stderr = ssh.exec_command(
                 command, environment=environment)
             stdout_str = stdout.read().decode()
@@ -111,8 +117,52 @@ class SSHManager:
                 print("Output:", stdout_str)
             if stderr_str:
                 print("Error:", stderr_str)
+            return True
         except Exception as e:
             print(f"Failed to execute command: {e}")
+            return False
+
+    def close(self):
+        if self.ssh:
+            self.ssh.close()
+            print("SSH connection closed")
+            self.ssh = None
+
+
+class JenkinsInstaller:
+
+    def __init__(self, ssh_manager):
+        self.ssh_manager = ssh_manager
+
+    def install_jenkins(self):
+        # System aktualisieren
+        self.ssh_manager.execute_command(
+            "DEBIAN_FRONTEND=noninteractive apt-get update -y")
+        self.ssh_manager.execute_command(
+            "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y")
+
+        # Java installieren
+        self.ssh_manager.execute_command(
+            "DEBIAN_FRONTEND=noninteractive apt-get install openjdk-11-jdk -y")
+
+        # Jenkins GPG-Schlüssel hinzufügen
+        self.ssh_manager.execute_command(
+            "curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null")
+        # Jenkins-Repository hinzufügen
+        self.ssh_manager.execute_command(
+            "echo 'deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/' | tee /etc/apt/sources.list.d/jenkins.list > /dev/null")
+
+        # Paketliste aktualisieren
+        self.ssh_manager.execute_command(
+            "DEBIAN_FRONTEND=noninteractive apt-get update -y")
+
+        # Jenkins installieren
+        self.ssh_manager.execute_command(
+            "DEBIAN_FRONTEND=noninteractive apt-get install jenkins -y")
+
+        # Jenkins starten
+        self.ssh_manager.execute_command("systemctl start jenkins")
+        self.ssh_manager.execute_command("systemctl enable jenkins")
 
 
 class JenkinsTester:
@@ -128,7 +178,8 @@ class JenkinsTester:
                 print("Jenkins is up and running.")
                 return True
             else:
-                print(f"Jenkins is not running. Status code: {response.status_code}")
+                print(f"Jenkins is not running. Status code: {
+                      response.status_code}")
                 return False
         except requests.exceptions.ConnectionError:
             print("Failed to connect to Jenkins.")
@@ -145,6 +196,47 @@ def is_ssh_port_open(ip, port=22, timeout=5):
         return result == 0
 
 
+class EnvironmentManager:
+
+    def __init__(self, vm_manager, ssh_key_path):
+        self.vm_manager = vm_manager
+        self.ssh_key_path = ssh_key_path
+        self.vm_ip = None
+
+    def setup_jenkins(self):
+        server_id = self.vm_manager.vm['server']['id']
+        if self.vm_manager.wait_for_vm(server_id):
+            self.vm_ip = self.vm_manager.get_vm_ip()
+            if self.vm_ip:
+                print(f"VM IP address: {self.vm_ip}")
+                # Warten, bis der SSH-Port offen ist
+                while not is_ssh_port_open(self.vm_ip):
+                    print(f"SSH port not open on {self.vm_ip}. Waiting...")
+                    time.sleep(10)
+                self.ssh_manager = SSHManager(self.vm_ip, self.ssh_key_path)
+
+                installer = JenkinsInstaller(self.ssh_manager)
+                installer.install_jenkins()
+
+    def test_jenkins(self):
+        if self.vm_ip:
+            tester = JenkinsTester(self.vm_ip)
+            if tester.test_jenkins():
+                print("Jenkins test passed.")
+                return True
+            else:
+                print("Jenkins test failed.")
+                return False
+        else:
+            print("No VM IP address found.")
+            return False
+
+    def cleanup(self):
+        if self.ssh_manager:
+            self.ssh_manager.close()
+        self.vm_manager.delete_vm()
+
+
 def main():
     api_token = "2qqLRyCJcWatOJuW46CQ0mvyaPxBkboh7fJxjSVrcsxEGVwAJDeR5RgO7vZ2PfwZ"
     os_type = "ubuntu-22.04"
@@ -155,61 +247,11 @@ def main():
     manager = VMManager(api_token)
     manager.create_vm(os_type, server_type, ssh_key_id)
 
-    server_id = manager.vm['server']['id']
-    if manager.wait_for_vm(server_id):
-        vm_ip = manager.get_vm_ip()
-        if vm_ip:
-            print(f"VM IP address: {vm_ip}")
-            # Warten, bis der SSH-Port offen ist
-            while not is_ssh_port_open(vm_ip):
-                print(f"SSH port not open on {vm_ip}. Waiting...")
-                time.sleep(10)
-            ssh_manager = SSHManager(vm_ip, ssh_private_key_path)
-            ssh = ssh_manager.connect()
+    env_manager = EnvironmentManager(manager, ssh_private_key_path)
 
-            if ssh:
-                # System aktualisieren
-                ssh_manager.execute_command(
-                    ssh, "DEBIAN_FRONTEND=noninteractive apt-get update -y")
-                ssh_manager.execute_command(
-                    ssh, "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y")
-
-                # Java installieren
-                ssh_manager.execute_command(
-                    ssh, "DEBIAN_FRONTEND=noninteractive apt-get install openjdk-11-jdk -y")
-
-                # Jenkins GPG-Schlüssel hinzufügen
-                ssh_manager.execute_command(
-                    ssh, "curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null")
-                # Jenkins-Repository hinzufügen
-                ssh_manager.execute_command(
-                    ssh, "echo 'deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/' | tee /etc/apt/sources.list.d/jenkins.list > /dev/null")
-
-                # Paketliste aktualisieren
-                ssh_manager.execute_command(
-                    ssh, "DEBIAN_FRONTEND=noninteractive apt-get update -y")
-
-                # Jenkins installieren
-                ssh_manager.execute_command(
-                    ssh, "DEBIAN_FRONTEND=noninteractive apt-get install jenkins -y")
-
-                # Jenkins starten
-                ssh_manager.execute_command(ssh, "systemctl start jenkins")
-                ssh_manager.execute_command(ssh, "systemctl enable jenkins")
-
-                ssh.close()
-
-                tester = JenkinsTester(vm_ip)
-                if tester.test_jenkins():
-                    print("Jenkins test passed.")
-                else:
-                    print("Jenkins test failed.")
-
-                manager.delete_vm()
-        else:
-            print("Failed to retrieve VM IP address")
-    else:
-        print("Server did not become ready in time.")
+    env_manager.setup_jenkins()
+    env_manager.test_jenkins()
+    env_manager.cleanup()
 
 
 if __name__ == '__main__':
