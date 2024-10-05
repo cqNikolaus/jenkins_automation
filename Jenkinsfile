@@ -13,7 +13,7 @@ pipeline {
     stage('Create Jenkins Instance') {
       steps {
         echo "create jenkins"
-        sh "python create_environment.py"
+        sh "python jenkins_automation.py"
       }
     }
     stage('Check successful Installation') {
