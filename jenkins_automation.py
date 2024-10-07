@@ -97,9 +97,12 @@ class SSHManager:
     def connect(self):
         if self.ssh is not None:
             return self.ssh
-        print(f"Connecting to {self.ip_address} with {self.ssh_key_path}")
+        ssh_key_path_expanded = os.path.expanduser(self.ssh_key_path)
+        print(f"Connecting to {self.ip_address} with {ssh_key_path_expanded}")
         try:
-            ssh_key_path_expanded = os.path.expanduser(self.ssh_key_path)
+            if not os.path.exists(ssh_key_path_expanded):
+                print(f"SSH key file does not exist at {ssh_key_path_expanded}")
+                return None
             key = paramiko.RSAKey.from_private_key_file(ssh_key_path_expanded)
             self.ssh = paramiko.SSHClient()
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -376,7 +379,7 @@ def main():
     os_type = "ubuntu-22.04"
     server_type = "cx22"
     ssh_key_id = 23404904
-    ssh_private_key_path = "~/.ssh/id_rsa"
+    ssh_private_key_path = "/root/.ssh/id_rsa"
 
     manager = VMManager(api_token)
     
