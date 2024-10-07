@@ -2,6 +2,7 @@ pipeline {
   agent {
     docker { 
       image 'python-build' 
+      args '-v $HOME/.ssh:/root/.ssh'
     }
   }
   environment {
