@@ -7,7 +7,7 @@ pipeline {
   environment {
     API_TOKEN = credentials('HETZNER_API_TOKEN')
     DNS_API_TOKEN = credentials('HETZNER_DNS_API_TOKEN')
-    DOMAIN = 'comquent.academy'
+    DOMAIN = 'jenkins-${env.BUILD_NUMBER}.comquent.academy'
   }
   stages {
     stage('Init Environment') {
@@ -31,6 +31,12 @@ pipeline {
       steps {
         echo "kill jenkins"
         sh "python jenkins_automation.py cleanup"
+      }
+    }
+    stage('Create DNS Record'){
+      steps{
+        echo "create dns record"
+        sh "python jenkins_automation.py create_dns"
       }
     }
     stage('Setup Nginx and SSL') {

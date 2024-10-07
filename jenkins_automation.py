@@ -340,10 +340,26 @@ class EnvironmentManager:
             os.remove('vm_info.json')
 
     def setup_nginx(self, domain):
+        # Stelle sicher, dass die VM-IP bekannt ist
+        if not self.vm_ip:
+            self.vm_ip = self.vm_manager.get_vm_ip()
+            if not self.vm_ip:
+                print("VM IP address not found. Cannot proceed with Nginx setup.")
+                return
+
+        # Stelle sicher, dass ssh_manager initialisiert ist
+        if not self.ssh_manager:
+            # Überprüfe, ob der SSH-Port offen ist
+            while not is_ssh_port_open(self.vm_ip):
+                print(f"SSH port not open on {self.vm_ip}. Waiting...")
+                time.sleep(10)
+            self.ssh_manager = SSHManager(self.vm_ip, self.ssh_key_path)
+
         nginx_installer = NginxInstaller(self.ssh_manager, domain)
         nginx_installer.install_nginx()
         nginx_installer.configure_nginx()
         nginx_installer.obtain_ssl_certificate()
+
         
         
 def main():
