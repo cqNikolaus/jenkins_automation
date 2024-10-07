@@ -3,9 +3,6 @@ pipeline {
     docker { 
       image 'python-build' 
       args '-v $HOME/.ssh:/root/.ssh'
-      environment {
-        HOME = '/root'
-      }
     }
   }
   environment {
