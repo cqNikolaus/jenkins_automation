@@ -3,13 +3,18 @@ import time
 import paramiko
 import os
 import socket
-
+import sys
+import json
 
 class VMManager:
 
     def __init__(self, api_token):
         self.vm = None
         self.api_token = api_token
+        
+        if os.path.exists('vm_info.json'):
+            with open('vm_info.json', 'r') as f:
+                self.vm = json.load(f)
 
     def create_vm(self, os_type, server_type, ssh_key):
         url = "https://api.hetzner.cloud/v1/servers"
@@ -30,6 +35,8 @@ class VMManager:
         if response.status_code == 201:
             self.vm = response.json()
             print("VM created successfully")
+            with open('vm_info.json', 'w') as f:
+                json.dump(self.vm, f)
         else:
             print("Failed to create VM", response.status_code)
             print(response.json())
@@ -235,9 +242,14 @@ class EnvironmentManager:
         if self.ssh_manager:
             self.ssh_manager.close()
         self.vm_manager.delete_vm()
+        
+        if os.path.exists('vm_info.json'):
+            os.remove('vm_info.json')
 
 
 def main():
+    action = sys.argv[1] if len(sys.argv) > 1 else 'full'
+    
     api_token = "2qqLRyCJcWatOJuW46CQ0mvyaPxBkboh7fJxjSVrcsxEGVwAJDeR5RgO7vZ2PfwZ"
     os_type = "ubuntu-22.04"
     server_type = "cx22"
@@ -245,14 +257,28 @@ def main():
     ssh_private_key_path = "~/.ssh/id_rsa"
 
     manager = VMManager(api_token)
-    manager.create_vm(os_type, server_type, ssh_key_id)
+    
+    if action == 'create':
+        manager.create_vm(os_type, server_type, ssh_key_id)
 
-    env_manager = EnvironmentManager(manager, ssh_private_key_path)
+        env_manager = EnvironmentManager(manager, ssh_private_key_path)
 
-    env_manager.setup_jenkins()
-    env_manager.test_jenkins()
-    env_manager.cleanup()
+        env_manager.setup_jenkins()
+        
+    elif action == 'test':
+        env_manager = EnvironmentManager(manager, ssh_private_key_path)
+        env_manager.test_jenkins()
 
+    elif action == 'cleanup':
+        env_manager = EnvironmentManager(manager, ssh_private_key_path)
+        env_manager.cleanup()
+
+    else:
+        manager.create_vm(os_type, server_type, ssh_key_id)
+        env_manager = EnvironmentManager(manager, ssh_private_key_path)
+        env_manager.setup_jenkins()
+        env_manager.test_jenkins()
+        env_manager.cleanup()
 
 if __name__ == '__main__':
     main()
