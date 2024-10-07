@@ -2,9 +2,11 @@ pipeline {
   agent {
     docker { 
       image 'python-build' 
+      args '-v $HOME/.ssh:/root/.ssh'
     }
   }
   environment {
+    HOME = '/root'
     API_TOKEN = credentials('HETZNER_API_TOKEN')
     DNS_API_TOKEN = credentials('HETZNER_DNS_API_TOKEN')
     DOMAIN = 'jenkins-${env.BUILD_NUMBER}.comquent.academy'
@@ -15,16 +17,17 @@ pipeline {
         sh 'python -V'
       }
     }
+    stage('Verify SSH Key') {
+      steps {
+        sh 'ls -la /root/.ssh/' 
+      }
+    }
     stage('Create Jenkins Instance') {
-            steps {
-                script {
-                    sshagent(['agent-account']) {
-                        echo "Creating Jenkins VM"
-                        sh "python jenkins_automation.py create"
-                    }
-                }
-            }
-        }
+      steps {
+        echo "create jenkins vm"
+        sh "python jenkins_automation.py create"
+      }
+    }
     stage('Check successful Installation') {
       steps {
         echo "test jenkins"
