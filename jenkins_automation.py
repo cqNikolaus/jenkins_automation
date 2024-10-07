@@ -136,10 +136,11 @@ class SSHManager:
             self.ssh = None
 
 class DNSManager:
-    def __init__(self, dns_api_token)
+    def __init__(self, dns_api_token):
         self.dns_api_token = dns_api_token
         
     def create_dns_record(self, domain, ip_address):
+        zone_name = 'comquent.academy'
         url = "https://dns.hetzner.com/api/v1/records"
         headers = {
             "Auth-API-Token": self.dns_api_token,
@@ -281,6 +282,11 @@ class NginxInstaller:
 
         self.ssh_manager.execute_command("ln -s /etc/nginx/sites-available/jenkins.conf /etc/nginx/sites-enabled/jenkins.conf")
         
+    def obtain_ssl_certificate(self):
+        # Certbot installieren
+        self.ssh_manager.execute_command("DEBIAN_FRONTEND=noninteractive apt-get install certbot python3-certbot-nginx -y")
+        # SSL-Zertifikat beantragen
+        self.ssh_manager.execute_command(f"certbot --nginx -d {self.domain} --non-interactive --agree-tos -m clemens.nikolaus@comquent.de")
         
 def is_ssh_port_open(ip, port=22, timeout=5):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -333,10 +339,11 @@ class EnvironmentManager:
         if os.path.exists('vm_info.json'):
             os.remove('vm_info.json')
 
-    def setup_nginx(self, domain)
+    def setup_nginx(self, domain):
         nginx_installer = NginxInstaller(self.ssh_manager, domain)
         nginx_installer.install_nginx()
         nginx_installer.configure_nginx()
+        nginx_installer.obtain_ssl_certificate()
         
         
 def main():
