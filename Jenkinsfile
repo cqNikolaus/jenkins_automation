@@ -2,7 +2,6 @@ pipeline {
   agent {
     docker { 
       image 'python-build' 
-      args '-v $HOME/.ssh:/root/.ssh'
     }
   }
   environment {
@@ -17,11 +16,15 @@ pipeline {
       }
     }
     stage('Create Jenkins Instance') {
-      steps {
-        echo "create jenkins"
-        sh "python jenkins_automation.py create"
-      }
-    }
+            steps {
+                script {
+                    sshagent(['agent-account']) {
+                        echo "Creating Jenkins VM"
+                        sh "python jenkins_automation.py create"
+                    }
+                }
+            }
+        }
     stage('Check successful Installation') {
       steps {
         echo "test jenkins"
