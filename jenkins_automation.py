@@ -135,7 +135,48 @@ class SSHManager:
             print("SSH connection closed")
             self.ssh = None
 
+class DNSManager:
+    def __init__(self, dns_api_token)
+        self.dns_api_token = dns_api_token
+        
+    def create_dns_record(self, domain, ip_address):
+        url = "https://dns.hetzner.com/api/v1/records"
+        headers = {
+            "Auth-API-Token": self.dns_api_token,
+            "Content-Type": "application/json"
+        }
 
+        zone_id = self.get_zone_id(domain)
+
+        data = {
+            "value": ip_address,
+            "ttl": 3600,
+            "type": "A",
+            "name": domain.split('.')[0],  # Subdomain
+            "zone_id": zone_id
+        }
+
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            print("DNS record created successfully")
+        else:
+            print("Failed to create DNS record", response.status_code)
+            print(response.json())
+        
+        
+    def get_zone_id(self, domain):
+        url = "https://dns.hetzner.com/api/v1/zones"
+        headers = {
+            "Auth-API-Token": self.dns_api_token
+        }
+        response = requests.get(url, headers=headers)
+        zones = response.json().get("zones", [])
+        for zone in zones:
+            if zone["name"] == domain:
+                return zone["id"]
+        print("Zone not found for domain:", domain)
+        return None
+        
 class JenkinsInstaller:
 
     def __init__(self, ssh_manager):
@@ -172,7 +213,7 @@ class JenkinsInstaller:
         self.ssh_manager.execute_command("systemctl enable jenkins")
 
 
-class JenkinsTester:
+class JenkinsTester:  
 
     def __init__(self, ip_address):
         self.ip_address = ip_address
@@ -196,6 +237,51 @@ class JenkinsTester:
             return False
 
 
+class NginxInstaller:
+    
+    def __init__(self, ssh_manager, domain):
+        self.ssh_manager = ssh_manager
+        self.domain = domain
+        
+    def install_nginx(self):
+        self.ssh_manager.execute_command(
+            "DEBIAN_FRONTEND=noninteractive apt-get install nginx -y")
+        
+    def configure_nginx(self):
+        nginx_conf = f"""
+        server {{
+            listen 80;
+            server_name {self.domain};
+
+            location / {{
+                return 301 https://$host$request_uri;
+            }}
+        }}
+
+        server {{
+            listen 443 ssl;
+            server_name {self.domain};
+
+            ssl_certificate /etc/letsencrypt/live/{self.domain}/fullchain.pem;
+            ssl_certificate_key /etc/letsencrypt/live/{self.domain}/privkey.pem;
+
+            location / {{
+                proxy_pass http://localhost:8080/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }}
+        }}
+        """
+        
+        self.ssh_manager.execute_command(f"echo '{nginx_conf}' > /etc/nginx/sites-available/jenkins.conf")
+        
+        self.ssh_manager.execute_command("rm /etc/nginx/sites-enabled/default")
+
+        self.ssh_manager.execute_command("ln -s /etc/nginx/sites-available/jenkins.conf /etc/nginx/sites-enabled/jenkins.conf")
+        
+        
 def is_ssh_port_open(ip, port=22, timeout=5):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.settimeout(timeout)
@@ -247,14 +333,18 @@ class EnvironmentManager:
         if os.path.exists('vm_info.json'):
             os.remove('vm_info.json')
 
-
+    def setup_nginx(self, domain)
+        nginx_installer = NginxInstaller(self.ssh_manager, domain)
+        nginx_installer.install_nginx()
+        nginx_installer.configure_nginx()
+        
+        
 def main():
     action = sys.argv[1] if len(sys.argv) > 1 else 'full'
     
     api_token = os.getenv('API_TOKEN')
-    if not api_token:
-        print("API_TOKEN environment variable not set")
-        return
+    dns_api_token = os.getenv('DNS_API_TOKEN')
+    domain = os.getenv('DOMAIN')
     
     os_type = "ubuntu-22.04"
     server_type = "cx22"
@@ -263,12 +353,32 @@ def main():
 
     manager = VMManager(api_token)
     
+    env_manager = EnvironmentManager(manager, ssh_private_key_path)
+    
     if action == 'create':
         manager.create_vm(os_type, server_type, ssh_key_id)
 
-        env_manager = EnvironmentManager(manager, ssh_private_key_path)
-
         env_manager.setup_jenkins()
+        
+        if dns_api_token:
+            dns_manager = DNSManager(dns_api_token)
+            ip_address = manager.get_vm_ip()
+            dns_manager.create_dns_record(domain, ip_address)
+            
+        env_manager.setup_nginx(domain)
+
+
+    elif action == 'setup_nginx':
+        env_manager.setup_nginx(domain)
+
+    elif action == 'create_dns':
+        if dns_api_token:
+            dns_manager = DNSManager(dns_api_token)
+            ip_address = manager.get_vm_ip()
+            dns_manager.create_dns_record(domain, ip_address)
+        else:
+            print("DNS_API_TOKEN not set")
+
         
     elif action == 'test':
         env_manager = EnvironmentManager(manager, ssh_private_key_path)

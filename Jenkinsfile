@@ -6,6 +6,8 @@ pipeline {
   }
   environment {
     API_TOKEN = credentials('HETZNER_API_TOKEN')
+    DNS_API_TOKEN = credentials('HETZNER_DNS_API_TOKEN')
+    DOMAIN = 'comquent.de'
   }
   stages {
     stage('Init Environment') {
