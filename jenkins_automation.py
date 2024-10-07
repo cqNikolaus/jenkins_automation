@@ -97,12 +97,14 @@ class SSHManager:
     def connect(self):
         if self.ssh is not None:
             return self.ssh
-        print(f"Connecting to {self.ip_address} using SSH agent")
+        print(f"Connecting to {self.ip_address} with {self.ssh_key_path}")
         try:
+            ssh_key_path_expanded = os.path.expanduser(self.ssh_key_path)
+            key = paramiko.RSAKey.from_private_key_file(ssh_key_path_expanded)
             self.ssh = paramiko.SSHClient()
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.ssh.connect(self.ip_address, username='root')
-            print("Connected successfully using SSH agent")
+            self.ssh.connect(self.ip_address, username='root', pkey=key)
+            print("Connected successfully")
             return self.ssh
         except Exception as e:
             print(f"Failed to connect: {e}")
@@ -374,11 +376,11 @@ def main():
     os_type = "ubuntu-22.04"
     server_type = "cx22"
     ssh_key_id = 23404904
-    ssh_private_key_path = "/root/.ssh/id_rsa"
+    ssh_private_key_path = "~/.ssh/id_rsa"
 
     manager = VMManager(api_token)
     
-    env_manager = EnvironmentManager(manager, ssh_private_key_path)
+    
     
     if action == 'create':
         manager.create_vm(os_type, server_type, ssh_key_id)
@@ -394,9 +396,11 @@ def main():
 
 
     elif action == 'setup_nginx':
+        env_manager = EnvironmentManager(manager, ssh_private_key_path)
         env_manager.setup_nginx(domain)
 
     elif action == 'create_dns':
+        env_manager = EnvironmentManager(manager, ssh_private_key_path)
         if dns_api_token:
             dns_manager = DNSManager(dns_api_token)
             ip_address = manager.get_vm_ip()
