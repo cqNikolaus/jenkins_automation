@@ -27,12 +27,6 @@ pipeline {
         sh "python jenkins_automation.py test"
       }
     }
-    stage('Shutdown Jenkins Instance') {
-      steps {
-        echo "kill jenkins"
-        sh "python jenkins_automation.py cleanup"
-      }
-    }
     stage('Create DNS Record'){
       steps{
         echo "create dns record"
