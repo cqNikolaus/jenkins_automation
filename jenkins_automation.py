@@ -147,7 +147,7 @@ class DNSManager:
             "Content-Type": "application/json"
         }
 
-        zone_id = self.get_zone_id(domain)
+        zone_id = self.get_zone_id(zone_name)
 
         data = {
             "value": ip_address,
@@ -165,7 +165,7 @@ class DNSManager:
             print(response.json())
         
         
-    def get_zone_id(self, domain):
+    def get_zone_id(self, zone_name):
         url = "https://dns.hetzner.com/api/v1/zones"
         headers = {
             "Auth-API-Token": self.dns_api_token
@@ -173,9 +173,9 @@ class DNSManager:
         response = requests.get(url, headers=headers)
         zones = response.json().get("zones", [])
         for zone in zones:
-            if zone["name"] == domain:
+            if zone["name"] == zone_name:
                 return zone["id"]
-        print("Zone not found for domain:", domain)
+        print("Zone not found for zone name:", zone_name)
         return None
         
 class JenkinsInstaller:
@@ -282,11 +282,15 @@ class NginxInstaller:
 
         self.ssh_manager.execute_command("ln -s /etc/nginx/sites-available/jenkins.conf /etc/nginx/sites-enabled/jenkins.conf")
         
+        self.ssh_manager.execute_command("systemctl restart nginx")
+        
     def obtain_ssl_certificate(self):
         # Certbot installieren
         self.ssh_manager.execute_command("DEBIAN_FRONTEND=noninteractive apt-get install certbot python3-certbot-nginx -y")
         # SSL-Zertifikat beantragen
-        self.ssh_manager.execute_command(f"certbot --nginx -d {self.domain} --non-interactive --agree-tos -m clemens.nikolaus@comquent.de")
+        result = self.ssh_manager.execute_command(f"certbot --nginx -d {self.domain} --non-interactive --agree-tos -m clemens.nikolaus@comquent.de")
+        if not result:
+            print("Failed to obtain SSL certificate")
         
 def is_ssh_port_open(ip, port=22, timeout=5):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -401,8 +405,7 @@ def main():
             dns_manager.create_dns_record(domain, ip_address)
         else:
             print("DNS_API_TOKEN not set")
-
-        
+            
     elif action == 'test':
         env_manager = EnvironmentManager(manager, ssh_private_key_path)
         env_manager.test_jenkins()
