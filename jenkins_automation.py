@@ -209,6 +209,7 @@ class EnvironmentManager:
         self.vm_manager = vm_manager
         self.ssh_key_path = ssh_key_path
         self.vm_ip = None
+        self.ssh_manager = None
 
     def setup_jenkins(self):
         server_id = self.vm_manager.vm['server']['id']
