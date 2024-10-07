@@ -251,7 +251,11 @@ class EnvironmentManager:
 def main():
     action = sys.argv[1] if len(sys.argv) > 1 else 'full'
     
-    api_token = "2qqLRyCJcWatOJuW46CQ0mvyaPxBkboh7fJxjSVrcsxEGVwAJDeR5RgO7vZ2PfwZ"
+    api_token = os.getenv('API_TOKEN')
+    if not api_token:
+        print("API_TOKEN environment variable not set")
+        return
+    
     os_type = "ubuntu-22.04"
     server_type = "cx22"
     ssh_key_id = 23404904

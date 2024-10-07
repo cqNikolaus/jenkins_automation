@@ -4,6 +4,9 @@ pipeline {
       image 'python-build' 
     }
   }
+  environment {
+    API_TOKEN = credentials('HETZNER_API_TOKEN')
+  }
   stages {
     stage('Init Environment') {
       steps {
