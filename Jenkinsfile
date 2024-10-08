@@ -84,5 +84,11 @@ pipeline {
         '''
       }
     }
+    stage('Shutdown Jenkins Instance') {
+      steps {
+        echo "kill jenkins"
+        sh "python jenkins_automation.py cleanup"
+      }
+    }
   }
 }
