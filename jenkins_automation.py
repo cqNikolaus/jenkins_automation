@@ -159,7 +159,7 @@ class DNSManager:
         }
 
         response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 201:
+        if response.status_code == 200:
             print("DNS record created successfully")
         else:
             print("Failed to create DNS record", response.status_code)
@@ -230,8 +230,11 @@ class NginxInstaller:
         self.domain = domain
 
     def install_nginx(self):
-        self.ssh_manager.execute_command(
-            "DEBIAN_FRONTEND=noninteractive apt-get install nginx -y")
+        if not self.ssh_manager.execute_command("DEBIAN_FRONTEND=noninteractive apt-get install nginx -y"):
+            print("Failed to install Nginx")
+            return False
+        print("Nginx installed successfully")
+        return True
 
     def configure_nginx(self):
         nginx_conf = f"""
@@ -249,8 +252,7 @@ class NginxInstaller:
             server_name {self.domain};
 
             ssl_certificate /etc/letsencrypt/live/{self.domain}/fullchain.pem;
-            ssl_certificate_key /etc/letsencrypt/ \
-                live/{self.domain}/privkey.pem;
+            ssl_certificate_key /etc/letsencrypt/live/{self.domain}/privkey.pem;
 
             location / {{
                 proxy_pass http://localhost:8080/;
@@ -262,14 +264,22 @@ class NginxInstaller:
         }}
         """
 
-        self.ssh_manager.execute_command(
-            f"echo '{nginx_conf}' > /etc/nginx/sites-available/jenkins.conf")
+        if not self.ssh_manager.execute_command(f"echo '{nginx_conf}' > /etc/nginx/sites-available/jenkins.conf"):
+            print("Failed to create Nginx configuration file")
+            return False
+        print("Nginx configuration file created successfully")
 
         self.ssh_manager.execute_command("rm /etc/nginx/sites-enabled/default")
 
-        self.ssh_manager.execute_command(
-            "ln -s /etc/nginx/sites-available/jenkins.conf /etc/nginx/sites-enabled/jenkins.conf")
+        self.ssh_manager.execute_command("ln -s /etc/nginx/sites-available/jenkins.conf /etc/nginx/sites-enabled/jenkins.conf")
+        
+        print("Testing Nginx configuration...")
+        if not self.ssh_manager.execute_command("nginx -t"):
+            print("Nginx configuration test failed.")
+            return False
+        print("Nginx configuration test passed.")
 
+        print("Restarting Nginx...")
         self.ssh_manager.execute_command("systemctl restart nginx")
 
     def obtain_ssl_certificate(self):
