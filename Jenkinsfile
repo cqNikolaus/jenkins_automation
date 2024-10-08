@@ -8,14 +8,14 @@ pipeline {
   environment {
     API_TOKEN = credentials('HETZNER_API_TOKEN')
     DNS_API_TOKEN = credentials('HETZNER_DNS_API_TOKEN')
-    DOMAIN = 'jenkins-${env.BUILD_NUMBER}.comquent.academy'
+    DOMAIN = "jenkins-${env.BUILD_NUMBER}.comquent.academy" 
   }
   stages {
     stage('Create Jenkins Instance') {
       steps {
         withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
           sh '''
-            echo "create jenkins instance"
+            echo "Creating Jenkins Instance"
             chmod 600 $SSH_KEY_FILE
             export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
             python jenkins_automation.py create
@@ -23,11 +23,11 @@ pipeline {
         }
       }
     }
-    stage('Check Successful Installation') {
-      withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
-        steps {
+    stage('Check Successful Installation') { 
+      steps {
+        withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
           sh '''
-            echo "check successful installation"
+            echo "Checking Successful Installation"
             export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
             python jenkins_automation.py test
           '''
@@ -37,16 +37,16 @@ pipeline {
     stage('Create DNS Record') {
       steps {
         sh '''
-          echo "create dns record"
+          echo "Creating DNS Record"
           python jenkins_automation.py create_dns
         '''
       }
     }
-    stage('Setup Nginx and SSL') {
-      withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
-        steps {
+    stage('Setup Nginx and SSL') { 
+      steps {
+        withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
           sh '''
-            echo "setup nginx and ssl"
+            echo "Setting Up Nginx and SSL"
             export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
             python jenkins_automation.py setup_nginx
           '''
