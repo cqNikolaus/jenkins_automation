@@ -6,12 +6,13 @@ import socket
 import sys
 import json
 
+
 class VMManager:
 
     def __init__(self, api_token):
         self.vm = None
         self.api_token = api_token
-        
+
         if os.path.exists('vm_info.json'):
             with open('vm_info.json', 'r') as f:
                 self.vm = json.load(f)
@@ -99,8 +100,7 @@ class SSHManager:
             return self.ssh
         print(f"Connecting to {self.ip_address} with {self.ssh_key_path}")
         try:
-            ssh_key_path_expanded = os.path.expanduser(self.ssh_key_path)
-            key = paramiko.RSAKey.from_private_key_file(ssh_key_path_expanded)
+            key = paramiko.RSAKey.from_private_key_file(self.ssh_key_path)
             self.ssh = paramiko.SSHClient()
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.ssh.connect(self.ip_address, username='root', pkey=key)
@@ -135,10 +135,11 @@ class SSHManager:
             print("SSH connection closed")
             self.ssh = None
 
+
 class DNSManager:
     def __init__(self, dns_api_token):
         self.dns_api_token = dns_api_token
-        
+
     def create_dns_record(self, domain, ip_address):
         zone_name = 'comquent.academy'
         url = "https://dns.hetzner.com/api/v1/records"
@@ -158,13 +159,12 @@ class DNSManager:
         }
 
         response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 200:
+        if response.status_code == 201:
             print("DNS record created successfully")
         else:
             print("Failed to create DNS record", response.status_code)
             print(response.json())
-        
-        
+
     def get_zone_id(self, zone_name):
         url = "https://dns.hetzner.com/api/v1/zones"
         headers = {
@@ -177,44 +177,30 @@ class DNSManager:
                 return zone["id"]
         print("Zone not found for zone name:", zone_name)
         return None
-        
+
+
 class JenkinsInstaller:
 
     def __init__(self, ssh_manager):
         self.ssh_manager = ssh_manager
 
     def install_jenkins(self):
-        # System aktualisieren
-        self.ssh_manager.execute_command(
-            "DEBIAN_FRONTEND=noninteractive apt-get update -y")
-        self.ssh_manager.execute_command(
-            "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y")
-
-        # Java installieren
-        self.ssh_manager.execute_command(
-            "DEBIAN_FRONTEND=noninteractive apt-get install openjdk-17-jdk -y")
-
-        # Jenkins GPG-Schlüssel hinzufügen
-        self.ssh_manager.execute_command(
-            "curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null")
-        # Jenkins-Repository hinzufügen
-        self.ssh_manager.execute_command(
-            "echo 'deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/' | tee /etc/apt/sources.list.d/jenkins.list > /dev/null")
-
-        # Paketliste aktualisieren
-        self.ssh_manager.execute_command(
-            "DEBIAN_FRONTEND=noninteractive apt-get update -y")
-
-        # Jenkins installieren
-        self.ssh_manager.execute_command(
-            "DEBIAN_FRONTEND=noninteractive apt-get install jenkins -y")
-
-        # Jenkins starten
-        self.ssh_manager.execute_command("systemctl start jenkins")
-        self.ssh_manager.execute_command("systemctl enable jenkins")
+        commands = [
+            "DEBIAN_FRONTEND=noninteractive apt-get update -y",
+            "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y",
+            "DEBIAN_FRONTEND=noninteractive apt-get install openjdk-17-jdk -y",
+            "curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null",
+            "echo 'deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/' | tee /etc/apt/sources.list.d/jenkins.list > /dev/null",
+            "DEBIAN_FRONTEND=noninteractive apt-get update -y",
+            "DEBIAN_FRONTEND=noninteractive apt-get install jenkins -y",
+            "systemctl start jenkins",
+            "systemctl enable jenkins"
+        ]
+        for command in commands:
+            self.ssh_manager.execute_command(command)
 
 
-class JenkinsTester:  
+class JenkinsTester:
 
     def __init__(self, ip_address):
         self.ip_address = ip_address
@@ -227,8 +213,7 @@ class JenkinsTester:
                 print("Jenkins is up and running.")
                 return True
             else:
-                print(f"Jenkins is not running. Status code: {
-                      response.status_code}")
+                print(f"Jenkins is not running. Status code: {response.status_code}")
                 return False
         except requests.exceptions.ConnectionError:
             print("Failed to connect to Jenkins.")
@@ -239,15 +224,15 @@ class JenkinsTester:
 
 
 class NginxInstaller:
-    
+
     def __init__(self, ssh_manager, domain):
         self.ssh_manager = ssh_manager
         self.domain = domain
-        
+
     def install_nginx(self):
         self.ssh_manager.execute_command(
             "DEBIAN_FRONTEND=noninteractive apt-get install nginx -y")
-        
+
     def configure_nginx(self):
         nginx_conf = f"""
         server {{
@@ -264,7 +249,8 @@ class NginxInstaller:
             server_name {self.domain};
 
             ssl_certificate /etc/letsencrypt/live/{self.domain}/fullchain.pem;
-            ssl_certificate_key /etc/letsencrypt/live/{self.domain}/privkey.pem;
+            ssl_certificate_key /etc/letsencrypt/ \
+                live/{self.domain}/privkey.pem;
 
             location / {{
                 proxy_pass http://localhost:8080/;
@@ -275,23 +261,28 @@ class NginxInstaller:
             }}
         }}
         """
-        
-        self.ssh_manager.execute_command(f"echo '{nginx_conf}' > /etc/nginx/sites-available/jenkins.conf")
-        
+
+        self.ssh_manager.execute_command(
+            f"echo '{nginx_conf}' > /etc/nginx/sites-available/jenkins.conf")
+
         self.ssh_manager.execute_command("rm /etc/nginx/sites-enabled/default")
 
-        self.ssh_manager.execute_command("ln -s /etc/nginx/sites-available/jenkins.conf /etc/nginx/sites-enabled/jenkins.conf")
-        
+        self.ssh_manager.execute_command(
+            "ln -s /etc/nginx/sites-available/jenkins.conf /etc/nginx/sites-enabled/jenkins.conf")
+
         self.ssh_manager.execute_command("systemctl restart nginx")
-        
+
     def obtain_ssl_certificate(self):
         # Certbot installieren
-        self.ssh_manager.execute_command("DEBIAN_FRONTEND=noninteractive apt-get install certbot python3-certbot-nginx -y")
+        self.ssh_manager.execute_command(
+            "DEBIAN_FRONTEND=noninteractive apt-get install certbot python3-certbot-nginx -y")
         # SSL-Zertifikat beantragen
-        result = self.ssh_manager.execute_command(f"certbot --nginx -d {self.domain} --non-interactive --agree-tos -m clemens.nikolaus@comquent.de")
+        result = self.ssh_manager.execute_command(
+            f"certbot --nginx -d {self.domain} --non-interactive --agree-tos -m clemens.nikolaus@comquent.de")
         if not result:
             print("Failed to obtain SSL certificate")
-        
+
+
 def is_ssh_port_open(ip, port=22, timeout=5):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.settimeout(timeout)
@@ -323,6 +314,8 @@ class EnvironmentManager:
                 installer.install_jenkins()
 
     def test_jenkins(self):
+        if not self.vm_ip:
+            self.vm_ip = self.vm_manager.get_vm_ip()
         if self.vm_ip:
             tester = JenkinsTester(self.vm_ip)
             if tester.test_jenkins():
@@ -339,7 +332,7 @@ class EnvironmentManager:
         if self.ssh_manager:
             self.ssh_manager.close()
         self.vm_manager.delete_vm()
-        
+
         if os.path.exists('vm_info.json'):
             os.remove('vm_info.json')
 
@@ -364,64 +357,49 @@ class EnvironmentManager:
         nginx_installer.configure_nginx()
         nginx_installer.obtain_ssl_certificate()
 
-        
-        
+
 def main():
     action = sys.argv[1] if len(sys.argv) > 1 else 'full'
-    
+
     api_token = os.getenv('API_TOKEN')
     dns_api_token = os.getenv('DNS_API_TOKEN')
     domain = os.getenv('DOMAIN')
-    
+    ssh_private_key_path = os.getenv('SSH_PRIVATE_KEY_PATH')
+
     os_type = "ubuntu-22.04"
     server_type = "cx22"
     ssh_key_id = 23404904
-    ssh_private_key_path = "~/.ssh/id_rsa"
 
     manager = VMManager(api_token)
-    
-    
-    
+    env_manager = EnvironmentManager(manager, ssh_private_key_path)
+
     if action == 'create':
         manager.create_vm(os_type, server_type, ssh_key_id)
-
         env_manager.setup_jenkins()
-        
-        if dns_api_token:
-            dns_manager = DNSManager(dns_api_token)
-            ip_address = manager.get_vm_ip()
-            dns_manager.create_dns_record(domain, ip_address)
-            
-        env_manager.setup_nginx(domain)
-
 
     elif action == 'setup_nginx':
-        env_manager = EnvironmentManager(manager, ssh_private_key_path)
         env_manager.setup_nginx(domain)
 
     elif action == 'create_dns':
-        env_manager = EnvironmentManager(manager, ssh_private_key_path)
         if dns_api_token:
             dns_manager = DNSManager(dns_api_token)
             ip_address = manager.get_vm_ip()
             dns_manager.create_dns_record(domain, ip_address)
         else:
             print("DNS_API_TOKEN not set")
-            
+
     elif action == 'test':
-        env_manager = EnvironmentManager(manager, ssh_private_key_path)
         env_manager.test_jenkins()
 
     elif action == 'cleanup':
-        env_manager = EnvironmentManager(manager, ssh_private_key_path)
         env_manager.cleanup()
 
     else:
         manager.create_vm(os_type, server_type, ssh_key_id)
-        env_manager = EnvironmentManager(manager, ssh_private_key_path)
         env_manager.setup_jenkins()
         env_manager.test_jenkins()
         env_manager.cleanup()
+
 
 if __name__ == '__main__':
     main()

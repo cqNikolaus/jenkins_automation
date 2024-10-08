@@ -2,6 +2,7 @@ pipeline {
   agent {
     docker { 
       image 'python-build' 
+      args '-u root:root'
     }
   }
   environment {
@@ -10,33 +11,46 @@ pipeline {
     DOMAIN = 'jenkins-${env.BUILD_NUMBER}.comquent.academy'
   }
   stages {
-    stage('Init Environment') {
-      steps {
-        sh 'python -V'
-      }
-    }
     stage('Create Jenkins Instance') {
       steps {
-        echo "create jenkins vm"
-        sh "python jenkins_automation.py create"
+        withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
+          sh '''
+            echo "create jenkins instance"
+            chmod 600 $SSH_KEY_FILE
+            export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
+            python jenkins_automation.py create
+          '''
+        }
       }
     }
-    stage('Check successful Installation') {
+    stage('Check Successful Installation') {
+      withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
+        steps {
+          sh '''
+            echo "check successful installation"
+            export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
+            python jenkins_automation.py test
+          '''
+        }
+      }
+    }
+    stage('Create DNS Record') {
       steps {
-        echo "test jenkins"
-        sh "python jenkins_automation.py test"
-      }
-    }
-    stage('Create DNS Record'){
-      steps{
-        echo "create dns record"
-        sh "python jenkins_automation.py create_dns"
+        sh '''
+          echo "create dns record"
+          python jenkins_automation.py create_dns
+        '''
       }
     }
     stage('Setup Nginx and SSL') {
-      steps {
-        echo "setup nginx and ssl"
-        sh "python jenkins_automation.py setup_nginx"
+      withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
+        steps {
+          sh '''
+            echo "setup nginx and ssl"
+            export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
+            python jenkins_automation.py setup_nginx
+          '''
+        }
       }
     }
   }
