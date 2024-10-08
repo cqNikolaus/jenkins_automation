@@ -364,8 +364,8 @@ class EnvironmentManager:
 
         nginx_installer = NginxInstaller(self.ssh_manager, domain)
         nginx_installer.install_nginx()
-        nginx_installer.configure_nginx()
         nginx_installer.obtain_ssl_certificate()
+        nginx_installer.configure_nginx()
 
 
 def main():
