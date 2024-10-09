@@ -214,25 +214,11 @@ class JenkinsInstaller:
         for cmd in commands:
             self.ssh_manager.execute_command(cmd)
 
-        commands = [
-            "DEBIAN_FRONTEND=noninteractive apt-get update -y",
-            "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y",
-            "DEBIAN_FRONTEND=noninteractive apt-get install openjdk-17-jdk -y",
-            "curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null",
-            "echo 'deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/' | tee /etc/apt/sources.list.d/jenkins.list > /dev/null",
-            "DEBIAN_FRONTEND=noninteractive apt-get update -y",
-            "DEBIAN_FRONTEND=noninteractive apt-get install jenkins -y",
-            "systemctl start jenkins",
-            "systemctl enable jenkins"
-        ]
-        for command in commands:
-            self.ssh_manager.execute_command(command)
-
     def build_jenkins_docker_image(self):
         self.ssh_manager.execute_command("mkdir -p ~/jenkins-docker")
 
         self.ssh_manager.sftp_put(
-            'jenkins-docker/Dockerfile', '~/jenkins_docker/Dockerfile')
+            'jenkins-docker/Dockerfile', '~/jenkins-docker/Dockerfile')
 
         self.ssh_manager.execute_command(
             "cd ~/jenkins_docker && sudo docker build -t jenkins-image .")
@@ -249,6 +235,8 @@ class JenkinsInstaller:
         self.install_docker()
         self.build_jenkins_docker_image()
         self.run_jenkins_container()
+
+
 class JenkinsTester:
 
     def __init__(self, ip_address):
@@ -302,7 +290,8 @@ class NginxInstaller:
             server_name {self.domain};
 
             ssl_certificate /etc/letsencrypt/live/{self.domain}/fullchain.pem;
-            ssl_certificate_key /etc/letsencrypt/live/{self.domain}/privkey.pem;
+            ssl_certificate_key /etc/letsencrypt/ \
+                live/{self.domain}/privkey.pem;
 
             location / {{
                 proxy_pass http://localhost:8080/;
