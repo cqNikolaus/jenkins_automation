@@ -129,6 +129,20 @@ class SSHManager:
             print(f"Failed to execute command: {e}")
             return False
 
+    def sftp_put(self, local_path, remote_path):
+        try:
+            ssh = self.connect()
+            if ssh = None:
+                return False
+            sftp = ssh.open_sftp()
+            sftp.put(local_path, remote_path)
+            sftp.close()
+            print(f"Transferred {local_path} to {remote_path}")
+            return True
+        except Exception as e:
+            print(f"Failed to transfer file: {e}")
+            return False
+
     def close(self):
         if self.ssh:
             self.ssh.close()
@@ -184,7 +198,22 @@ class JenkinsInstaller:
     def __init__(self, ssh_manager):
         self.ssh_manager = ssh_manager
 
-    def install_jenkins(self):
+    def install_docker(self):
+        commands = [
+            "sudo apt-get update -y",
+            "sudo apt-get install -y ca-certificates curl gnupg lsb-release",
+            "sudo mkdir -p /etc/apt/keyrings",
+            "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg",
+            'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] '
+            'https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | '
+            'sudo tee /etc/apt/sources.list.d/docker.list > /dev/null',
+            "sudo apt-get update -y",
+            "sudo apt-get install -y docker-ce docker-ce-cli containerd.io",
+            "sudo usermod -aG docker $USER"
+        ]
+        for cmd in commands:
+            self.ssh_manager.execute_command(cmd)
+
         commands = [
             "DEBIAN_FRONTEND=noninteractive apt-get update -y",
             "DEBIAN_FRONTEND=noninteractive apt-get upgrade -y",
@@ -199,7 +228,27 @@ class JenkinsInstaller:
         for command in commands:
             self.ssh_manager.execute_command(command)
 
+    def build_jenkins_docker_image(self):
+        self.ssh_manager.execute_command("mkdir -p ~/jenkins-docker")
 
+        self.ssh_manager.sftp_put(
+            'jenkins-docker/Dockerfile', '~/jenkins_docker/Dockerfile')
+
+        self.ssh_manager.execute_command(
+            "cd ~/jenkins_docker && sudo docker build -t jenkins-image .")
+
+    def run_jenkins_container(self):
+        self.ssh_manager.execute_command(
+            "sudo docker run -d --name jenkins "
+            "-p 8080:8080 -p 50000:50000 "
+            "-v jenkins_home:/var/jenkins_home "
+            "jenkins-image"
+        )
+
+    def install_jenkins(self):
+        self.install_docker()
+        self.build_jenkins_docker_image()
+        self.run_jenkins_container()
 class JenkinsTester:
 
     def __init__(self, ip_address):
@@ -213,7 +262,8 @@ class JenkinsTester:
                 print("Jenkins is up and running.")
                 return True
             else:
-                print(f"Jenkins is not running. Status code: {response.status_code}")
+                print(f"Jenkins is not running. Status code: {
+                      response.status_code}")
                 return False
         except requests.exceptions.ConnectionError:
             print("Failed to connect to Jenkins.")
@@ -252,7 +302,8 @@ class NginxInstaller:
             server_name {self.domain};
 
             ssl_certificate /etc/letsencrypt/live/{self.domain}/fullchain.pem;
-            ssl_certificate_key /etc/letsencrypt/live/{self.domain}/privkey.pem;
+            ssl_certificate_key /etc/letsencrypt/ \
+                live/{self.domain}/privkey.pem;
 
             location / {{
                 proxy_pass http://localhost:8080/;
@@ -271,8 +322,9 @@ class NginxInstaller:
 
         self.ssh_manager.execute_command("rm /etc/nginx/sites-enabled/default")
 
-        self.ssh_manager.execute_command("ln -s /etc/nginx/sites-available/jenkins.conf /etc/nginx/sites-enabled/jenkins.conf")
-        
+        self.ssh_manager.execute_command(
+            "ln -s /etc/nginx/sites-available/jenkins.conf /etc/nginx/sites-enabled/jenkins.conf")
+
         print("Testing Nginx configuration...")
         if not self.ssh_manager.execute_command("nginx -t"):
             print("Nginx configuration test failed.")
