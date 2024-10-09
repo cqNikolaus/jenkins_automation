@@ -132,7 +132,7 @@ class SSHManager:
     def sftp_put(self, local_path, remote_path):
         try:
             ssh = self.connect()
-            if ssh = None:
+            if ssh is None:
                 return False
             sftp = ssh.open_sftp()
             sftp.put(local_path, remote_path)
