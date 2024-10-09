@@ -32,7 +32,9 @@ class VMManager:
             "start_after_create": True,
             "ssh_keys": [ssh_key]
         }
+        
         response = requests.post(url, headers=headers, json=data)
+        
         if response.status_code == 201:
             self.vm = response.json()
             print("VM created successfully")
@@ -46,29 +48,6 @@ class VMManager:
         if self.vm:
             return self.vm["server"]["public_net"]["ipv4"]["ip"]
         return None
-
-    def wait_for_vm(self, server_id, timeout=300, interval=10):
-        url = f"https://api.hetzner.cloud/v1/servers/{server_id}"
-        headers = {
-            "Authorization": f"Bearer {self.api_token}",
-        }
-        elapsed = 0
-        while elapsed < timeout:
-            response = requests.get(url, headers=headers)
-            if response.status_code == 200:
-                server_status = response.json()['server']['status']
-                if server_status == 'running':
-                    print("Server is running.")
-                    return True
-                else:
-                    print(f"Server status: {server_status}. Waiting...")
-            else:
-                print(f"Failed to get server status: {response.text}")
-                return False
-            time.sleep(interval)
-            elapsed += interval
-        print("Timeout waiting for server to be ready.")
-        return False
 
     def delete_vm(self):
         if self.vm:
@@ -253,8 +232,7 @@ class JenkinsTester:
                 print("Jenkins is up and running.")
                 return True
             else:
-                print(f"Jenkins is not running. Status code: {
-                      response.status_code}")
+                print(f"Jenkins is not running. Status code: {response.status_code}")
                 return False
         except requests.exceptions.ConnectionError:
             print("Failed to connect to Jenkins.")
@@ -349,19 +327,46 @@ class EnvironmentManager:
         self.ssh_key_path = ssh_key_path
         self.vm_ip = None
         self.ssh_manager = None
+        
+    def wait_for_vm(self, server_id, timeout=300, interval=10):
+        url = f"https://api.hetzner.cloud/v1/servers/{server_id}"
+        headers = {
+            "Authorization": f"Bearer {self.api_token}",
+        }
+        elapsed = 0
+        while elapsed < timeout:
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                server_status = response.json()['server']['status']
+                if server_status == 'running':
+                    print("Server is running.")
+                    return True
+                else:
+                    print(f"Server status: {server_status}. Waiting...")
+            else:
+                print(f"Failed to get server status: {response.text}")
+                return False
+            time.sleep(interval)
+            elapsed += interval
+        print("Timeout waiting for server to be ready.")
+        return False
 
-    def setup_jenkins(self):
+    def wait_for_vm_to_be_ready(self):
         server_id = self.vm_manager.vm['server']['id']
-        if self.vm_manager.wait_for_vm(server_id):
+        if self.wait_for_vm(server_id):
             self.vm_ip = self.vm_manager.get_vm_ip()
             if self.vm_ip:
                 print(f"VM IP address: {self.vm_ip}")
-                # Warten, bis der SSH-Port offen ist
                 while not is_ssh_port_open(self.vm_ip):
                     print(f"SSH port not open on {self.vm_ip}. Waiting...")
                     time.sleep(10)
-                self.ssh_manager = SSHManager(self.vm_ip, self.ssh_key_path)
+                print("VM is fully ready and reachable via SSH.")
+                return True
+        print("VM is not ready or failed to become reachable.")
+        return False
 
+    def setup_jenkins(self):
+                self.ssh_manager = SSHManager(self.vm_ip, self.ssh_key_path)
                 installer = JenkinsInstaller(self.ssh_manager)
                 installer.install_jenkins()
 
@@ -427,7 +432,8 @@ def main():
 
     if action == 'create':
         manager.create_vm(os_type, server_type, ssh_key_id)
-        env_manager.setup_jenkins()
+        if env_manager.wait_for_vm_to_be_ready():
+            env_manager.setup_jenkins()
 
     elif action == 'setup_nginx':
         env_manager.setup_nginx(domain)
