@@ -214,14 +214,16 @@ class JenkinsInstaller:
         for cmd in commands:
             self.ssh_manager.execute_command(cmd)
 
+        
+        
     def build_jenkins_docker_image(self):
-        self.ssh_manager.execute_command("mkdir -p ~/jenkins-docker")
+        self.ssh_manager.execute_command("cd ~/jenkins-docker-setup/jenkins-docker && sudo docker build -t jenkins-image .")
 
-        self.ssh_manager.sftp_put(
-            'jenkins-docker/Dockerfile', '~/jenkins-docker/Dockerfile')
+    def clone_repo(self):
+        self.ssh_manager.execute_command("sudo apt-get install -y git")
+        repo_url = "https://github.com/cqNikolaus/jenkins_automation/blob/jenkins-docker-setup"
+        self.ssh_manager.execute_command(f"git clone {repo_url} ~/jenkins-docker-setup")
 
-        self.ssh_manager.execute_command(
-            "cd ~/jenkins_docker && sudo docker build -t jenkins-image .")
 
     def run_jenkins_container(self):
         self.ssh_manager.execute_command(
@@ -233,6 +235,7 @@ class JenkinsInstaller:
 
     def install_jenkins(self):
         self.install_docker()
+        self.clone_repo()
         self.build_jenkins_docker_image()
         self.run_jenkins_container()
 
