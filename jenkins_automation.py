@@ -331,7 +331,7 @@ class EnvironmentManager:
     def wait_for_vm(self, server_id, timeout=300, interval=10):
         url = f"https://api.hetzner.cloud/v1/servers/{server_id}"
         headers = {
-            "Authorization": f"Bearer {self.api_token}",
+            "Authorization": f"Bearer {self.vm_manager.api_token}",
         }
         elapsed = 0
         while elapsed < timeout:
