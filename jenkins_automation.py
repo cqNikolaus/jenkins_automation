@@ -185,6 +185,8 @@ class JenkinsInstaller:
 
     def __init__(self, ssh_manager, jenkins_user, jenkins_pass):
         self.ssh_manager = ssh_manager
+        self.jenkins_user = jenkins_user
+        self.jenkins_pass = jenkins_pass
 
     def install_docker(self):
         commands = [
