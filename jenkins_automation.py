@@ -354,7 +354,7 @@ class EnvironmentManager:
 
     def wait_until_ready(self):
         server_id = self.vm_manager.vm['server']['id']
-        if self.wait_for_vm_running(server_id):
+        if self.vm_manager.wait_for_vm_running(server_id):
             self.vm_ip = self.vm_manager.get_vm_ip()
             if self.vm_ip:
                 print(f"VM IP address: {self.vm_ip}")
