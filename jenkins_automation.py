@@ -204,19 +204,21 @@ class JenkinsInstaller:
 
     def build_jenkins_docker_image(self):
         self.ssh_manager.execute_command(
-            "cd ~/jenkins-docker-setup/jenkins-docker && sudo docker build -t jenkins-image .")
+            "cd ~/jenkins-jcac/jenkins-docker && sudo docker build -t jenkins-image .")
 
     def clone_repo(self):
         self.ssh_manager.execute_command("sudo apt-get install -y git")
-        repo_url = "https://github.com/cqNikolaus/jenkins_automation/blob/jenkins-docker-setup"
+        repo_url = "https://github.com/cqNikolaus/jenkins_automation/tree/jenkins-jcac"
         self.ssh_manager.execute_command(
-            f"git clone {repo_url} ~/jenkins-docker-setup")
+            f"git clone {repo_url} ~/jenkins-jcac")
 
     def run_jenkins_container(self):
         self.ssh_manager.execute_command(
             "sudo docker run -d --name jenkins "
             "-p 8080:8080 -p 50000:50000 "
             "-v jenkins_home:/var/jenkins_home "
+            f"-e JENKINS_USER={jenkins_user} "
+            f"-e JENKINS_PASS={jenkins_pass} "
             "jenkins-image"
         )
 
@@ -395,6 +397,8 @@ def main():
 
     api_token = os.getenv('API_TOKEN')
     dns_api_token = os.getenv('DNS_API_TOKEN')
+    jenkins_user = os.getenv('JENKINS_USER')
+    jenkins_pass = os.getenv('JENKINS_PASS')
     domain = os.getenv('DOMAIN')
     ssh_private_key_path = os.getenv('SSH_PRIVATE_KEY_PATH')
 
