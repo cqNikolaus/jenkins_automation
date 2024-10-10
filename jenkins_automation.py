@@ -32,9 +32,9 @@ class VMManager:
             "start_after_create": True,
             "ssh_keys": [ssh_key]
         }
-        
+
         response = requests.post(url, headers=headers, json=data)
-        
+
         if response.status_code == 201:
             self.vm = response.json()
             print("VM created successfully")
@@ -88,6 +88,7 @@ class VMManager:
             elapsed += interval
         print("Timeout waiting for server to be ready.")
         return False
+
 
 class SSHManager:
 
@@ -201,16 +202,15 @@ class JenkinsInstaller:
         for cmd in commands:
             self.ssh_manager.execute_command(cmd)
 
-        
-        
     def build_jenkins_docker_image(self):
-        self.ssh_manager.execute_command("cd ~/jenkins-docker-setup/jenkins-docker && sudo docker build -t jenkins-image .")
+        self.ssh_manager.execute_command(
+            "cd ~/jenkins-docker-setup/jenkins-docker && sudo docker build -t jenkins-image .")
 
     def clone_repo(self):
         self.ssh_manager.execute_command("sudo apt-get install -y git")
         repo_url = "https://github.com/cqNikolaus/jenkins_automation/blob/jenkins-docker-setup"
-        self.ssh_manager.execute_command(f"git clone {repo_url} ~/jenkins-docker-setup")
-
+        self.ssh_manager.execute_command(
+            f"git clone {repo_url} ~/jenkins-docker-setup")
 
     def run_jenkins_container(self):
         self.ssh_manager.execute_command(
@@ -240,7 +240,8 @@ class JenkinsTester:
                 print("Jenkins is up and running.")
                 return True
             else:
-                print(f"Jenkins is not running. Status code: {response.status_code}")
+                print(f"Jenkins is not running. Status code: {
+                      response.status_code}")
                 return False
         except requests.exceptions.ConnectionError:
             print("Failed to connect to Jenkins.")
@@ -279,7 +280,8 @@ class NginxInstaller:
             server_name {self.domain};
 
             ssl_certificate /etc/letsencrypt/live/{self.domain}/fullchain.pem;
-            ssl_certificate_key /etc/letsencrypt/live/{self.domain}/privkey.pem;
+            ssl_certificate_key /etc/letsencrypt/ \
+                live/{self.domain}/privkey.pem;
 
             location / {{
                 proxy_pass http://localhost:8080/;
@@ -335,8 +337,6 @@ class EnvironmentManager:
         self.ssh_key_path = ssh_key_path
         self.vm_ip = None
         self.ssh_manager = None
-        
-        
 
     def wait_until_ready(self):
         server_id = self.vm_manager.vm['server']['id']
@@ -353,9 +353,9 @@ class EnvironmentManager:
         return False
 
     def setup_jenkins(self):
-                self.ssh_manager = SSHManager(self.vm_ip, self.ssh_key_path)
-                installer = JenkinsInstaller(self.ssh_manager)
-                installer.install_jenkins()
+        self.ssh_manager = SSHManager(self.vm_ip, self.ssh_key_path)
+        installer = JenkinsInstaller(self.ssh_manager)
+        installer.install_jenkins()
 
     def test_jenkins(self):
         if not self.vm_ip:
@@ -372,10 +372,12 @@ class EnvironmentManager:
             print("No VM IP address found.")
             return False
 
-    def cleanup(self):
+    def cleanup(self, delete_vm=True):
         if self.ssh_manager:
             self.ssh_manager.close()
-        self.vm_manager.delete_vm()
+
+        if delete_vm:
+            self.vm_manager.delete_vm()
 
         if os.path.exists('vm_info.json'):
             os.remove('vm_info.json')
