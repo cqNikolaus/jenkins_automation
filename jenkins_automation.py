@@ -280,8 +280,7 @@ class NginxInstaller:
             server_name {self.domain};
 
             ssl_certificate /etc/letsencrypt/live/{self.domain}/fullchain.pem;
-            ssl_certificate_key /etc/letsencrypt/ \
-                live/{self.domain}/privkey.pem;
+            ssl_certificate_key /etc/letsencrypt/live/{self.domain}/privkey.pem;
 
             location / {{
                 proxy_pass http://localhost:8080/;
