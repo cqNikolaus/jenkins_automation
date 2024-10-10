@@ -431,7 +431,7 @@ def main():
         env_manager.test_jenkins()
 
     elif action == 'cleanup':
-        env_manager.cleanup()
+        env_manager.cleanup(delete_vm=False)
 
     else:
         manager.create_vm(os_type, server_type, ssh_key_id)
