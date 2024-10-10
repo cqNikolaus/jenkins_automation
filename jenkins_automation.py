@@ -66,6 +66,28 @@ class VMManager:
         else:
             print("No VM to delete")
 
+    def wait_for_vm_running(self, server_id, timeout=300, interval=10):
+        url = f"https://api.hetzner.cloud/v1/servers/{server_id}"
+        headers = {
+            "Authorization": f"Bearer {self.api_token}",
+        }
+        elapsed = 0
+        while elapsed < timeout:
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                server_status = response.json()['server']['status']
+                if server_status == 'running':
+                    print("Server is running.")
+                    return True
+                else:
+                    print(f"Server status: {server_status}. Waiting...")
+            else:
+                print(f"Failed to get server status: {response.text}")
+                return False
+            time.sleep(interval)
+            elapsed += interval
+        print("Timeout waiting for server to be ready.")
+        return False
 
 class SSHManager:
 
@@ -328,32 +350,11 @@ class EnvironmentManager:
         self.vm_ip = None
         self.ssh_manager = None
         
-    def wait_for_vm(self, server_id, timeout=300, interval=10):
-        url = f"https://api.hetzner.cloud/v1/servers/{server_id}"
-        headers = {
-            "Authorization": f"Bearer {self.vm_manager.api_token}",
-        }
-        elapsed = 0
-        while elapsed < timeout:
-            response = requests.get(url, headers=headers)
-            if response.status_code == 200:
-                server_status = response.json()['server']['status']
-                if server_status == 'running':
-                    print("Server is running.")
-                    return True
-                else:
-                    print(f"Server status: {server_status}. Waiting...")
-            else:
-                print(f"Failed to get server status: {response.text}")
-                return False
-            time.sleep(interval)
-            elapsed += interval
-        print("Timeout waiting for server to be ready.")
-        return False
+        
 
-    def wait_for_vm_to_be_ready(self):
+    def wait_until_ready(self):
         server_id = self.vm_manager.vm['server']['id']
-        if self.wait_for_vm(server_id):
+        if self.wait_for_vm_running(server_id):
             self.vm_ip = self.vm_manager.get_vm_ip()
             if self.vm_ip:
                 print(f"VM IP address: {self.vm_ip}")
@@ -432,7 +433,7 @@ def main():
 
     if action == 'create':
         manager.create_vm(os_type, server_type, ssh_key_id)
-        if env_manager.wait_for_vm_to_be_ready():
+        if env_manager.wait_until_ready():
             env_manager.setup_jenkins()
 
     elif action == 'setup_nginx':
