@@ -183,7 +183,7 @@ class DNSManager:
 
 class JenkinsInstaller:
 
-    def __init__(self, ssh_manager):
+    def __init__(self, ssh_manager, jenkins_user, jenkins_pass):
         self.ssh_manager = ssh_manager
 
     def install_docker(self):
@@ -214,11 +214,11 @@ class JenkinsInstaller:
 
     def run_jenkins_container(self):
         self.ssh_manager.execute_command(
-            "sudo docker run -d --name jenkins "
-            "-p 8080:8080 -p 50000:50000 "
-            "-v jenkins_home:/var/jenkins_home "
-            f"-e JENKINS_USER={jenkins_user} "
-            f"-e JENKINS_PASS={jenkins_pass} "
+            f"sudo docker run -d --name jenkins "
+            f"-p 8080:8080 -p 50000:50000 "
+            f"-v jenkins_home:/var/jenkins_home "
+            f"-e JENKINS_USER={self.jenkins_user} "
+            f"-e JENKINS_PASS={self.jenkins_pass} "
             "jenkins-image"
         )
 
@@ -332,9 +332,11 @@ def is_ssh_port_open(ip, port=22, timeout=5):
 
 class EnvironmentManager:
 
-    def __init__(self, vm_manager, ssh_key_path):
+    def __init__(self, vm_manager, ssh_key_path, jenkins_user, jenkins_pass):
         self.vm_manager = vm_manager
         self.ssh_key_path = ssh_key_path
+        self.jenkins_user = jenkins_user
+        self.jenkins_pass = jenkins_pass
         self.vm_ip = None
         self.ssh_manager = None
 
@@ -355,7 +357,7 @@ class EnvironmentManager:
 
     def setup_jenkins(self):
         self.ssh_manager = SSHManager(self.vm_ip, self.ssh_key_path)
-        installer = JenkinsInstaller(self.ssh_manager)
+        installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass)
         installer.install_jenkins()
 
     def test_jenkins(self):
@@ -407,7 +409,7 @@ def main():
     ssh_key_id = 23404904
 
     manager = VMManager(api_token)
-    env_manager = EnvironmentManager(manager, ssh_private_key_path)
+    env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass)
 
     if action == 'create':
         manager.create_vm(os_type, server_type, ssh_key_id)
