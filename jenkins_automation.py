@@ -130,20 +130,6 @@ class SSHManager:
             print(f"Failed to execute command: {e}")
             return False
 
-    def sftp_put(self, local_path, remote_path):
-        try:
-            ssh = self.connect()
-            if ssh is None:
-                return False
-            sftp = ssh.open_sftp()
-            sftp.put(local_path, remote_path)
-            sftp.close()
-            print(f"Transferred {local_path} to {remote_path}")
-            return True
-        except Exception as e:
-            print(f"Failed to transfer file: {e}")
-            return False
-
     def close(self):
         if self.ssh:
             self.ssh.close()
