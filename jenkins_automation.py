@@ -208,7 +208,7 @@ class JenkinsInstaller:
 
     def clone_repo(self):
         self.ssh_manager.execute_command("sudo apt-get install -y git")
-        repo_url = "https://github.com/cqNikolaus/jenkins_automation/tree/jenkins-jcac"
+        repo_url = "https://github.com/cqNikolaus/jenkins_automation/blob/jenkins-jcac"
         self.ssh_manager.execute_command(
             f"git clone {repo_url} ~/jenkins-jcac")
 
