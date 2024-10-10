@@ -413,8 +413,8 @@ def main():
             env_manager.setup_jenkins()
 
     elif action == 'setup_nginx':
-        if 
-        env_manager.setup_nginx(domain)
+        if env_manager.wait_until_ready(): 
+            env_manager.setup_nginx(domain)
 
     elif action == 'create_dns':
         if dns_api_token:
