@@ -340,16 +340,16 @@ class EnvironmentManager:
 
     def wait_until_ready(self):
         server_id = self.vm_manager.vm['server']['id']
+        print("Server ID:", server_id)
         if self.vm_manager.wait_for_vm_running(server_id):
             if not self.vm_ip:
                 self.vm_ip = self.vm_manager.get_vm_ip()
-            else:
-                print(f"VM IP address: {self.vm_ip}")
-                while not is_ssh_port_open(self.vm_ip):
-                    print(f"SSH port not open on {self.vm_ip}. Waiting...")
-                    time.sleep(10)
-                print("VM is fully ready and reachable via SSH.")
-                return True
+            print(f"VM IP address: {self.vm_ip}")
+            while not is_ssh_port_open(self.vm_ip):
+                print(f"SSH port not open on {self.vm_ip}. Waiting...")
+                time.sleep(10)
+            print("VM is fully ready and reachable via SSH.")
+            return True
         print("VM is not ready or failed to become reachable.")
         return False
 
