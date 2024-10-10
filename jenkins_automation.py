@@ -240,8 +240,7 @@ class JenkinsTester:
                 print("Jenkins is up and running.")
                 return True
             else:
-                print(f"Jenkins is not running. Status code: {
-                      response.status_code}")
+                print(f"Jenkins is not running. Status code: {response.status_code}")
                 return False
         except requests.exceptions.ConnectionError:
             print("Failed to connect to Jenkins.")
@@ -410,11 +409,7 @@ def main():
         manager.create_vm(os_type, server_type, ssh_key_id)
         if env_manager.wait_until_ready():
             env_manager.setup_jenkins()
-
-    elif action == 'setup_nginx':
-        if env_manager.wait_until_ready(): 
-            env_manager.setup_nginx(domain)
-
+            
     elif action == 'create_dns':
         if dns_api_token:
             dns_manager = DNSManager(dns_api_token)
@@ -422,6 +417,11 @@ def main():
             dns_manager.create_dns_record(domain, ip_address)
         else:
             print("DNS_API_TOKEN not set")
+
+    elif action == 'setup_nginx':
+        if env_manager.wait_until_ready(): 
+            env_manager.setup_nginx(domain)
+
 
     elif action == 'test':
         env_manager.test_jenkins()
