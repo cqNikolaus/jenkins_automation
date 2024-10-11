@@ -10,5 +10,10 @@ jenkins:
       allowAnonymousRead: false
 
 unclassified:
+    ignoreAcceptLanguage: true
   location:
     url: "${DOMAIN}"
+appearance:
+  locale:
+    systemLocale: en
+    ignoreAcceptLanguage: true
