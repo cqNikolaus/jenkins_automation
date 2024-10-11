@@ -5,6 +5,7 @@ import os
 import socket
 import sys
 import json
+import subprocess
 
 
 class VMManager:
@@ -231,10 +232,12 @@ class JenkinsInstaller:
             'sudo tee /etc/apt/sources.list.d/docker.list > /dev/null',
             "sudo apt-get update -y",
             "sudo apt-get install -y docker-ce docker-ce-cli containerd.io",
-            "sudo usermod -aG docker $USER"
+            "sudo usermod -aG docker $USER",
+            "sudo chmod 666 /var/run/docker.sock"
         ]
         for cmd in commands:
             self.ssh_manager.execute_command(cmd)
+
 
     def build_jenkins_docker_image(self):
         self.ssh_manager.execute_command(
@@ -372,6 +375,8 @@ def is_ssh_port_open(ip, port=22, timeout=5):
         sock.settimeout(timeout)
         result = sock.connect_ex((ip, port))
         return result == 0
+    
+
 
 
 class EnvironmentManager:
