@@ -238,7 +238,7 @@ class JenkinsInstaller:
 
     def build_jenkins_docker_image(self):
         self.ssh_manager.execute_command(
-            "cd ~/jenkins-jcac/jenkins-docker && sudo docker build -t jenkins-image .")
+            "cd /var/jenkins_home/jenkins-jcac/jenkins-docker && sudo docker build -t jenkins-image .")
 
     def clone_repo(self):
         repo_url = "https://github.com/cqNikolaus/jenkins_automation"
