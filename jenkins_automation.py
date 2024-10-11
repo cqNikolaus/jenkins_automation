@@ -479,7 +479,7 @@ def main():
     elif action == 'cleanup':
         env_manager.cleanup(delete_vm=False)
         dns_manager = DNSManager(dns_api_token)
-        dns_manager.delete_dns_record(domain)
+        # dns_manager.delete_dns_record(domain)
 
     else:
         manager.create_vm(os_type, server_type, ssh_key_id)
