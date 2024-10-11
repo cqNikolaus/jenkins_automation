@@ -221,6 +221,7 @@ class JenkinsInstaller:
             f"-v jenkins_home:/var/jenkins_home "
             f"-e JENKINS_USER={self.jenkins_user} "
             f"-e JENKINS_PASS={self.jenkins_pass} "
+            f"-e DOMAIN='https://{os.getenv('DOMAIN')}' "
             "jenkins-image"
         )
 
@@ -291,6 +292,8 @@ class NginxInstaller:
                 proxy_set_header X-Real-IP $remote_addr;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                 proxy_set_header X-Forwarded-Proto $scheme;
+                proxy_set_header X-Forwarded-Host $host;
+                proxy_set_header X-Forwarded-Port $server_port;
             }}
         }}
         """
