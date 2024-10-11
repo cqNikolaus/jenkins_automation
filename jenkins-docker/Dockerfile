@@ -9,11 +9,7 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y docker-ce-cli
 
-ARG DOCKER_GID=999
-
-RUN groupadd -g $DOCKER_GID docker && usermod -aG docker jenkins
-
-RUN chown -R jenkins:jenkins /var/jenkins_home
+RUN groupadd docker && usermod -aG docker jenkins
 
 COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
 RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
