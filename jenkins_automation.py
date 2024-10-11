@@ -268,6 +268,8 @@ class JenkinsTester:
 
     def __init__(self, ip_address):
         self.ip_address = ip_address
+        self.max_retries = max_retries
+        self.wait_seconds = wait_seconds
 
     def test_jenkins(self):
         url = f"http://{self.ip_address}:8080/login?from=%2F"
@@ -289,7 +291,7 @@ class JenkinsTester:
                 time.sleep(self.wait_seconds)
         
         print("Jenkins is not running after multiple attempts.")
-        sys.exit(1)  # Exit mit Fehler
+        sys.exit(1) 
 
 
 class NginxInstaller:
