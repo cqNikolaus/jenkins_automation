@@ -166,6 +166,38 @@ class DNSManager:
         else:
             print("Failed to create DNS record", response.status_code)
             print(response.json())
+            
+            
+    def delete_dns_record(self, domain):
+        zone_name = 'comquent.academy'
+        url = "https://dns.hetzner.com/api/v1/records"
+        headers = {
+            "Auth-API-Token": self.dns_api_token
+        }
+
+        zone_id = self.get_zone_id(zone_name)
+        if not zone_id:
+            print("Zone ID not found.")
+            return
+
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            records = response.json().get("records", [])
+            for record in records:
+                if record["zone_id"] == zone_id and record["name"] == domain.split('.')[0]:
+                    record_id = record["id"]
+                    delete_url = f"{url}/{record_id}"
+                    delete_response = requests.delete(delete_url, headers=headers)
+                    if delete_response.status_code == 200:
+                        print("DNS record deleted successfully")
+                    else:
+                        print("Failed to delete DNS record", delete_response.status_code)
+                        print(delete_response.json())
+                        return
+            print("DNS record not found.")
+        else:
+            print("Failed to retrieve DNS records", response.status_code)
+            print(response.json())    
 
     def get_zone_id(self, zone_name):
         url = "https://dns.hetzner.com/api/v1/zones"
@@ -239,20 +271,25 @@ class JenkinsTester:
 
     def test_jenkins(self):
         url = f"http://{self.ip_address}:8080/login?from=%2F"
-        try:
-            response = requests.get(url, timeout=30)
-            if response.status_code == 200:
-                print("Jenkins is up and running.")
-                return True
-            else:
-                print(f"Jenkins is not running. Status code: {response.status_code}")
-                return False
-        except requests.exceptions.ConnectionError:
-            print("Failed to connect to Jenkins.")
-            return False
-        except requests.exceptions.Timeout:
-            print("Connection to Jenkins timed out")
-            return False
+        for attempt in range(1, self.max_retries + 1):
+            try:
+                response = requests.get(url, timeout=30)
+                if response.status_code == 200:
+                    print("Jenkins is up and running.")
+                    return True
+                else:
+                    print(f"Attempt {attempt}: Jenkins is not running. Status code: {response.status_code}")
+            except requests.exceptions.ConnectionError:
+                print(f"Attempt {attempt}: Failed to connect to Jenkins.")
+            except requests.exceptions.Timeout:
+                print(f"Attempt {attempt}: Connection to Jenkins timed out.")
+            
+            if attempt < self.max_retries:
+                print(f"Waiting for {self.wait_seconds} seconds before retrying...")
+                time.sleep(self.wait_seconds)
+        
+        print("Jenkins is not running after multiple attempts.")
+        sys.exit(1)  # Exit mit Fehler
 
 
 class NginxInstaller:
@@ -439,6 +476,8 @@ def main():
 
     elif action == 'cleanup':
         env_manager.cleanup(delete_vm=False)
+        dns_manager = DNSManager(dns_api_token)
+        dns_manager.delete_dns_record(domain)
 
     else:
         manager.create_vm(os_type, server_type, ssh_key_id)
