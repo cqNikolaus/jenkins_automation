@@ -4,6 +4,8 @@ import os
 def main():
     api_token = os.getenv('API_TOKEN')
     dns_api_token = os.getenv('DNS_API_TOKEN')
+    JENKINS_USER = credentials('JENKINS_USER')
+    JENKINS_PASS = credentials('JENKINS_PASS')
     domain = os.getenv('DOMAIN')
     ssh_private_key_path = os.getenv('SSH_PRIVATE_KEY_PATH')
 
@@ -22,6 +24,7 @@ def main():
     dns_manager.create_dns_record(domain, ip_adress)
     
     env_manager.setup_nginx(domain)
+    env_manager.cleanup(delete_vm=False)
     
     
 if __name__ == "__main__":
