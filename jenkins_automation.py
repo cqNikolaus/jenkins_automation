@@ -266,7 +266,7 @@ class JenkinsInstaller:
 
 class JenkinsTester:
 
-    def __init__(self, ip_address):
+    def __init__(self, ip_address, max_retries=10, wait_seconds=10):
         self.ip_address = ip_address
         self.max_retries = max_retries
         self.wait_seconds = wait_seconds
@@ -303,7 +303,7 @@ class NginxInstaller:
     def install_nginx(self):
         if not self.ssh_manager.execute_command("DEBIAN_FRONTEND=noninteractive apt-get install nginx -y"):
             print("Failed to install Nginx")
-            return False
+            sys.exit(1)
         print("Nginx installed successfully")
         return True
 
@@ -350,7 +350,7 @@ class NginxInstaller:
         print("Testing Nginx configuration...")
         if not self.ssh_manager.execute_command("nginx -t"):
             print("Nginx configuration test failed.")
-            return False
+            sys.exit(1)
         print("Nginx configuration test passed.")
 
         print("Restarting Nginx...")
