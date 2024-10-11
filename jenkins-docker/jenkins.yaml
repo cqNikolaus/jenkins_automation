@@ -10,7 +10,6 @@ jenkins:
       allowAnonymousRead: false
 
 unclassified:
-    ignoreAcceptLanguage: true
   location:
     url: "${DOMAIN}"
 appearance:
