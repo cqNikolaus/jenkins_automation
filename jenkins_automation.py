@@ -297,7 +297,7 @@ class JenkinsJobManager:
         while time.time() - start_time < timeout:
             last_build_info = self.server.get_job_info(job_name)['lastBuild']
             if last_build_info is not None:
-                status = self.get_build_info(job_name, self.build_number)['result']
+                status = self.server.get_build_info(job_name, self.build_number)['result']
                 if status == 'BUILDING':
                     print("Build still in progress. Waiting...")
                 elif status == 'SUCCESS':
