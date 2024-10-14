@@ -542,6 +542,7 @@ def main():
     jenkins_user = os.getenv('JENKINS_USER')
     jenkins_pass = os.getenv('JENKINS_PASS')
     domain = os.getenv('DOMAIN')
+    jenkins_url = f"https://{domain}/"
     ssh_private_key_path = os.getenv('SSH_PRIVATE_KEY_PATH')
     job_name = 'docker-test'
 
@@ -550,7 +551,7 @@ def main():
     ssh_key_id = 23404904
 
     manager = VMManager(api_token)
-    env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, domain, job_name)
+    env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, jenkins_url, job_name)
 
     if action == 'create':
         manager.create_vm(os_type, server_type, ssh_key_id)
