@@ -54,7 +54,7 @@ pipeline {
           set -e
           echo "test dns record"
           dig +short ${DOMAIN} @8.8.8.8
-          if [ -z "$(dig +short ${DOMAIN} @8.8.8.8)" ]; then
+          if [ $? -ne 0 ]; then
             echo "DNS record does not exist or cannot be resolved."
             exit 1
           fi
