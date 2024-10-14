@@ -440,6 +440,8 @@ class EnvironmentManager:
         self.ssh_manager = SSHManager(self.vm_ip, self.ssh_key_path)
         installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass)
         installer.install_jenkins()
+        print("Waiting for Jenkins to initialize...")
+        time.sleep(30)
         
 
         
@@ -448,13 +450,21 @@ class EnvironmentManager:
             self.vm_ip = self.vm_manager.get_vm_ip()
         if self.vm_ip:
             self.jenkins_url = f"http://{self.vm_ip}:8080"
-            try: 
-                self.jenkins_job_manager = JenkinsJobManager(self.jenkins_url, self.jenkins_user, self.jenkins_pass)
-                print("Jenkins is up and running")
-                return True
-            except jenkins.JenkinsException as e:
-                print(f"Failed to connect to Jenkins: {e}")
-                return False
+            max_retries = 10
+            wait_seconds = 10
+            for attempt in range(1, max_retries + 1):
+                try: 
+                    self.jenkins_job_manager = JenkinsJobManager(self.jenkins_url, self.jenkins_user, self.jenkins_pass)
+                    print("Jenkins is up and running")
+                    return True
+                except Exception as e:
+                    print(f"Attempt {attempt}: Failed to connect to Jenkins: {e}")
+                    if attempt < max_retries:
+                        print(f"Waiting {wait_seconds} seconds before retrying...")
+                        time.sleep(wait_seconds)
+                    else:
+                        print("Max retries reached. Jenkins is not running.")
+                        return False
         else:
             print("No VM IP address found")
             return False
