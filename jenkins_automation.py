@@ -308,7 +308,8 @@ class JenkinsJobManager:
             return sys.exit(1) 
         
     
-    def wait_for_build_to_finish(self, job_name, timeout=300, interval=10):           
+    def wait_for_build_to_finish(self, job_name, timeout=300, interval=10):
+        time.sleep(30)           
         build_number = self.get_last_build_number(job_name)
         if build_number is None:
             print(f"Failed to get last build number for job {job_name}")
