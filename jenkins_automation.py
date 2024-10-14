@@ -5,7 +5,7 @@ import os
 import socket
 import sys
 import json
-import subprocess
+import jenkins
 
 
 class VMManager:
@@ -266,6 +266,73 @@ class JenkinsInstaller:
         self.build_jenkins_docker_image()
         self.run_jenkins_container()
 
+class JenkinsJobManager:
+    def __init__(self, jenkins_url, user, password):
+        try: 
+            self.server = jenkins.Jenkins(jenkins_url, username=user, password=password)
+            self.server.get_whoami()
+            self.server.get_version()
+            print(f"Connected to Jenkins server {jenkins_url}")
+        except jenkins.JenkinsException as e:
+            print(f"Failed to connect to Jenkins: {e}")
+            sys.exit(1)
+            
+    def trigger_job(self, job_name):
+        try:
+            self.server.build_job(job_name)
+            print(f"Triggered job {job_name}")
+            return True
+        except jenkins.JenkinsException as e:
+            print(f"Failed to trigger job {job_name}: {e}")
+            sys.exit(1)
+            
+    
+    def get_last_build_number(self, job_name):
+        try:
+            job_info = self.server.get_job_info(job_name)
+            return job_info['lastBuild']['number']
+        except jenkins.JenkinsException as e:
+            print(f"Failed to get last build number for job {job_name}: {e}")
+            
+            
+    def get_build_status(self, job_name, build_number):
+        try:
+            build_info = self.server.get_build_info(job_name, build_number)
+            if build_info['building']:
+                return "BUILDING"
+            else:
+                return build_info['result']
+        except jenkins.JenkinsException as e:
+            print(f"Failed to get build status for job {job_name} build {build_number}: {e}")
+            return sys.exit(1) 
+        
+    
+    def wait_for_build_to_finish(self, job_name, timeout=300, interval=10):           
+        build_number = self.get_last_build_number(job_name)
+        if build_number is None:
+            print(f"Failed to get last build number for job {job_name}")
+            return sys.exit(1)
+        
+        print(f"Waiting for build {build_number} of job {job_name} to finish...")
+        start_time = time.time()
+        
+        while True:
+            status = self.get_build_status(job_name, build_number)
+            if status == 'BUILDING':
+                print("Build still in progress. Waiting...")
+            elif status == 'SUCCESS':
+                print("Build successful")
+                return True
+            elif status == 'FAILURE':
+                print("Build failed")
+                return sys.exit(1)
+            
+            elapsed = time.time() - start_time
+            if elapsed > timeout:
+                print("Timeout waiting for build to finish")
+                return 'TIMEOUT'
+            
+            time.sleep(interval)
 
 class JenkinsTester:
 
@@ -381,13 +448,16 @@ def is_ssh_port_open(ip, port=22, timeout=5):
 
 class EnvironmentManager:
 
-    def __init__(self, vm_manager, ssh_key_path, jenkins_user, jenkins_pass):
+    def __init__(self, vm_manager, ssh_key_path, jenkins_user, jenkins_pass, jenkins_url, job_name):
         self.vm_manager = vm_manager
         self.ssh_key_path = ssh_key_path
         self.jenkins_user = jenkins_user
         self.jenkins_pass = jenkins_pass
         self.vm_ip = None
         self.ssh_manager = None
+        self.jenkins_url = jenkins_url
+        self.job_name = job_name
+        self.jenkins_job_manager = None
 
     def wait_until_ready(self):
         server_id = self.vm_manager.vm['server']['id']
@@ -408,7 +478,27 @@ class EnvironmentManager:
         self.ssh_manager = SSHManager(self.vm_ip, self.ssh_key_path)
         installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass)
         installer.install_jenkins()
+        
+    def trigger_and_monitor_job(self):
+        self.jenkins_job_manager = JenkinsJobManager(jenkins_url = self.jenkins_url, user = self.jenkins_user, password = self.jenkins_pass)
 
+        success = self.jenkins_job_manager.trigger_job(self.job_name)
+        if not success:
+            print("Failed to trigger job")
+            return sys.exit(1)
+
+        result = self.jenkins_job_manager.wait_for_build_to_finish(self.job_name)
+        
+        if result == 'SUCCESS':
+            print("Job completed successfully")
+            return True
+        elif result == 'FAILURE':
+            print("Job failed")
+            return sys.exit(1)
+        else:
+            print("Job ended with status: {result}")
+            return sys.exit(1)
+        
     def test_jenkins(self):
         if not self.vm_ip:
             self.vm_ip = self.vm_manager.get_vm_ip()
@@ -423,6 +513,7 @@ class EnvironmentManager:
         else:
             print("No VM IP address found.")
             return False
+        
 
     def cleanup(self, delete_vm=True):
         if self.ssh_manager:
@@ -452,19 +543,25 @@ def main():
     jenkins_pass = os.getenv('JENKINS_PASS')
     domain = os.getenv('DOMAIN')
     ssh_private_key_path = os.getenv('SSH_PRIVATE_KEY_PATH')
+    job_name = 'docker-test'
 
     os_type = "ubuntu-22.04"
     server_type = "cx22"
     ssh_key_id = 23404904
 
     manager = VMManager(api_token)
-    env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass)
+    env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, domain, job_name)
 
     if action == 'create':
         manager.create_vm(os_type, server_type, ssh_key_id)
         if env_manager.wait_until_ready():
             env_manager.setup_jenkins()
-            
+            success = env_manager.trigger_and_monitor_job()
+            if success:
+                print("Job completed successfully")
+            else:
+                print("Job failed")
+                            
     elif action == 'create_dns':
         if dns_api_token:
             dns_manager = DNSManager(dns_api_token)
