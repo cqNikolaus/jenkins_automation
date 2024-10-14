@@ -295,7 +295,6 @@ class JenkinsJobManager:
         start_time = time.time()
 
         while time.time() - start_time < timeout:
-            time.sleep(15)
             last_build_info = self.server.get_job_info(job_name)['lastBuild']
             if last_build_info is not None:
                 status = self.server.get_build_info(job_name, self.build_number)['result']
@@ -307,6 +306,8 @@ class JenkinsJobManager:
                 elif status == 'FAILURE':
                     print(f"Build failed")
                     return sys.exit(1)
+                elif status == None:
+                    print("Build status not available yet, still running...")
                 else:
                     print(f"Build ended with status: {status}")
                     return sys.exit(1)
