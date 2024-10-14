@@ -596,7 +596,7 @@ def main():
 
     elif action == 'cleanup':
         env_manager.cleanup(delete_vm=False)
-        dns_manager = DNSManager(dns_api_token)
+        dns_manager = DNSManager(dns_api_token, zone_name='comquent.academy')
         # dns_manager.delete_dns_record(domain)
 
     else:
