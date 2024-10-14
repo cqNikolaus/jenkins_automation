@@ -586,12 +586,15 @@ def main():
             print("DNS_API_TOKEN not set")
 
     elif action == 'setup_nginx':
-        try:
-            if env_manager.wait_until_ready(): 
-                env_manager.setup_nginx(domain)
-        except Exception as e:
-            print(f"Failed to setup Nginx: {e}")
-            sys.exit(1)
+        if not manager.vm:
+            if os.path.exists('vm_info.json'):
+                with open('vm_info.json', 'r') as f:
+                    manager.vm = json.load(f)
+            else:
+                print("vm_info.json not found. Cannot proceed with setup_nginx.")
+                sys.exit(1)
+        if env_manager.wait_until_ready(): 
+            env_manager.setup_nginx(domain)
 
 
     elif action == 'cleanup':
