@@ -113,13 +113,12 @@ class SSHManager:
             print(f"Failed to connect: {e}")
             return None
 
-    def execute_command(self, command, environment=None):
+    def execute_command(self, command):
         try:
             ssh = self.connect()
             if ssh is None:
                 return False
-            stdin, stdout, stderr = ssh.exec_command(
-                command, environment=environment)
+            stdin, stdout, stderr = ssh.exec_command(command)
             stdout_str = stdout.read().decode()
             stderr_str = stderr.read().decode()
             if stdout_str:
@@ -140,18 +139,18 @@ class SSHManager:
 
 
 class DNSManager:
-    def __init__(self, dns_api_token):
+    def __init__(self, dns_api_token, zone_name):
         self.dns_api_token = dns_api_token
+        self.zone_name = zone_name
 
     def create_dns_record(self, domain, ip_address):
-        zone_name = 'comquent.academy'
         url = "https://dns.hetzner.com/api/v1/records"
         headers = {
             "Auth-API-Token": self.dns_api_token,
             "Content-Type": "application/json"
         }
 
-        zone_id = self.get_zone_id(zone_name)
+        zone_id = self.get_zone_id(self.zone_name)
 
         data = {
             "value": ip_address,
@@ -170,13 +169,12 @@ class DNSManager:
             
             
     def delete_dns_record(self, domain):
-        zone_name = 'comquent.academy'
         url = "https://dns.hetzner.com/api/v1/records"
         headers = {
             "Auth-API-Token": self.dns_api_token
         }
 
-        zone_id = self.get_zone_id(zone_name)
+        zone_id = self.get_zone_id(self.zone_name)
         if not zone_id:
             print("Zone ID not found.")
             return
@@ -267,16 +265,18 @@ class JenkinsInstaller:
         self.run_jenkins_container()
 
 class JenkinsJobManager:
+    
     def __init__(self, jenkins_url, user, password):
         try: 
-            self.server = jenkins.Jenkins(jenkins_url, username=user, password=password)
             print(f"Trying to connect to Jenkins server {jenkins_url}")
-            self.server.get_whoami()
-            self.server.get_version()
-            print(f"Connected to Jenkins server {jenkins_url}")
+            self.server = jenkins.Jenkins(jenkins_url, username=user, password=password)
+            user_info = self.server.get_whoami()
+            version = self.server.get_version()
+            print(f"Connected to Jenkins {version} as {user_info['fullName']}")
         except jenkins.JenkinsException as e:
             print(f"Failed to connect to Jenkins: {e}")
             sys.exit(1)
+            
             
     def trigger_job(self, job_name):
         try:
@@ -285,67 +285,45 @@ class JenkinsJobManager:
             return True
         except jenkins.JenkinsException as e:
             print(f"Failed to trigger job {job_name}: {e}")
-            sys.exit(1)
-            
-            
-        
+            raise
+
     
     def wait_for_build_to_finish(self, job_name, timeout=300, interval=2):
-        self.build_number = 1
         start_time = time.time()
+        
+        # Warte darauf, dass der Job eine Build-Nummer erhält
+        while time.time() - start_time < timeout:
+            last_build_info = self.server.get_job_info(job_name)['lastBuild']
+            if last_build_info is not None:
+                self.build_number = last_build_info['number']
+                break
+            time.sleep(interval)
+        else:
+            print("Timeout beim Abrufen der Build-Nummer")
+            return False        
 
+        # Überwache den Build-Status
         while time.time() - start_time < timeout:
             last_build_info = self.server.get_job_info(job_name)['lastBuild']
             if last_build_info is not None:
                 status = self.server.get_build_info(job_name, self.build_number)['result']
-                if status == 'BUILDING':
+                if status == None:
                     print("Build still in progress. Waiting...")
                 elif status == 'SUCCESS':
                     print("Build successful")
                     return 'SUCCESS'
                 elif status == 'FAILURE':
                     print(f"Build failed")
-                    return sys.exit(1)
-                elif status == None:
-                    print("Build status not available yet, still running...")
+                    return 'FAILURE'
                 else:
                     print(f"Build ended with status: {status}")
-                    return sys.exit(1)
+                    return status
             time.sleep(interval)  
 
         print("Timeout waiting for build to finish")
-        return sys.exit(1)
-        
-        
+        return False      
 
-class JenkinsTester:
 
-    def __init__(self, ip_address, max_retries=10, wait_seconds=10):
-        self.ip_address = ip_address
-        self.max_retries = max_retries
-        self.wait_seconds = wait_seconds
-
-    def test_jenkins(self):
-        url = f"http://{self.ip_address}:8080/login?from=%2F"
-        for attempt in range(1, self.max_retries + 1):
-            try:
-                response = requests.get(url, timeout=30)
-                if response.status_code == 200:
-                    print("Jenkins is up and running.")
-                    return True
-                else:
-                    print(f"Attempt {attempt}: Jenkins is not running. Status code: {response.status_code}")
-            except requests.exceptions.ConnectionError:
-                print(f"Attempt {attempt}: Failed to connect to Jenkins.")
-            except requests.exceptions.Timeout:
-                print(f"Attempt {attempt}: Connection to Jenkins timed out.")
-            
-            if attempt < self.max_retries:
-                print(f"Waiting for {self.wait_seconds} seconds before retrying...")
-                time.sleep(self.wait_seconds)
-        
-        print("Jenkins is not running after multiple attempts.")
-        sys.exit(1) 
 
 
 class NginxInstaller:
@@ -456,23 +434,56 @@ class EnvironmentManager:
             print("VM is fully ready and reachable via SSH.")
             return True
         print("VM is not ready or failed to become reachable.")
-        return False
+        raise Exception("VM is not ready or failed to become reachable.")
 
     def setup_jenkins(self):
         self.ssh_manager = SSHManager(self.vm_ip, self.ssh_key_path)
         installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass)
         installer.install_jenkins()
         
+
+        
+    def test_jenkins(self):
+        if not self.vm_ip:
+            self.vm_ip = self.vm_manager.get_vm_ip()
+        if self.vm_ip:
+            self.jenkins_url = f"http://{self.vm_ip}:8080"
+            try: 
+                self.jenkins_job_manager = JenkinsJobManager(self.jenkins_url, self.jenkins_user, self.jenkins_pass)
+                print("Jenkins is up and running")
+                return True
+            except jenkins.JenkinsException as e:
+                print(f"Failed to connect to Jenkins: {e}")
+                return False
+        else:
+            print("No VM IP address found")
+            return False
+            
+            
+    def initialize_jenkins_job_manager(self):
+        if not self.jenkins_job_manager:
+            self.jenkins_url = f"http://{self.vm_ip}:8080"
+            try:
+                self.jenkins_job_manager = JenkinsJobManager(jenkins_url = self.jenkins_url, user=self.jenkins_user, password=self.jenkins_pass)
+                print("Initialized Jenkins job manager")
+                return True
+            except jenkins.JenkinsException as e:
+                print(f"Failed to initialize Jenkins job manager: {e}")
+                return False
+        else:
+            return True
+            
     def trigger_and_monitor_job(self):
-        self.ip = self.vm_manager.get_vm_ip()
-        self.jenkins_url = f"http://{self.ip}:8080"
-        self.jenkins_job_manager = JenkinsJobManager(jenkins_url = self.jenkins_url, user = self.jenkins_user, password = self.jenkins_pass)
-
-        success = self.jenkins_job_manager.trigger_job(self.job_name)
-        if not success:
-            print("Failed to trigger job")
-            return sys.exit(1)
-
+        if not self.jenkins_job_manager:
+            print("Jenkins job manager not initialized")
+            return False
+        
+        try:
+            self.jenkins_job_manager.trigger_job(self.job_name)
+        except Exception as e:
+            print("Failed to trigger job {e}")
+            sys.exit(1)
+            
         result = self.jenkins_job_manager.wait_for_build_to_finish(self.job_name)
         
         if result == 'SUCCESS':
@@ -480,26 +491,10 @@ class EnvironmentManager:
             return True
         elif result == 'FAILURE':
             print("Job failed")
-            return sys.exit(1)
+            sys.exit(1)
         else:
-            print("Job ended with status: {result}")
-            return sys.exit(1)
-        
-    def test_jenkins(self):
-        if not self.vm_ip:
-            self.vm_ip = self.vm_manager.get_vm_ip()
-        if self.vm_ip:
-            tester = JenkinsTester(self.vm_ip)
-            if tester.test_jenkins():
-                print("Jenkins test passed.")
-                return True
-            else:
-                print("Jenkins test failed.")
-                return False
-        else:
-            print("No VM IP address found.")
-            return False
-        
+            print(f"Job ended with status: {result}")
+            sys.exit(1)        
 
     def cleanup(self, delete_vm=True):
         if self.ssh_manager:
@@ -537,33 +532,57 @@ def main():
 
     manager = VMManager(api_token)
     env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, job_name)
-
-    if action == 'create':
+    
+    
+    if action == 'create_jenkins':
         manager.create_vm(os_type, server_type, ssh_key_id)
-        if env_manager.wait_until_ready():
-            env_manager.setup_jenkins()
-        if env_manager.test_jenkins():
-            success = env_manager.trigger_and_monitor_job()
-            if success:
-                print("Job completed successfully")
+        try:
+            if env_manager.wait_until_ready():
+                env_manager.setup_jenkins()
+                if env_manager.test_jenkins():
+                    print("Jenkins is up and running")
+                else:
+                    print("Jenkins is not running")
+                    sys.exit(1)
+        except Exception as e:
+            print(f"Failed to create Jenkins: {e}")
+            sys.exit(1)
+                
+    elif action == 'test_docker':
+        if not manager.vm:
+            if os.path.exists('vm_info.json'):
+                with open('vm_info.json', 'r') as f:
+                    manager.vm = json.load(f)     
+                    
+        env_manager.vm_ip = manager.get_vm_ip()
+        if env_manager.vm_ip:
+            if env_manager.initialize_jenkins_job_manager():
+                if env_manager.trigger_and_monitor_job():
+                    print("Docker test successful")
+                else:
+                    print("Docker test failed")
+                    sys.exit(1)
             else:
-                print("Job failed")
-                            
+                print("Failed to initialize Jenkins job manager")
+                sys.exit(1)
+                    
+                    
     elif action == 'create_dns':
         if dns_api_token:
-            dns_manager = DNSManager(dns_api_token)
+            dns_manager = DNSManager(dns_api_token, zone_name='comquent.academy')
             ip_address = manager.get_vm_ip()
             dns_manager.create_dns_record(domain, ip_address)
         else:
             print("DNS_API_TOKEN not set")
 
     elif action == 'setup_nginx':
-        if env_manager.wait_until_ready(): 
-            env_manager.setup_nginx(domain)
+        try:
+            if env_manager.wait_until_ready(): 
+                env_manager.setup_nginx(domain)
+        except Exception as e:
+            print(f"Failed to setup Nginx: {e}")
+            sys.exit(1)
 
-
-    elif action == 'test':
-        env_manager.test_jenkins()
 
     elif action == 'cleanup':
         env_manager.cleanup(delete_vm=False)

@@ -21,19 +21,20 @@ pipeline {
             echo "create jenkins instance"
             chmod 600 $SSH_KEY_FILE
             export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
-            python jenkins_automation.py create
+            python jenkins_automation.py create_jenkins
           '''
         }
       }
     }
-    stage('Test Jenkins Installation') { 
+    stage('Test Docker') { 
       steps {
-        withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
+        withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE'),
+        usernamePassword(credentialsId: 'JENKINS_ADMIN_CREDENTIALS', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS')
+        ]) {
           sh '''
             set -e
-            echo "check successful jenkins installation"
-            export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
-            python jenkins_automation.py test
+            echo "check successful docker installation"
+            python jenkins_automation.py test_docker
           '''
         }
       }
@@ -53,7 +54,7 @@ pipeline {
           set -e
           echo "test dns record"
           dig +short ${DOMAIN} @8.8.8.8
-          if [ $? -ne 0 ]; then
+          if [ -z "$(dig +short ${DOMAIN} @8.8.8.8)" ]; then
             echo "DNS record does not exist or cannot be resolved."
             exit 1
           fi
@@ -78,10 +79,12 @@ pipeline {
         sh '''
           set -e
           echo "test ssl certificate"
-          echo | openssl s_client -connect ${DOMAIN}:443 -servername ${DOMAIN} 2>/dev/null | openssl x509 -noout -dates -subject
-          if [ $? -ne 0 ]; then
+          CERT_INFO=$(echo | openssl s_client -connect ${DOMAIN}:443 -servername ${DOMAIN} 2>/dev/null | openssl x509 -noout -dates -subject)
+          if [ -z "$CERT_INFO" ]; then
             echo "SSL certificate is not valid or cannot be retrieved."
             exit 1
+          else
+            echo "$CERT_INFO"
           fi
         '''
       }
