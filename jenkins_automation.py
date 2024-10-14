@@ -306,15 +306,17 @@ class JenkinsJobManager:
         start_time = time.time()
 
         while time.time() - start_time < timeout:
-            status = self.get_build_status(job_name, self.build_number)
-            if status == 'BUILDING':
-                print("Build still in progress. Waiting...")
-            elif status == 'SUCCESS':
-                print("Build successful")
-                return 'SUCCESS'
-            elif status == 'FAILURE':
-                print(f"Build failed")
-                return sys.exit(1)
+            last_build_info = self.server.get_job_info(job_name)['lastBuild']
+            if last_build_info is not None:
+                status = self.get_build_status(job_name, self.build_number)
+                if status == 'BUILDING':
+                    print("Build still in progress. Waiting...")
+                elif status == 'SUCCESS':
+                    print("Build successful")
+                    return 'SUCCESS'
+                elif status == 'FAILURE':
+                    print(f"Build failed")
+                    return sys.exit(1)
 
             time.sleep(interval)  
 
