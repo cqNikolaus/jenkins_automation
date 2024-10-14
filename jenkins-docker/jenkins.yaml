@@ -30,6 +30,9 @@ jobs:
           }
         }
       }
+seedJob:
+  jobs:
+    - 'docker-test'
 
 unclassified:
   location:
