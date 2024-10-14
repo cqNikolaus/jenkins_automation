@@ -9,6 +9,27 @@ jenkins:
     loggedInUsersCanDoAnything:
       allowAnonymousRead: false
 
+jobs:
+  - script: >
+      pipelineJob('docker-test') {
+        definition {
+          cps {
+            script('''
+              pipeline {
+                agent any
+                stages {
+                  stage('test docker') {
+                    steps {
+                      sh 'docker ps'
+                    }
+                  }
+                }
+              }
+            ''')
+          }
+        }
+      }
+
 unclassified:
   location:
     url: "${DOMAIN}"
