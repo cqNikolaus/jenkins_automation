@@ -287,13 +287,6 @@ class JenkinsJobManager:
             print(f"Failed to trigger job {job_name}: {e}")
             sys.exit(1)
             
-    
-    def get_last_build_number(self, job_name):
-        try:
-            job_info = self.server.get_job_info(job_name)
-            return job_info['lastBuild']['number']
-        except jenkins.JenkinsException as e:
-            print(f"Failed to get last build number for job {job_name}: {e}")
             
             
     def get_build_status(self, job_name, build_number):
@@ -309,32 +302,28 @@ class JenkinsJobManager:
         
     
     def wait_for_build_to_finish(self, job_name, timeout=300, interval=10):
-        time.sleep(30)           
-        build_number = self.get_last_build_number(job_name)
-        if build_number is None:
-            print(f"Failed to get last build number for job {job_name}")
-            return sys.exit(1)
+        self.build_number = 1
         
-        print(f"Waiting for build {build_number} of job {job_name} to finish...")
+        time.sleep(interval)
+        
         start_time = time.time()
-        
-        while True:
-            status = self.get_build_status(job_name, build_number)
+
+        while time.time() - start_time < timeout:
+            status = self.get_build_status(job_name, self.build_number)
             if status == 'BUILDING':
                 print("Build still in progress. Waiting...")
+                time.sleep(interval)
             elif status == 'SUCCESS':
                 print("Build successful")
-                return True
-            elif status == 'FAILURE':
-                print("Build failed")
-                return sys.exit(1)
-            
-            elapsed = time.time() - start_time
-            if elapsed > timeout:
-                print("Timeout waiting for build to finish")
-                return 'TIMEOUT'
-            
-            time.sleep(interval)
+                return 'SUCCESS'
+            else:
+                print(f"Build ended with status: {status}")
+                return status
+
+        print("Timeout waiting for build to finish")
+        return 'TIMEOUT'
+        
+        
 
 class JenkinsTester:
 
