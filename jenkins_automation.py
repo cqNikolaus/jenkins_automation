@@ -302,7 +302,7 @@ class JenkinsJobManager:
         
     
     def wait_for_build_to_finish(self, job_name, timeout=300, interval=2):
-        
+        self.build_number = 1
         start_time = time.time()
 
         while time.time() - start_time < timeout:
