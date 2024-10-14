@@ -270,6 +270,7 @@ class JenkinsJobManager:
     def __init__(self, jenkins_url, user, password):
         try: 
             self.server = jenkins.Jenkins(jenkins_url, username=user, password=password)
+            print(f"Trying to connect to Jenkins server {jenkins_url}")
             self.server.get_whoami()
             self.server.get_version()
             print(f"Connected to Jenkins server {jenkins_url}")
@@ -558,6 +559,7 @@ def main():
         manager.create_vm(os_type, server_type, ssh_key_id)
         if env_manager.wait_until_ready():
             env_manager.setup_jenkins()
+        if env_manager.test_jenkins():
             success = env_manager.trigger_and_monitor_job()
             if success:
                 print("Job completed successfully")
