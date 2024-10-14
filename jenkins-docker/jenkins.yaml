@@ -20,7 +20,7 @@ jobs:
                 stages {
                   stage('test docker') {
                     steps {
-                      sh 'dock er ps'
+                      sh 'docker ps'
                     }
                   }
                 }
