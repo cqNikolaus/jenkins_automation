@@ -301,10 +301,7 @@ class JenkinsJobManager:
             return sys.exit(1) 
         
     
-    def wait_for_build_to_finish(self, job_name, timeout=300, interval=10):
-        self.build_number = 1
-        
-        time.sleep(interval)
+    def wait_for_build_to_finish(self, job_name, timeout=300, interval=2):
         
         start_time = time.time()
 
@@ -312,13 +309,14 @@ class JenkinsJobManager:
             status = self.get_build_status(job_name, self.build_number)
             if status == 'BUILDING':
                 print("Build still in progress. Waiting...")
-                time.sleep(interval)
             elif status == 'SUCCESS':
                 print("Build successful")
                 return 'SUCCESS'
-            else:
-                print(f"Build ended with status: {status}")
-                return status
+            elif status == 'FAILURE':
+                print(f"Build failed")
+                return sys.exit(1)
+
+            time.sleep(interval)  
 
         print("Timeout waiting for build to finish")
         return 'TIMEOUT'
