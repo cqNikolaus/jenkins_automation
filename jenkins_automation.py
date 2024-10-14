@@ -558,7 +558,7 @@ def main():
             print(f"Failed to create Jenkins: {e}")
             sys.exit(1)
                 
-    elif action == 'test_docker':
+    elif action == 'test_pipeline':
         if not manager.vm:
             if os.path.exists('vm_info.json'):
                 with open('vm_info.json', 'r') as f:
