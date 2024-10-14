@@ -448,14 +448,14 @@ def is_ssh_port_open(ip, port=22, timeout=5):
 
 class EnvironmentManager:
 
-    def __init__(self, vm_manager, ssh_key_path, jenkins_user, jenkins_pass, jenkins_url, job_name):
+    def __init__(self, vm_manager, ssh_key_path, jenkins_user, jenkins_pass, job_name):
         self.vm_manager = vm_manager
         self.ssh_key_path = ssh_key_path
         self.jenkins_user = jenkins_user
         self.jenkins_pass = jenkins_pass
         self.vm_ip = None
         self.ssh_manager = None
-        self.jenkins_url = jenkins_url
+        self.jenkins_url = None
         self.job_name = job_name
         self.jenkins_job_manager = None
 
@@ -480,6 +480,8 @@ class EnvironmentManager:
         installer.install_jenkins()
         
     def trigger_and_monitor_job(self):
+        self.ip = self.vm_manager.get_vm_ip()
+        self.jenkins_url = f"http://{self.ip}:8080"
         self.jenkins_job_manager = JenkinsJobManager(jenkins_url = self.jenkins_url, user = self.jenkins_user, password = self.jenkins_pass)
 
         success = self.jenkins_job_manager.trigger_job(self.job_name)
@@ -542,7 +544,6 @@ def main():
     jenkins_user = os.getenv('JENKINS_USER')
     jenkins_pass = os.getenv('JENKINS_PASS')
     domain = os.getenv('DOMAIN')
-    jenkins_url = f"https://{domain}/"
     ssh_private_key_path = os.getenv('SSH_PRIVATE_KEY_PATH')
     job_name = 'docker-test'
 
@@ -551,7 +552,7 @@ def main():
     ssh_key_id = 23404904
 
     manager = VMManager(api_token)
-    env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, jenkins_url, job_name)
+    env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, job_name)
 
     if action == 'create':
         manager.create_vm(os_type, server_type, ssh_key_id)
