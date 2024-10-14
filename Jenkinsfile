@@ -26,15 +26,15 @@ pipeline {
         }
       }
     }
-    stage('Test Docker') { 
+    stage('Pipeline Test') { 
       steps {
         withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE'),
         usernamePassword(credentialsId: 'JENKINS_ADMIN_CREDENTIALS', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS')
         ]) {
           sh '''
             set -e
-            echo "check successful docker installation"
-            python jenkins_automation.py test_docker
+            echo "check successful pipeline job"
+            python jenkins_automation.py test_pipeline
           '''
         }
       }
