@@ -32,7 +32,7 @@ class JenkinsInstaller:
     def clone_repo(self):
         repo_url = "https://github.com/cqNikolaus/jenkins_automation"
         self.ssh_manager.execute_command(
-            f"git clone --branch jenkins-jcac {repo_url} /var/jenkins_home/jenkins-jcac")
+            f"git clone --branch module-split {repo_url} /var/jenkins_home/module-split")
 
     def run_jenkins_container(self):
         self.ssh_manager.execute_command(
