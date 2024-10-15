@@ -6,13 +6,9 @@ RUN apt-get update && \
     
 WORKDIR /code
 
-COPY ./setup.py /code/setup.py
-
 COPY ./requirements.txt /code/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
-
-COPY ./automation_lib /code/automation_lib
 
 
 RUN pip install -e .
