@@ -7,6 +7,7 @@ from jenkins_automation.ssh_manager import SSHManager
 from jenkins_automation.jenkins_installer import JenkinsInstaller
 from jenkins_automation.jenkins_job_manager import JenkinsJobManager
 from jenkins_automation.nginx_installer import NginxInstaller
+from jenkins_automation.vm_manager import VMManager
 
 
 
