@@ -1,5 +1,6 @@
 import os
 
+
 class JenkinsInstaller:
 
     def __init__(self, ssh_manager, jenkins_user, jenkins_pass):
