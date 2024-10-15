@@ -9,6 +9,7 @@ pipeline {
     API_TOKEN = credentials('HETZNER_API_TOKEN')
     DNS_API_TOKEN = credentials('HETZNER_DNS_API_TOKEN')
     DOMAIN = "jenkins-${env.BUILD_NUMBER}.comquent.academy" 
+    
   }
   stages {
     stage('Create Jenkins Instance') {
@@ -21,7 +22,7 @@ pipeline {
             echo "create jenkins instance"
             chmod 600 $SSH_KEY_FILE
             export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
-            python jenkins_automation.py create_jenkins
+            python scripts/main.py create_jenkins
           '''
         }
       }
@@ -34,7 +35,7 @@ pipeline {
           sh '''
             set -e
             echo "check successful pipeline job"
-            python jenkins_automation.py test_pipeline
+            python scripts/main.py test_pipeline
           '''
         }
       }
@@ -44,7 +45,7 @@ pipeline {
         sh '''
           set -e
           echo "create dns record"
-          python jenkins_automation.py create_dns
+          python scripts/main.py create_dns
         '''
       }
     }
@@ -69,7 +70,7 @@ pipeline {
             echo "setup nginx and ssl"
             chmod 600 $SSH_KEY_FILE
             export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
-            python jenkins_automation.py setup_nginx
+            python scripts/main.py setup_nginx
           '''
         }
       }
@@ -92,7 +93,7 @@ pipeline {
     stage('Shutdown Jenkins Instance') {
       steps {
         echo "kill jenkins"
-        sh "python jenkins_automation.py cleanup"
+        sh "python scripts/main.py cleanup"
       }
     }
   }

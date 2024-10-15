@@ -9,17 +9,20 @@ pipeline {
         API_TOKEN = credentials('HETZNER_API_TOKEN')
         DNS_API_TOKEN = credentials('HETZNER_DNS_API_TOKEN')
         DOMAIN = "jenkins-${env.BUILD_NUMBER}.comquent.academy" 
+        ZONE_NAME = "comquent.academy"
     }
     stages {
         stage('Setup Environment') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE'), 
+                usernamePassword(credentialsId: 'JENKINS_ADMIN_CREDENTIALS', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS')
+                ]) {
                     sh '''
                         set -e
                         echo "set up the environment"
                         chmod 600 $SSH_KEY_FILE
                         export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
-                        python create_environment.py
+                        python scripts/create_environment.py
                     '''
                 }
             }
