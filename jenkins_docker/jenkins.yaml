@@ -1,0 +1,40 @@
+jenkins:
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "${JENKINS_USER}"
+          password: "${JENKINS_PASS}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+jobs:
+  - script: >
+      pipelineJob('docker-test') {
+        definition {
+          cps {
+            script('''
+              pipeline {
+                agent any
+                stages {
+                  stage('test docker') {
+                    steps {
+                      sh 'docker ps'
+                    }
+                  }
+                }
+              }
+            ''')
+            sandbox()
+          }
+        }
+      }
+
+unclassified:
+  location:
+    url: "${DOMAIN}"
+appearance:
+  locale:
+    systemLocale: en
+    ignoreAcceptLanguage: true
