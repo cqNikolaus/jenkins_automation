@@ -1,3 +1,0 @@
-git
-workflow-aggregator
-configuration-as-code
