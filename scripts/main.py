@@ -1,9 +1,8 @@
 import sys
 import os
 import json
-from jenkins_automation.vm_manager import VMManager
-from jenkins_automation.environment_manager import EnvironmentManager
-from jenkins_automation.dns_manager import DNSManager
+from automation_lib import VMManager, EnvironmentManager, DNSManager
+
 
 
 
