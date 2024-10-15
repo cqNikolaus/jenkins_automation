@@ -28,12 +28,12 @@ class JenkinsInstaller:
 
     def build_jenkins_docker_image(self):
         self.ssh_manager.execute_command(
-            "cd /var/jenkins_home/module-split/jenkins-docker && sudo docker build -t jenkins-image .")
+            "cd /var/jenkins_home/modular-split/jenkins-docker && sudo docker build -t jenkins-image .")
 
     def clone_repo(self):
         repo_url = "https://github.com/cqNikolaus/jenkins_automation"
         self.ssh_manager.execute_command(
-            f"git clone --branch module-split {repo_url} /var/jenkins_home/module-split")
+            f"git clone --branch modular-split {repo_url} /var/jenkins_home/modular-split")
 
     def run_jenkins_container(self):
         self.ssh_manager.execute_command(
