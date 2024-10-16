@@ -14,7 +14,7 @@ def main():
     jenkins_user = os.getenv('JENKINS_USER')
     jenkins_pass = os.getenv('JENKINS_PASS')
     domain = os.getenv('DOMAIN')
-    ssh_private_key_path = os.getenv('SSH_PRIVATE_KEY_PATH')
+    ssh_private_key = os.getenv('SSH_PRIVATE_KEY')
     zone_name = os.getenv('ZONE_NAME')
     ssh_key_id = int(os.getenv('SSH_KEY_ID'))
 

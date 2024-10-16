@@ -45,11 +45,15 @@ pipeline {
     }
     stage('Create DNS Record') {
       steps {
-        sh '''
-          set -e
-          echo "create dns record"
-          python scripts/main.py create_dns 
-        '''
+        withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE')]) {
+          sh '''
+            set -e
+            echo "create dns record"
+            chmod 600 $SSH_KEY_FILE
+            export SSH_PRIVATE_KEY="$(cat $SSH_KEY_FILE)"
+            python scripts/main.py create_dns 
+          '''
+        }
       }
     }
     stage('Test DNS Record') {
@@ -72,7 +76,7 @@ pipeline {
             set -e
             echo "setup nginx and ssl"
             chmod 600 $SSH_KEY_FILE
-            export SSH_PRIVATE_KEY=$SSH_KEY_FILE
+            export SSH_PRIVATE_KEY="$(cat $SSH_KEY_FILE)"
             python scripts/main.py setup_nginx
           '''
         }
