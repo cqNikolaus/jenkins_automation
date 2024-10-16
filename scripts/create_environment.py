@@ -1,8 +1,13 @@
 from automation_lib import VMManager, EnvironmentManager, DNSManager
 import os
 import sys
+import argparse
 
 def main():
+    parser = argparse.ArgumentParser(description='Setup Jenkins environment and create DNS')
+    parser.add_argument('--config-repo', help='The URL of the Jenkins configuration repository', required=True)
+    args = parser.parse_args()
+    
     api_token = os.getenv('API_TOKEN')
     dns_api_token = os.getenv('DNS_API_TOKEN')
     jenkins_user = os.getenv('JENKINS_USER')
@@ -23,7 +28,7 @@ def main():
     try:
         if env_manager.wait_until_ready():
             # Jenkins installieren
-            env_manager.setup_jenkins()
+            env_manager.setup_jenkins(config_repo_url=args.config_repo)
             print("Jenkins installiert")
             
             # Initialen Job ausführen

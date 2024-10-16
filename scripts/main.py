@@ -10,7 +10,7 @@ from automation_lib import VMManager, EnvironmentManager, DNSManager
 def main():
     parser = argparse.ArgumentParser(description='CI Pipeline: Validates the environment setup, tests the pipeline')
     parser.add_argument('command', choices=['create_jenkins', 'test_pipeline', 'create_dns', 'setup_nginx', 'cleanup'])
-    parser.add_argument('--config-repo', help='https://github.com/cqNikolaus/jenkins_configs')
+    parser.add_argument('--config-repo', help='URL of the configuration repository')
     
     args = parser.parse_args()
     
