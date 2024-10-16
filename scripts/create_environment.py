@@ -18,7 +18,7 @@ def main():
     manager = VMManager(api_token)
     manager.create_vm(os_type, server_type, ssh_key_id)
     
-    env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, job_name=None)
+    env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, job_name="docker-test")
     
     try:
         if env_manager.wait_until_ready():
