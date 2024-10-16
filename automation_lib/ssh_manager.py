@@ -1,4 +1,5 @@
 import paramiko
+from scp import SCPClient
 
 class SSHManager:
 
@@ -6,6 +7,7 @@ class SSHManager:
         self.ip_address = ip_address
         self.ssh_key_path = ssh_key_path
         self.ssh = None
+
 
     def connect(self):
         if self.ssh is not None:
@@ -48,3 +50,15 @@ class SSHManager:
             self.ssh.close()
             print("SSH connection closed")
             self.ssh = None
+
+    def copy_file_to_vm(self, local_path, remote_path):
+        try:
+            if self.ssh is None:
+                self.connect()
+            with SCPClient(self.ssh.get_transport()) as scp:
+                scp.put(local_path, remote_path)
+            print(f"Copied {local_path} to {remote_path} on the VM")
+            return True
+        except Exception as e:
+            print(f"Failed to copy file: {e}")
+            return False

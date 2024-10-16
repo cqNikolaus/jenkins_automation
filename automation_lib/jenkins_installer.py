@@ -1,4 +1,5 @@
 import os
+import sys
 
 
 class JenkinsInstaller:
@@ -25,11 +26,31 @@ class JenkinsInstaller:
         ]
         for cmd in commands:
             self.ssh_manager.execute_command(cmd)
+            
+            
+            
+    def copy_dockerfile_to_vm(self):
+        # Get the current working directory
+        local_dockerfile_path = os.path.join(os.getcwd(), 'Dockerfile')
+        # Remote path on the VM
+        remote_dockerfile_path = '/var/jenkins_home/Dockerfile'
+
+        # Check if Dockerfile exists locally
+        if not os.path.isfile(local_dockerfile_path):
+            print(f"Local Dockerfile not found at {local_dockerfile_path}")
+            sys.exit(1)
+
+        print(f"Copying {local_dockerfile_path} to VM at {remote_dockerfile_path}")
+        success = self.ssh_manager.copy_file_to_vm(local_dockerfile_path, remote_dockerfile_path)
+        if not success:
+            print("Failed to copy Dockerfile to VM")
+            sys.exit(1)
+        
 
 
     def build_jenkins_docker_image(self):
         self.ssh_manager.execute_command(
-            "sudo docker build -t jenkins-image /var/jenkins_home/jenkins_automation")
+            "sudo docker build -t jenkins-image /var/jenkins_home")
 
     def clone_config_repo(self):
         self.ssh_manager.execute_command(
@@ -51,5 +72,6 @@ class JenkinsInstaller:
     def install_jenkins(self):
         self.install_docker()
         self.clone_config_repo()
+        self.copy_dockerfile_to_vm()
         self.build_jenkins_docker_image()
         self.run_jenkins_container()
