@@ -71,7 +71,7 @@ pipeline {
             echo "setup nginx and ssl"
             chmod 600 $SSH_KEY_FILE
             export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
-            python scripts/main.py setup_nginx --config-repo
+            python scripts/main.py setup_nginx
           '''
         }
       }
@@ -94,7 +94,7 @@ pipeline {
     stage('Shutdown Jenkins Instance') {
       steps {
         echo "kill jenkins"
-        sh "python scripts/main.py cleanup --config-repo" 
+        sh "python scripts/main.py cleanup" 
       }
     }
   }
