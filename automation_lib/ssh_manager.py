@@ -34,7 +34,10 @@ class SSHManager:
                 print("Command executed successfully")
                 print("Output:", stdout_str)
             if stderr_str:
-                print("Error:", stderr_str)
+                if "error" in stderr_str.lower():
+                    print("Error:", stderr_str)
+                else:
+                    print("Standard error output (not necessarily an error):", stderr_str)
             return True
         except Exception as e:
             print(f"Failed to execute command: {e}")
