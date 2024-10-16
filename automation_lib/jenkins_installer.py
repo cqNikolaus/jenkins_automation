@@ -3,10 +3,11 @@ import os
 
 class JenkinsInstaller:
 
-    def __init__(self, ssh_manager, jenkins_user, jenkins_pass):
+    def __init__(self, ssh_manager, jenkins_user, jenkins_pass, config_repo_url):
         self.ssh_manager = ssh_manager
         self.jenkins_user = jenkins_user
         self.jenkins_pass = jenkins_pass
+        self.config_repo_url = config_repo_url
 
     def install_docker(self):
         commands = [
@@ -28,12 +29,11 @@ class JenkinsInstaller:
 
     def build_jenkins_docker_image(self):
         self.ssh_manager.execute_command(
-            "cd /var/jenkins_home/modular-split/jenkins_docker && sudo docker build -t jenkins-image .")
+            "cd /var/jenkins_home/jenkins_configs && sudo docker build -t jenkins-image .")
 
-    def clone_repo(self):
-        repo_url = "https://github.com/cqNikolaus/jenkins_automation"
+    def clone_config_repo(self):
         self.ssh_manager.execute_command(
-            f"git clone --branch modular-split {repo_url} /var/jenkins_home/modular-split")
+            f"git clone {self.config_repo_url} /var/jenkins_home/jenkins_configs")
 
     def run_jenkins_container(self):
         self.ssh_manager.execute_command(
@@ -49,6 +49,6 @@ class JenkinsInstaller:
 
     def install_jenkins(self):
         self.install_docker()
-        self.clone_repo()
+        self.clone_config_repo()
         self.build_jenkins_docker_image()
         self.run_jenkins_container()

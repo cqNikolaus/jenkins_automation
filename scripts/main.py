@@ -1,4 +1,5 @@
 import sys
+import argparse
 import os
 import json
 from automation_lib import VMManager, EnvironmentManager, DNSManager
@@ -7,7 +8,10 @@ from automation_lib import VMManager, EnvironmentManager, DNSManager
 
 
 def main():
-    action = sys.argv[1] if len(sys.argv) > 1 else 'full'
+    parser = argparse.ArgumentParser(description='CI Pipeline: Validates the environment setup, tests the pipeline')
+    parser.add_argument('command', choices=['create_jenkins', 'test_pipeline', 'create_dns', 'setup_nginx', 'cleanup'])
+    parser.add_argument('--config-repo', help='https://github.com/cqNikolaus/jenkins_configs', required=True)
+    args = parser.parse_args()
 
     api_token = os.getenv('API_TOKEN')
     dns_api_token = os.getenv('DNS_API_TOKEN')
@@ -25,11 +29,11 @@ def main():
     env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, job_name)
     
     
-    if action == 'create_jenkins':
+    if args.command == 'create_jenkins':
         manager.create_vm(os_type, server_type, ssh_key_id)
         try:
             if env_manager.wait_until_ready():
-                env_manager.setup_jenkins()
+                env_manager.setup_jenkins(config_repo_url=args.config_repo)
                 if env_manager.test_jenkins():
                     print("Jenkins is up and running")
                 else:
@@ -39,7 +43,7 @@ def main():
             print(f"Failed to create Jenkins: {e}")
             sys.exit(1)
                 
-    elif action == 'test_pipeline':
+    elif args.command == 'test_pipeline':
         if not manager.vm:
             if os.path.exists('vm_info.json'):
                 with open('vm_info.json', 'r') as f:
@@ -58,7 +62,7 @@ def main():
                 sys.exit(1)
                     
                     
-    elif action == 'create_dns':
+    elif args.command == 'create_dns':
         if dns_api_token:
             dns_manager = DNSManager(dns_api_token, zone_name='comquent.academy')
             ip_address = manager.get_vm_ip()
@@ -66,7 +70,7 @@ def main():
         else:
             print("DNS_API_TOKEN not set")
 
-    elif action == 'setup_nginx':
+    elif args.command == 'setup_nginx':
         if not manager.vm:
             if os.path.exists('vm_info.json'):
                 with open('vm_info.json', 'r') as f:
@@ -78,7 +82,7 @@ def main():
             env_manager.setup_nginx(domain)
 
 
-    elif action == 'cleanup':
+    elif args.command == 'cleanup':
         env_manager.cleanup(delete_vm=True)
         dns_manager = DNSManager(dns_api_token, zone_name='comquent.academy')
         dns_manager.delete_dns_record(domain)

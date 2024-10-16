@@ -46,9 +46,9 @@ class EnvironmentManager:
         print("VM is not ready or failed to become reachable.")
         raise Exception("VM is not ready or failed to become reachable.")
 
-    def setup_jenkins(self):
+    def setup_jenkins(self, config_repo_url):
         self.ssh_manager = SSHManager(self.vm_ip, self.ssh_key_path)
-        installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass)
+        installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
         installer.install_jenkins()
         print("Waiting for Jenkins to initialize...")
         time.sleep(30)
