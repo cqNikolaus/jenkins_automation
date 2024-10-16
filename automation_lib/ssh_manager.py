@@ -5,7 +5,7 @@ class SSHManager:
 
     def __init__(self, ip_address, key_file):
         self.ip_address = ip_address
-        self.key_fileh = key_file
+        self.key_file = key_file
         self.ssh = None
 
 
