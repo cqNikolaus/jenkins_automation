@@ -24,11 +24,12 @@ def main():
     jenkins_pass = os.getenv('JENKINS_PASS')
     domain = os.getenv('DOMAIN')
     ssh_private_key_path = os.getenv('SSH_PRIVATE_KEY_PATH')
-    job_name = 'docker-test'
+    zone_name = os.getenv('ZONE_NAME')
+    ssh_key_id = os.getenv('SSH_KEY_ID')
 
+    job_name = 'docker-test'
     os_type = "ubuntu-22.04"
     server_type = "cx22"
-    ssh_key_id = 23404904
 
     manager = VMManager(api_token)
     env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, job_name)
@@ -69,7 +70,7 @@ def main():
                     
     elif args.command == 'create_dns':
         if dns_api_token:
-            dns_manager = DNSManager(dns_api_token, zone_name='comquent.academy')
+            dns_manager = DNSManager(dns_api_token, zone_name)
             ip_address = manager.get_vm_ip()
             dns_manager.create_dns_record(domain, ip_address)
         else:

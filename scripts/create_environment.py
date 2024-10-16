@@ -15,15 +15,16 @@ def main():
     domain = os.getenv('DOMAIN')
     ssh_private_key_path = os.getenv('SSH_PRIVATE_KEY_PATH')
     zone_name = os.getenv('ZONE_NAME')
+    ssh_key_id = os.getenv('SSH_KEY_ID')
 
+    job_name = 'docker-test'
     os_type = "ubuntu-22.04"
     server_type = "cx22"
-    ssh_key_id = 23404904
 
     manager = VMManager(api_token)
     manager.create_vm(os_type, server_type, ssh_key_id)
     
-    env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, job_name="docker-test")
+    env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, job_name)
     
     try:
         if env_manager.wait_until_ready():
