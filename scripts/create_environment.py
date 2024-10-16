@@ -25,6 +25,10 @@ def main():
             # Jenkins installieren
             env_manager.setup_jenkins()
             print("Jenkins installiert")
+            
+            # Initialen Job ausführen
+            env_manager.initialize_jenkins_job_manager()
+            env_manager.trigger_and_monitor_job()
 
             # DNS-Eintrag erstellen
             if dns_api_token and domain and zone_name:
