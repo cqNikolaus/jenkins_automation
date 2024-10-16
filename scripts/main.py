@@ -28,6 +28,8 @@ def main():
     zone_name = os.getenv('ZONE_NAME')
     ssh_key_id = int(os.getenv('SSH_KEY_ID'))
 
+    print(f"SSH Private Key: {ssh_private_key}")
+    
     job_name = 'docker-test'
     os_type = "ubuntu-22.04"
     server_type = "cx22"
