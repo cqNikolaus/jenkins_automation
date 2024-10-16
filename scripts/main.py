@@ -3,6 +3,7 @@ import argparse
 import os
 import json
 from automation_lib import VMManager, EnvironmentManager, DNSManager
+from io import StringIO
 
 
 
@@ -23,16 +24,17 @@ def main():
     jenkins_user = os.getenv('JENKINS_USER')
     jenkins_pass = os.getenv('JENKINS_PASS')
     domain = os.getenv('DOMAIN')
-    ssh_private_key_path = os.getenv('SSH_PRIVATE_KEY_PATH')
+    ssh_private_key = os.getenv('SSH_PRIVATE_KEY')
     zone_name = os.getenv('ZONE_NAME')
-    ssh_key_id = int(os.getenv('SSH_KEY_ID'))
+    ssh_key_id = os.getenv('SSH_KEY_ID')
 
     job_name = 'docker-test'
     os_type = "ubuntu-22.04"
     server_type = "cx22"
 
+    key_file = StringIO(ssh_private_key)
     manager = VMManager(api_token)
-    env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, job_name)
+    env_manager = EnvironmentManager(manager, key_file, jenkins_user, jenkins_pass, job_name)
     
     
     if args.command == 'create_jenkins':
