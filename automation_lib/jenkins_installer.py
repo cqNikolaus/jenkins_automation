@@ -32,13 +32,9 @@ class JenkinsInstaller:
             "sudo docker build -t jenkins-image /var/jenkins_home/jenkins_automation")
 
     def clone_config_repo(self):
-        print(f"trying to clone from {self.config_repo_url}")
-        self.ssh_manager.execute_command("sudo mkdir -p /var/jenkins_home/")
-        self.ssh_manager.execute_command("sudo chown $USER:$USER /var/jenkins_home/")
-        stdout, stderr = self.ssh_manager.execute_command(
+        self.ssh_manager.execute_command(
         f"git clone {self.config_repo_url} /var/jenkins_home/jenkins_configs")
-        if stderr:
-            print(f"Error cloning repository: {stderr}")
+
 
     def run_jenkins_container(self):
         self.ssh_manager.execute_command(
