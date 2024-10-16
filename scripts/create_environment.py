@@ -2,6 +2,7 @@ from automation_lib import VMManager, EnvironmentManager, DNSManager
 import os
 import sys
 import argparse
+from io import StringIO
 
 def main():
     parser = argparse.ArgumentParser(description='Setup Jenkins environment and create DNS')
@@ -21,10 +22,11 @@ def main():
     os_type = "ubuntu-22.04"
     server_type = "cx22"
 
+    key_file = StringIO(ssh_private_key)
     manager = VMManager(api_token)
     manager.create_vm(os_type, server_type, ssh_key_id)
     
-    env_manager = EnvironmentManager(manager, ssh_private_key_path, jenkins_user, jenkins_pass, job_name)
+    env_manager = EnvironmentManager(manager, key_file, jenkins_user, jenkins_pass, job_name)
     
     try:
         if env_manager.wait_until_ready():
