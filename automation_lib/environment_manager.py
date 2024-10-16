@@ -20,9 +20,9 @@ def is_ssh_port_open(ip, port=22, timeout=5):
 
 class EnvironmentManager:
 
-    def __init__(self, vm_manager, ssh_key_path, jenkins_user, jenkins_pass, job_name):
+    def __init__(self, vm_manager, key_file, jenkins_user, jenkins_pass, job_name):
         self.vm_manager = vm_manager
-        self.ssh_key_path = ssh_key_path
+        self.key_file = key_file
         self.jenkins_user = jenkins_user
         self.jenkins_pass = jenkins_pass
         self.vm_ip = None
@@ -47,7 +47,7 @@ class EnvironmentManager:
         raise Exception("VM is not ready or failed to become reachable.")
 
     def setup_jenkins(self, config_repo_url):
-        self.ssh_manager = SSHManager(self.vm_ip, self.ssh_key_path)
+        self.ssh_manager = SSHManager(self.vm_ip, self.key_file)
         installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
         installer.install_jenkins()
         print("Waiting for Jenkins to initialize...")

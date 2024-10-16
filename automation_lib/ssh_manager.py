@@ -3,18 +3,18 @@ from scp import SCPClient
 
 class SSHManager:
 
-    def __init__(self, ip_address, ssh_key_path):
+    def __init__(self, ip_address, key_file):
         self.ip_address = ip_address
-        self.ssh_key_path = ssh_key_path
+        self.key_fileh = key_file
         self.ssh = None
 
 
     def connect(self):
         if self.ssh is not None:
             return self.ssh
-        print(f"Connecting to {self.ip_address} with {self.ssh_key_path}")
+        print(f"Connecting to {self.ip_address}")
         try:
-            key = paramiko.RSAKey.from_private_key_file(self.ssh_key_path)
+            key = paramiko.RSAKey.from_private_key_file(self.key_file)
             self.ssh = paramiko.SSHClient()
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.ssh.connect(self.ip_address, username='root', pkey=key)

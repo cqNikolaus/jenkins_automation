@@ -10,7 +10,7 @@ pipeline {
     DNS_API_TOKEN = credentials('HETZNER_DNS_API_TOKEN')
     DOMAIN = "jenkins-${env.BUILD_NUMBER}.comquent.academy"
     ZONE_NAME = "comquent.academy" 
-    SSH_KEY_ID = 23404904
+    SSH_KEY_ID = '23404904'
     
   }
   stages {
