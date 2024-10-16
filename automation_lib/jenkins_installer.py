@@ -29,9 +29,10 @@ class JenkinsInstaller:
 
     def build_jenkins_docker_image(self):
         self.ssh_manager.execute_command(
-            "cd /var/jenkins_home/jenkins_configs && sudo docker build -t jenkins-image .")
+            "sudo docker build -t jenkins-image /var/jenkins_home/jenkins_automation")
 
     def clone_config_repo(self):
+        print(f"trying to clone from {self.config_repo_url}")
         self.ssh_manager.execute_command(
             f"git clone {self.config_repo_url} /var/jenkins_home/jenkins_configs")
 
