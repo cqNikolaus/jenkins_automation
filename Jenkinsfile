@@ -24,6 +24,7 @@ pipeline {
             echo "create jenkins instance"
             chmod 600 $SSH_KEY_FILE
             export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
+            export SSH_KEY_ID=$SSH_KEY_ID
             pip install -e .
             python scripts/main.py create_jenkins --config-repo https://github.com/cqNikolaus/jenkins_configs.git
           '''
