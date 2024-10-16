@@ -25,7 +25,7 @@ def main():
     domain = os.getenv('DOMAIN')
     ssh_private_key_path = os.getenv('SSH_PRIVATE_KEY_PATH')
     zone_name = os.getenv('ZONE_NAME')
-    ssh_key_id = os.getenv('SSH_KEY_ID')
+    ssh_key_id = 23404904
 
     job_name = 'docker-test'
     os_type = "ubuntu-22.04"
