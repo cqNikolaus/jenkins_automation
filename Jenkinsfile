@@ -36,7 +36,7 @@ pipeline {
           sh '''
             set -e
             echo "check successful pipeline job"
-            python scripts/main.py test_pipeline
+            python scripts/main.py test_pipeline 
           '''
         }
       }
@@ -46,7 +46,7 @@ pipeline {
         sh '''
           set -e
           echo "create dns record"
-          python scripts/main.py create_dns
+          python scripts/main.py create_dns 
         '''
       }
     }
@@ -71,7 +71,7 @@ pipeline {
             echo "setup nginx and ssl"
             chmod 600 $SSH_KEY_FILE
             export SSH_PRIVATE_KEY_PATH=$SSH_KEY_FILE
-            python scripts/main.py setup_nginx
+            python scripts/main.py setup_nginx --config-repo
           '''
         }
       }
@@ -94,7 +94,7 @@ pipeline {
     stage('Shutdown Jenkins Instance') {
       steps {
         echo "kill jenkins"
-        sh "python scripts/main.py cleanup"
+        sh "python scripts/main.py cleanup --config-repo" 
       }
     }
   }

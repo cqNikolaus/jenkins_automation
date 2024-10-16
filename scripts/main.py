@@ -10,7 +10,12 @@ from automation_lib import VMManager, EnvironmentManager, DNSManager
 def main():
     parser = argparse.ArgumentParser(description='CI Pipeline: Validates the environment setup, tests the pipeline')
     parser.add_argument('command', choices=['create_jenkins', 'test_pipeline', 'create_dns', 'setup_nginx', 'cleanup'])
-    parser.add_argument('--config-repo', help='https://github.com/cqNikolaus/jenkins_configs', required=True)
+    parser.add_argument('--config-repo', help='https://github.com/cqNikolaus/jenkins_configs')
+    
+    if args.command == 'create_jenkins' and not args.config_repo:
+        print("Error: --config-repo is required for create_jenkins")
+        sys.exit(1)
+    
     args = parser.parse_args()
 
     api_token = os.getenv('API_TOKEN')
