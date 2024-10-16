@@ -33,6 +33,7 @@ class JenkinsInstaller:
 
     def clone_config_repo(self):
         print(f"trying to clone from {self.config_repo_url}")
+        self.ssh_manager.execute_command("mkdir -p /var/jenkins_home/")
         self.ssh_manager.execute_command(
             f"git clone {self.config_repo_url} /var/jenkins_home/jenkins_configs")
 
