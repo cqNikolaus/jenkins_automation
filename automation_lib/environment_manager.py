@@ -128,7 +128,7 @@ class EnvironmentManager:
 
     def setup_nginx(self, domain):
         if not self.ssh_manager:
-            self.ssh_manager = SSHManager(self.vm_ip, self.ssh_key_path)
+            self.ssh_manager = SSHManager(self.vm_ip, self.key_file)
         nginx_installer = NginxInstaller(self.ssh_manager, domain)
         nginx_installer.install_nginx()
         nginx_installer.obtain_ssl_certificate()
