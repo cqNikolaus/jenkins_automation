@@ -4,6 +4,7 @@ import os
 import json
 from automation_lib import VMManager, EnvironmentManager, DNSManager
 from io import StringIO
+from dotenv import load_dotenv
 
 
 
@@ -12,12 +13,14 @@ def main():
     parser = argparse.ArgumentParser(description='CI Pipeline: Validates the environment setup, tests the pipeline')
     parser.add_argument('command', choices=['create_jenkins', 'test_pipeline', 'create_dns', 'setup_nginx', 'cleanup'])
     parser.add_argument('--config-repo', help='URL of the configuration repository')
-    
     args = parser.parse_args()
     
     if args.command == 'create_jenkins' and not args.config_repo:
         print("Error: --config-repo is required for create_jenkins")
         sys.exit(1)
+        
+        
+    load_dotenv()
 
     api_token = os.getenv('API_TOKEN')
     dns_api_token = os.getenv('DNS_API_TOKEN')
@@ -27,10 +30,8 @@ def main():
     ssh_private_key = os.getenv('SSH_PRIVATE_KEY')
     zone_name = os.getenv('ZONE_NAME')
     ssh_key_id = int(os.getenv('SSH_KEY_ID'))
-
-    print(f"SSH Private Key: {ssh_private_key}")
+    job_name = os.getenv('JOB_NAME')
     
-    job_name = 'docker-test'
     os_type = "ubuntu-22.04"
     server_type = "cx22"
 
