@@ -239,6 +239,7 @@ This method uses the `create_environment.py` script and the `Jenkinsfile_setup` 
 
 
 2. **Configure the Pipeline**: Use the provided `Jenkinsfile_setup` in your Jenkins job. Update environment variables as needed.
+3. Replace "https://github.com/yourusername/yourjenkinsconfigs.git" in `Jenkinsfile_setup` with your Jenkins configuration repository.
 
    ```groovy
    pipeline {
@@ -280,7 +281,7 @@ This method uses the `create_environment.py` script and the `Jenkinsfile_setup` 
    ```
 
 
-3. **Run the Pipeline**: Execute the pipeline, which will:
+4. **Run the Pipeline**: Execute the pipeline, which will:
    - Spin up the VM
    - Install Jenkins in Docker
    - Configure Jenkins with your custom settings
