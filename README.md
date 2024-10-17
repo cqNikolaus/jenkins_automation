@@ -19,6 +19,7 @@ Automate the setup of a Jenkins instance on a Hetzner Cloud VM using Docker, wit
     - [Customizing the Initial Test Job](#customizing-the-initial-test-job)
 - [Environment Variables](#environment-variables)
 - [Running in a Jenkins Pipeline](#running-in-a-jenkins-pipeline)
+  - [Jenkins Pipeline Requirements](#jenkins-pipeline-requirements) 
   - [Using `create_environment.py` with `Jenkinsfile_setup`](#using-create_environmentpy-with-jenkinsfile_setup)
   - [CI/CD Pipeline with `main.py` and `Jenkinsfile`](#cicd-pipeline-with-mainpy-and-jenkinsfile)
 - [Project Structure](#project-structure)
@@ -205,6 +206,19 @@ SSL_EMAIL=youremail@example.com
 ## Running in a Jenkins Pipeline
 
 You can also run the setup within a Jenkins pipeline, which allows you to automate the entire process as part of your CI/CD workflow.
+
+<br>
+
+
+### Jenkins Pipeline Requirements
+
+To use the provided Jenkins pipelines (`Jenkinsfile` and `Jenkinsfile_setup`), it is necessary to have a Docker image available in your Jenkins environment. This image must be named **`python-build`** and should contain the following tools pre-installed:
+
+- Python
+- Git
+- pip
+- dnsutils (for DNS checks)
+- openssl (for SSL certificate validation)
 
 <br>
 
