@@ -1,10 +1,12 @@
 import sys
+import os
 
 class NginxInstaller:
 
     def __init__(self, ssh_manager, domain):
         self.ssh_manager = ssh_manager
         self.domain = domain
+        self.ssl_email = os.getenv('SSL_EMAIL')
 
     def install_nginx(self):
         if not self.ssh_manager.execute_command("DEBIAN_FRONTEND=noninteractive apt-get install nginx -y"):
@@ -68,7 +70,7 @@ class NginxInstaller:
             "DEBIAN_FRONTEND=noninteractive apt-get install certbot python3-certbot-nginx -y")
         # SSL-Zertifikat beantragen
         result = self.ssh_manager.execute_command(
-            f"certbot --nginx -d {self.domain} --non-interactive --agree-tos -m clemens.nikolaus@comquent.de")
+            f"certbot --nginx -d {self.domain} --non-interactive --agree-tos -m {self.ssl_email}")
         if not result:
             print("Failed to obtain SSL certificate")
 

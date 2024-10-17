@@ -11,6 +11,8 @@ pipeline {
         DOMAIN = "jenkins-${env.BUILD_NUMBER}.comquent.academy" 
         ZONE_NAME = "comquent.academy"
         SSH_KEY_ID = '23404904'
+        JOB_NAME = 'docker-test'
+        SSL_EMAIL= 'clemens.nikolaus@comquent.de'
     }
     stages {
         stage('Setup Environment') {
