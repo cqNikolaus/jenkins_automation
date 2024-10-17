@@ -10,7 +10,7 @@ pipeline {
     DNS_API_TOKEN = credentials('HETZNER_DNS_API_TOKEN')
     DOMAIN = "jenkins-${env.BUILD_NUMBER}.comquent.academy"
     ZONE_NAME = "comquent.academy" 
-    SSH_KEY_ID = 'AzureAD+ClemensNikolaus@CQ-Clemens'
+    SSH_KEY_NAME = 'AzureAD+ClemensNikolaus@CQ-Clemens'
     JOB_NAME = 'docker-test'
     SSL_EMAIL= 'clemens.nikolaus@comquent.de'
   }

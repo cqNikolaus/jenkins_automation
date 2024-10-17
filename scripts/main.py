@@ -29,7 +29,7 @@ def main():
     domain = os.getenv('DOMAIN')
     ssh_private_key = os.getenv('SSH_PRIVATE_KEY')
     zone_name = os.getenv('ZONE_NAME')
-    ssh_key_id = os.getenv('SSH_KEY_ID')
+    ssh_key = os.getenv('SSH_KEY_NAME')
     job_name = os.getenv('JOB_NAME')
     
     os_type = "ubuntu-22.04"
@@ -41,7 +41,7 @@ def main():
     
     
     if args.command == 'create_jenkins':
-        manager.create_vm(os_type, server_type, ssh_key_id)
+        manager.create_vm(os_type, server_type, ssh_key)
         try:
             if env_manager.wait_until_ready():
                 env_manager.setup_jenkins(config_repo_url=args.config_repo)
@@ -99,7 +99,7 @@ def main():
         dns_manager.delete_dns_record(domain)
 
     else:
-        manager.create_vm(os_type, server_type, ssh_key_id)
+        manager.create_vm(os_type, server_type, ssh_key)
         env_manager.setup_jenkins()
         env_manager.test_jenkins()
         env_manager.cleanup()

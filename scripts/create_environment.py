@@ -19,7 +19,7 @@ def main():
     domain = os.getenv('DOMAIN')
     ssh_private_key = os.getenv('SSH_PRIVATE_KEY')
     zone_name = os.getenv('ZONE_NAME')
-    ssh_key_id = int(os.getenv('SSH_KEY_ID'))
+    ssh_key = int(os.getenv('SSH_KEY_NAME'))
     job_name = os.getenv('JOB_NAME')
 
     os_type = "ubuntu-22.04"
@@ -27,7 +27,7 @@ def main():
 
     key_file = StringIO(ssh_private_key)
     manager = VMManager(api_token)
-    manager.create_vm(os_type, server_type, ssh_key_id)
+    manager.create_vm(os_type, server_type, ssh_key)
     
     env_manager = EnvironmentManager(manager, key_file, jenkins_user, jenkins_pass, job_name)
     try:
