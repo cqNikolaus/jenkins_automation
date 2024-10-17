@@ -19,7 +19,7 @@ def main():
     domain = os.getenv('DOMAIN')
     ssh_private_key = os.getenv('SSH_PRIVATE_KEY')
     zone_name = os.getenv('ZONE_NAME')
-    ssh_key = int(os.getenv('SSH_KEY_NAME'))
+    ssh_key = os.getenv('SSH_KEY_NAME')
     job_name = os.getenv('JOB_NAME')
 
     os_type = "ubuntu-22.04"
