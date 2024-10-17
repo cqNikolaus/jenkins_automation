@@ -4,5 +4,6 @@ paramiko
 python-jenkins
 scp
 python-dotenv
+.
 
 
