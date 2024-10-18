@@ -13,7 +13,7 @@ def main():
     
     config_repo = args.config_repo
     branch = args.branch
-    config_repo_url = f"-- branch {branch} {config_repo}" if branch else config_repo
+    config_repo_url = f"--branch {branch} {config_repo}" if branch else config_repo
     
     load_dotenv()
     
