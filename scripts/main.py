@@ -13,7 +13,12 @@ def main():
     parser = argparse.ArgumentParser(description='CI Pipeline: Validates the environment setup, tests the pipeline')
     parser.add_argument('command', choices=['create_jenkins', 'test_pipeline', 'create_dns', 'setup_nginx', 'cleanup'])
     parser.add_argument('--config-repo', help='URL of the configuration repository')
+    parser.add_argument('--branch', help='The branch of the configuration repository to use', default=None)
     args = parser.parse_args()
+    
+    config_repo = args.config_repo
+    branch = args.branch
+    config_repo_url = f"-- branch {branch} {config_repo}" if branch else config_repo
     
     if args.command == 'create_jenkins' and not args.config_repo:
         print("Error: --config-repo is required for create_jenkins")
@@ -44,7 +49,7 @@ def main():
         manager.create_vm(os_type, server_type, ssh_key)
         try:
             if env_manager.wait_until_ready():
-                env_manager.setup_jenkins(config_repo_url=args.config_repo)
+                env_manager.setup_jenkins(config_repo_url)
                 if env_manager.test_jenkins():
                     print("Jenkins is up and running")
                 else:

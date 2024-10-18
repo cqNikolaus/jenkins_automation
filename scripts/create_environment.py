@@ -8,7 +8,12 @@ from dotenv import load_dotenv
 def main():
     parser = argparse.ArgumentParser(description='Setup Jenkins environment and create DNS')
     parser.add_argument('--config-repo', help='The URL of the Jenkins configuration repository', required=True)
+    parser.add_argument('--branch', help='The branch of the configuration repository to use', default=None)
     args = parser.parse_args()
+    
+    config_repo = args.config_repo
+    branch = args.branch
+    config_repo_url = f"-- branch {branch} {config_repo}" if branch else config_repo
     
     load_dotenv()
     
@@ -33,7 +38,7 @@ def main():
     try:
         if env_manager.wait_until_ready():
             # Install Jenkins
-            env_manager.setup_jenkins(config_repo_url=args.config_repo)
+            env_manager.setup_jenkins(config_repo_url)
             print("Jenkins installed")
             
             # Create Jenkins Job
