@@ -63,6 +63,8 @@ class JenkinsInstaller:
             f"-p 8080:8080 -p 50000:50000 "
             f"-v jenkins_home:/var/jenkins_home "
             f"-v /var/run/docker.sock:/var/run/docker.sock "
+            f"-e ADMIN_USER={self.jenkins_user} "
+            f"-e ADMIN_PASS={self.jenkins_pass} "
             f"-e DOMAIN='https://{os.getenv('DOMAIN')}' "
             "jenkins-image"
         )
