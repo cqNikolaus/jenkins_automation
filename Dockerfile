@@ -19,5 +19,8 @@ COPY jenkins_configs/jenkins.yaml /var/jenkins_home/casc_configs/jenkins.yaml
 ENV CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs/jenkins.yaml
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 
+RUN curl -o /usr/local/bin/jenkins-cli.jar http://localhost:8080/jnlpJars/jenkins-cli.jar && \
+    chmod +x /usr/local/bin/jenkins-cli.jar
+
 USER jenkins
 
