@@ -6,13 +6,13 @@ pipeline {
     }
   }
   environment {
-    API_TOKEN = credentials('HETZNER_API_TOKEN')
-    DNS_API_TOKEN = credentials('HETZNER_DNS_API_TOKEN')
-    DOMAIN = "jenkinsc-${env.BUILD_NUMBER}.comquent.academy"
-    ZONE_NAME = "comquent.academy" 
-    SSH_KEY_NAME = 'clemens.nikolaus@comquent.de'
-    JOB_NAME = 'docker-test'
-    SSL_EMAIL= 'clemens.nikolaus@comquent.de'
+      API_TOKEN = credentials('HETZNER_API_TOKEN')
+      DNS_API_TOKEN = credentials('HETZNER_DNS_API_TOKEN')
+      DOMAIN = "jenkinsc-${env.BUILD_NUMBER}.comquent.academy" 
+      ZONE_NAME = "comquent.academy"
+      SSH_KEY_NAME = 'clemens.nikolaus@comquent.de'
+      JOB_NAME = 'docker-test'
+      SSL_EMAIL= 'clemens.nikolaus@comquent.de'
   }
   stages {
     stage('Checkout Workspace') {
