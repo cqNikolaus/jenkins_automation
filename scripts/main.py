@@ -3,7 +3,6 @@ import argparse
 import os
 import json
 from automation_lib import VMManager, EnvironmentManager, DNSManager
-from io import StringIO
 from dotenv import load_dotenv
 
 
@@ -37,14 +36,12 @@ def main():
     ssh_key = os.getenv('SSH_KEY_NAME')
     job_name = os.getenv('JOB_NAME')
     
-    print(f"ssh_private_key: {ssh_private_key}")
     
     os_type = "ubuntu-22.04"
     server_type = "cx22"
 
-    key_file = StringIO(ssh_private_key)
     manager = VMManager(api_token)
-    env_manager = EnvironmentManager(manager, key_file, jenkins_user, jenkins_pass, job_name)
+    env_manager = EnvironmentManager(manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
     
     print(f"jenkins user: {jenkins_user}")
     
