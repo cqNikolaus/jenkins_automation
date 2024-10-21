@@ -44,6 +44,7 @@ def main():
     manager = VMManager(api_token)
     env_manager = EnvironmentManager(manager, key_file, jenkins_user, jenkins_pass, job_name)
     
+    print(f"jenkins user: {jenkins_user}")
     
     if args.command == 'create_jenkins':
         manager.create_vm(os_type, server_type, ssh_key)
