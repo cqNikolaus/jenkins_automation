@@ -2,7 +2,6 @@ from automation_lib import VMManager, EnvironmentManager, DNSManager
 import os
 import sys
 import argparse
-from io import StringIO
 from dotenv import load_dotenv
 
 def main():
@@ -30,7 +29,6 @@ def main():
     os_type = "ubuntu-22.04"
     server_type = "cx22"
 
-    key_file = StringIO(ssh_private_key)
     manager = VMManager(api_token)
     manager.create_vm(os_type, server_type, ssh_key)
     
