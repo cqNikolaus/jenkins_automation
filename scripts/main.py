@@ -38,12 +38,11 @@ def main():
     
     
     os_type = "ubuntu-22.04"
-    server_type = "cx22"
+    server_type = "cpx11"
 
+    print(f"api_token: {api_token}")
     manager = VMManager(api_token)
     env_manager = EnvironmentManager(manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
-    
-    print(f"jenkins user: {jenkins_user}")
     
     if args.command == 'create_jenkins':
         manager.create_vm(os_type, server_type, ssh_key)

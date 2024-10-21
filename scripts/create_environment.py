@@ -27,7 +27,7 @@ def main():
     job_name = os.getenv('JOB_NAME')
 
     os_type = "ubuntu-22.04"
-    server_type = "cx22"
+    server_type = "cpx11"
 
     manager = VMManager(api_token)
     manager.create_vm(os_type, server_type, ssh_key)
