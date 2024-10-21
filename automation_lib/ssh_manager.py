@@ -14,7 +14,7 @@ class SSHManager:
             return self.ssh
         print(f"Connecting to {self.ip_address}")
         try:
-            key = paramiko.RSAKey.from_private_key(self.key_file)
+            key = paramiko.RSAKey.from_private_key_file(self.key_file)
             self.ssh = paramiko.SSHClient()
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.ssh.connect(self.ip_address, username='root', pkey=key)
