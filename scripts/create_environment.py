@@ -34,7 +34,7 @@ def main():
     manager = VMManager(api_token)
     manager.create_vm(os_type, server_type, ssh_key)
     
-    env_manager = EnvironmentManager(manager, key_file, jenkins_user, jenkins_pass, job_name)
+    env_manager = EnvironmentManager(manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
     try:
         if env_manager.wait_until_ready():
             # Install Jenkins
