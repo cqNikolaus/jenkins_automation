@@ -10,11 +10,16 @@ pipeline {
     DNS_API_TOKEN = credentials('HETZNER_DNS_API_TOKEN')
     DOMAIN = "jenkinsc-${env.BUILD_NUMBER}.comquent.academy"
     ZONE_NAME = "comquent.academy" 
-    SSH_KEY_NAME = 'AzureAD+ClemensNikolaus@CQ-Clemens'
+    SSH_KEY_NAME = 'clemens.nikolaus@comquent.de'
     JOB_NAME = 'docker-test'
     SSL_EMAIL= 'clemens.nikolaus@comquent.de'
   }
   stages {
+    stage('Checkout Workspace') {
+      steps {
+        git branch: 'main', url: 'https://github.com/cqNikolaus/jenkins_automation.git'
+      }
+    }
     stage('Create Jenkins Instance') {
       steps {
         withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE'), 

@@ -15,6 +15,11 @@ pipeline {
         SSL_EMAIL= 'clemens.nikolaus@comquent.de'
     }
     stages {
+        stage('Checkout Workspace') {
+            steps {
+                git branch: 'main', url: 'https://github.com/cqNikolaus/jenkins_automation.git'
+            }
+        }
         stage('Setup Environment') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE'), 
