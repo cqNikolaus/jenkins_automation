@@ -2,7 +2,6 @@ from automation_lib import VMManager, EnvironmentManager, DNSManager
 import os
 import sys
 import argparse
-from dotenv import load_dotenv
 
 def main():
     parser = argparse.ArgumentParser(description='Setup Jenkins environment and create DNS')
@@ -14,7 +13,6 @@ def main():
     branch = args.branch
     config_repo_url = f"--branch {branch} {config_repo}" if branch else config_repo
     
-    load_dotenv()
     
     api_token = os.getenv('API_TOKEN')
     dns_api_token = os.getenv('DNS_API_TOKEN')
