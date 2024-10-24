@@ -84,6 +84,7 @@ class JenkinsInstaller:
     )
 
     def install_jenkins(self):
+        print(f"HIERAPITOKEN: {self.api_token}")
         self.install_docker()
         self.clone_config_repo()
         self.copy_dockerfile_to_vm()
