@@ -79,7 +79,6 @@ class JenkinsInstaller:
             f"-e DOMAIN='https://{os.getenv('DOMAIN')}' "
             f"-e API_TOKEN={self.api_token} "
             f"-e DNS_API_TOKEN={self.dns_api_token} "
-            f"-e SSH_PRIVATE_KEY={self.ssh_private_key} "
             "jenkins-image"
     )
 
