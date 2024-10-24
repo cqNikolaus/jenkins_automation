@@ -76,6 +76,9 @@ class JenkinsInstaller:
     )
 
     def install_jenkins(self):
+        print(f"INSTALLJENKINSself.api_token: {self.api_token}")
+        print(f"self.dns_api_token: {self.dns_api_token}")
+        print(f"self.ssh_private_key: {self.ssh_private_key}")
         self.install_docker()
         self.clone_config_repo()
         self.copy_dockerfile_to_vm()
