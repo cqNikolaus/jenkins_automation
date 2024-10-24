@@ -32,6 +32,8 @@ def main():
     manager = VMManager(api_token)
     manager.create_vm(os_type, server_type, ssh_key)
     
+    print(f"First 4 chars of API Token: {api_token[:4]}")
+    
     env_manager = EnvironmentManager(manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
     try:
         if env_manager.wait_until_ready():

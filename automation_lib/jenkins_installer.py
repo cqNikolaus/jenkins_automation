@@ -9,6 +9,9 @@ class JenkinsInstaller:
         self.jenkins_user = jenkins_user
         self.jenkins_pass = jenkins_pass
         self.config_repo_url = config_repo_url
+        self.api_token = os.getenv('API_TOKEN')
+        self.dns_api_token = os.getenv('DNS_API_TOKEN')
+        self.ssh_private_key = os.getenv('SSH_KEY_FILE')
 
     def install_docker(self):
         commands = [
@@ -66,8 +69,11 @@ class JenkinsInstaller:
             f"-e ADMIN_USER={self.jenkins_user} "
             f"-e ADMIN_PASS={self.jenkins_pass} "
             f"-e DOMAIN='https://{os.getenv('DOMAIN')}' "
+            f"-e API_TOKEN='{self.api_token}' "
+            f"-e DNS_API_TOKEN='{self.dns_api_token}' "
+            f"-e SSH_PRIVATE_KEY='{self.ssh_private_key}' "
             "jenkins-image"
-        )
+    )
 
     def install_jenkins(self):
         self.install_docker()
