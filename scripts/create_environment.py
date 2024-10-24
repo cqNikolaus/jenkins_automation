@@ -28,7 +28,8 @@ def main():
 
     os_type = "ubuntu-22.04"
     server_type = "cpx11"
-    print(f"First 4 chars of API Token: {api_token[:4]}")
+    print(f"API Token: {os.getenv('API_TOKEN')}")
+    print(f"juser: {jenkins_user}, {jenkins_pass}")
 
     manager = VMManager(api_token)
     manager.create_vm(os_type, server_type, ssh_key)
