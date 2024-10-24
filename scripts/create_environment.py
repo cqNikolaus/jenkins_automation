@@ -23,6 +23,8 @@ def main():
     zone_name = os.getenv('ZONE_NAME')
     ssh_key = os.getenv('SSH_KEY_NAME')
     job_name = os.getenv('JOB_NAME')
+    
+
 
     os_type = "ubuntu-22.04"
     server_type = "cpx11"
