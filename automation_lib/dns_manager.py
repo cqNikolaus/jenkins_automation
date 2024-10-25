@@ -22,18 +22,35 @@ class DNSManager:
 
         data = {
             "value": ip_address,
-            "ttl": 300,
+            "ttl": 3600,
             "type": "A",
             "name": domain.split('.')[0],  # Subdomain
             "zone_id": zone_id
         }
 
         response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 201:
+        if response.status_code in [200, 201]:
             print("DNS record created successfully")
         else:
             print("Failed to create DNS record", response.status_code)
             print(response.json())
+            
+            
+            
+            
+            
+    def get_zone_id(self, zone_name):
+        url = "https://dns.hetzner.com/api/v1/zones"
+        headers = {
+            "Auth-API-Token": self.dns_api_token
+        }
+        response = requests.get(url, headers=headers)
+        zones = response.json().get("zones", [])
+        for zone in zones:
+            if zone["name"] == zone_name:
+                return zone["id"]
+        print("Zone not found for zone name:", zone_name)
+        return None        
             
             
             
@@ -74,15 +91,3 @@ class DNSManager:
 
 
 
-    def get_zone_id(self, zone_name):
-        url = "https://dns.hetzner.com/api/v1/zones"
-        headers = {
-            "Auth-API-Token": self.dns_api_token
-        }
-        response = requests.get(url, headers=headers)
-        zones = response.json().get("zones", [])
-        for zone in zones:
-            if zone["name"] == zone_name:
-                return zone["id"]
-        print("Zone not found for zone name:", zone_name)
-        return None
