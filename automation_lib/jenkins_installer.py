@@ -1,17 +1,15 @@
 import os
 import sys
-import base64
+import shlex
 
 
 class JenkinsInstaller:
 
-    def __init__(self, ssh_manager, jenkins_user, jenkins_pass, config_repo_url, api_token):
+    def __init__(self, ssh_manager, jenkins_user, jenkins_pass, config_repo_url):
         self.ssh_manager = ssh_manager
         self.jenkins_user = jenkins_user
         self.jenkins_pass = jenkins_pass
         self.config_repo_url = config_repo_url
-        self.api_token = api_token
-        self.dns_api_token = os.getenv('DNS_API_TOKEN')
         
 
     def install_docker(self):
@@ -62,24 +60,23 @@ class JenkinsInstaller:
 
 
     def run_jenkins_container(self):
+        domain = os.getenv('DOMAIN')
+        api_token_escaped = shlex.quote(self.api_token)
+        dns_api_token_escaped = shlex.quote(self.dns_api_token)
         self.ssh_manager.execute_command(
             f"sudo docker run -d --name jenkins "
             f"-p 8080:8080 -p 50000:50000 "
             f"-v jenkins_home:/var/jenkins_home "
             f"-v /var/run/docker.sock:/var/run/docker.sock "
-            f"-e ADMIN_USER={self.jenkins_user} "
-            f"-e ADMIN_PASS={self.jenkins_pass} "
-            f"-e DOMAIN='https://{os.getenv('DOMAIN')}' "
-            f"-e API_TOKEN={self.api_token} "
-            f"-e DNS_API_TOKEN={self.dns_api_token} "
+            f"-e ADMIN_USER='{self.jenkins_user}' "
+            f"-e ADMIN_PASS='{self.jenkins_pass}' "
+            f"-e DOMAIN='https://{domain}' "
+            f"-e API_TOKEN={api_token_escaped} "
+            f"-e DNS_API_TOKEN={dns_api_token_escaped} "
             "jenkins-image"
-            
-    )
+        )
 
     def install_jenkins(self):
-        print(f"HIERAPITOKEN: {self.api_token}")
-        print(f"HIERAPITOKEN: {self.dns_api_token}")
-        print(f"HIERADMINPW: {self.jenkins_pass}")
         self.install_docker()
         self.clone_config_repo()
         self.copy_dockerfile_to_vm()

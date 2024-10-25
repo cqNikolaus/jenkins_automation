@@ -20,7 +20,7 @@ def is_ssh_port_open(ip, port=22, timeout=5):
 
 class EnvironmentManager:
 
-    def __init__(self, vm_manager, key_file, jenkins_user, jenkins_pass, job_name, api_token):
+    def __init__(self, vm_manager, key_file, jenkins_user, jenkins_pass, job_name):
         self.vm_manager = vm_manager
         self.key_file = key_file
         self.jenkins_user = jenkins_user
@@ -49,7 +49,7 @@ class EnvironmentManager:
 
     def setup_jenkins(self, config_repo_url):
         self.ssh_manager = SSHManager(self.vm_ip, self.key_file)
-        installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url, self.api_token)
+        installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
         installer.install_jenkins()
         print("Waiting for Jenkins to initialize...")
         time.sleep(30)
