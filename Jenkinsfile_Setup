@@ -9,10 +9,9 @@ pipeline {
         ZONE_NAME = "comquent.academy"
         SSH_KEY_NAME = 'clemens.nikolaus@comquent.de'
         JOB_NAME = 'docker-test'
-        SSL_EMAIL= 'clemens.nikolaus@comquent.de'
+        SSL_EMAIL = 'clemens.nikolaus@comquent.de'
         DOMAIN = "${params.DOMAIN}"
         CONFIG_REPO = "${params.CONFIG_REPO}"
-        BRANCH = "${params.BRANCH}"
     }
     stages {
         stage('Checkout Workspace') {
@@ -29,15 +28,14 @@ pipeline {
                     string(credentialsId: 'hetzner-dns-api-token', variable: 'H_DNS_API_TOKEN')
                 ]) {
                     script {
+                        def branchParam = params.BRANCH ?: ''
+                        def branchOption = branchParam ? "--branch ${branchParam}" : ""
                         def command = """
                             set -e
                             echo "Setting up the environment with DOMAIN=${env.DOMAIN}"
                             pip install -e .
-                            python scripts/create_environment.py --config-repo ${env.CONFIG_REPO}
+                            python scripts/create_environment.py --config-repo ${env.CONFIG_REPO} ${branchOption}
                         """
-                        if (BRANCH) {
-                            command += " --branch ${env.BRANCH}"
-                        }
                         sh command
                     }
                 }
