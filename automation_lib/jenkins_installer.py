@@ -10,6 +10,8 @@ class JenkinsInstaller:
         self.jenkins_user = jenkins_user
         self.jenkins_pass = jenkins_pass
         self.config_repo_url = config_repo_url
+        self.api_token = os.getenv('API_TOKEN')
+        self.dns_api_token = os.getenv('DNS_API_TOKEN')
         
 
     def install_docker(self):
