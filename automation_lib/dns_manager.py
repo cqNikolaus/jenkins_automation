@@ -22,7 +22,7 @@ class DNSManager:
 
         data = {
             "value": ip_address,
-            "ttl": 3600,
+            "ttl": 300,
             "type": "A",
             "name": domain.split('.')[0],  # Subdomain
             "zone_id": zone_id

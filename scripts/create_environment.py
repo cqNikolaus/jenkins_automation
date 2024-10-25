@@ -52,7 +52,6 @@ def main():
                 dns_manager = DNSManager(dns_api_token, zone_name)
                 ip_address = manager.get_vm_ip()
                 dns_manager.create_dns_record(domain, ip_address)
-                print("DNS record created")
             else:
                 print("DNS configuration missing")
                 
