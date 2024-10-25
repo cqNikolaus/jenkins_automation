@@ -31,12 +31,12 @@ pipeline {
                     script {
                         def command = """
                             set -e
-                            echo "Setting up the environment with DOMAIN=${DOMAIN}"
+                            echo "Setting up the environment with DOMAIN=${env.DOMAIN}"
                             pip install -e .
-                            python scripts/create_environment.py --config-repo ${CONFIG_REPO}
+                            python scripts/create_environment.py --config-repo ${env.CONFIG_REPO}
                         """
                         if (BRANCH) {
-                            command += " --branch ${BRANCH}"
+                            command += " --branch ${env.BRANCH}"
                         }
                         sh command
                     }
