@@ -30,7 +30,7 @@ class EnvironmentManager:
         self.jenkins_url = None
         self.job_name = job_name
         self.jenkins_job_manager = None
-        self.api_token = api_token
+        
         
     def wait_until_ready(self):
         server_id = self.vm_manager.vm['server']['id']
