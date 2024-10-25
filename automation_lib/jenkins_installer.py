@@ -5,21 +5,14 @@ import base64
 
 class JenkinsInstaller:
 
-    def __init__(self, ssh_manager, jenkins_user, jenkins_pass, config_repo_url):
+    def __init__(self, ssh_manager, jenkins_user, jenkins_pass, config_repo_url, api_token):
         self.ssh_manager = ssh_manager
         self.jenkins_user = jenkins_user
         self.jenkins_pass = jenkins_pass
         self.config_repo_url = config_repo_url
+        self.api_token = api_token
+        self.dns_api_token = os.getenv('DNS_API_TOKEN')
         
-        
-        self.encoded_api_token = os.getenv('ENCODED_API_TOKEN')
-        self.encoded_dns_api_token = os.getenv('ENCODED_DNS_API_TOKEN')
-        self.encoded_ssh_private_key = os.getenv('ENCODED_SSH_KEY_FILE')
-        
-        
-        self.api_token = base64.b64decode(self.encoded_api_token).decode('utf-8')
-        self.dns_api_token = base64.b64decode(self.encoded_dns_api_token).decode('utf-8')
-        self.ssh_private_key = base64.b64decode(self.encoded_ssh_private_key).decode('utf-8')
 
     def install_docker(self):
         commands = [
@@ -80,10 +73,13 @@ class JenkinsInstaller:
             f"-e API_TOKEN={self.api_token} "
             f"-e DNS_API_TOKEN={self.dns_api_token} "
             "jenkins-image"
+            
     )
 
     def install_jenkins(self):
         print(f"HIERAPITOKEN: {self.api_token}")
+        print(f"HIERAPITOKEN: {self.dns_api_token}")
+        print(f"HIERADMINPW: {self.jenkins_pass}")
         self.install_docker()
         self.clone_config_repo()
         self.copy_dockerfile_to_vm()
