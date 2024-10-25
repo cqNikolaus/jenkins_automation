@@ -11,6 +11,8 @@ pipeline {
         JOB_NAME = 'docker-test'
         SSL_EMAIL= 'clemens.nikolaus@comquent.de'
         DOMAIN = "${params.DOMAIN}"
+        CONFIG_REPO = "${params.CONFIG_REPO}"
+        BRANCH = "${params.BRANCH}"
     }
     stages {
         stage('Checkout Workspace') {
@@ -26,12 +28,18 @@ pipeline {
                     string(credentialsId: 'hetzner-api-token', variable: 'H_API_TOKEN'),
                     string(credentialsId: 'hetzner-dns-api-token', variable: 'H_DNS_API_TOKEN')
                 ]) {
-                    sh '''
-                        set -e
-                        echo "set up the environment"
-                        pip install -e .
-                        python scripts/create_environment.py --config-repo https://github.com/cqNikolaus/jenkins_configs.git --branch bootstrap
-                    '''
+                    script {
+                        def command = """
+                            set -e
+                            echo "Setting up the environment with DOMAIN=${DOMAIN}"
+                            pip install -e .
+                            python scripts/create_environment.py --config-repo ${CONFIG_REPO}
+                        """
+                        if (BRANCH) {
+                            command += " --branch ${BRANCH}"
+                        }
+                        sh command
+                    }
                 }
             }
         }
