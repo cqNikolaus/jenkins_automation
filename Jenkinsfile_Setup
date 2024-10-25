@@ -6,11 +6,11 @@ pipeline {
         }
     }
     environment {
-        DOMAIN = "jenkinsc-${env.BUILD_NUMBER}.comquent.academy" 
         ZONE_NAME = "comquent.academy"
         SSH_KEY_NAME = 'clemens.nikolaus@comquent.de'
         JOB_NAME = 'docker-test'
         SSL_EMAIL= 'clemens.nikolaus@comquent.de'
+        DOMAIN = "${params.DOMAIN}"
     }
     stages {
         stage('Checkout Workspace') {
@@ -21,16 +21,14 @@ pipeline {
         stage('Setup Environment') {
             steps {
                 withCredentials([
-                    sshUserPrivateKey(credentialsId: 'ssh-private-key', keyFileVariable: 'SSH_KEY_FILE'),
+                    sshUserPrivateKey(credentialsId: 'ssh-private-key', keyFileVariable: 'H_SSH_PRIVATE_KEY'),
                     usernamePassword(credentialsId: 'jenkins-admin-credentials', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS'),
-                    string(credentialsId: 'hetzner-api-token', variable: 'API_TOKEN'),
-                    string(credentialsId: 'hetzner-dns-api-token', variable: 'DNS_API_TOKEN')
+                    string(credentialsId: 'hetzner-api-token', variable: 'H_API_TOKEN'),
+                    string(credentialsId: 'hetzner-dns-api-token', variable: 'H_DNS_API_TOKEN')
                 ]) {
                     sh '''
                         set -e
                         echo "set up the environment"
-                        export API_TOKEN="${API_TOKEN}"
-                        export DNS_API_TOKEN="${DNS_API_TOKEN}"
                         pip install -e .
                         python scripts/create_environment.py --config-repo https://github.com/cqNikolaus/jenkins_configs.git --branch bootstrap
                     '''
