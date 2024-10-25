@@ -61,7 +61,7 @@ class JenkinsInstaller:
         self.ssh_manager.execute_command(
         f"git clone {self.config_repo_url} /var/jenkins_home/jenkins_configs")
         
-    def read_key_file(key_file):
+    def read_key_file(self, key_file):
         with open(key_file, 'r') as file:
             key_content = file.read()
         return key_content
