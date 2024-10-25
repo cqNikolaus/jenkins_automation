@@ -12,6 +12,7 @@ class JenkinsInstaller:
         self.config_repo_url = config_repo_url
         self.api_token = os.getenv('H_API_TOKEN')
         self.dns_api_token = os.getenv('H_DNS_API_TOKEN')
+        self.ssh_private_key = os.getenv('H_SSH_PRIVATE_KEY')
         
 
     def install_docker(self):
@@ -65,6 +66,7 @@ class JenkinsInstaller:
         domain = os.getenv('DOMAIN')
         api_token_escaped = shlex.quote(self.api_token)
         dns_api_token_escaped = shlex.quote(self.dns_api_token)
+        ssh_key_escaped = shlex.quote(self.ssh_private_key)
         self.ssh_manager.execute_command(
             f"sudo docker run -d --name jenkins "
             f"-p 8080:8080 -p 50000:50000 "
@@ -75,6 +77,7 @@ class JenkinsInstaller:
             f"-e DOMAIN='https://{domain}' "
             f"-e API_TOKEN={api_token_escaped} "
             f"-e DNS_API_TOKEN={dns_api_token_escaped} "
+            f"-e SSH_PRIVATE_KEY={ssh_key_escaped} "
             "jenkins-image"
         )
 
