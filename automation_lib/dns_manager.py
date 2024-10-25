@@ -17,6 +17,8 @@ class DNSManager:
         }
 
         zone_id = self.get_zone_id(self.zone_name)
+        print(f"Zone ID: {zone_id}")
+
 
         data = {
             "value": ip_address,
@@ -27,7 +29,7 @@ class DNSManager:
         }
 
         response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 200:
+        if response.status_code == 201:
             print("DNS record created successfully")
         else:
             print("Failed to create DNS record", response.status_code)
