@@ -26,12 +26,12 @@ def main():
         
     load_dotenv()
 
-    api_token = os.getenv('API_TOKEN')
-    dns_api_token = os.getenv('DNS_API_TOKEN')
+    api_token = os.getenv('H_API_TOKEN')
+    dns_api_token = os.getenv('H_DNS_API_TOKEN')
     jenkins_user = os.getenv('JENKINS_USER')
     jenkins_pass = os.getenv('JENKINS_PASS')
     domain = os.getenv('DOMAIN')
-    ssh_private_key = os.getenv('SSH_KEY_FILE')
+    ssh_private_key = os.getenv('H_SSH_PRIVATE_KEY')
     zone_name = os.getenv('ZONE_NAME')
     ssh_key = os.getenv('SSH_KEY_NAME')
     job_name = os.getenv('JOB_NAME')
@@ -40,7 +40,6 @@ def main():
     os_type = "ubuntu-22.04"
     server_type = "cpx11"
 
-    print(f"api_token: {api_token}")
     manager = VMManager(api_token)
     env_manager = EnvironmentManager(manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
     
@@ -78,12 +77,9 @@ def main():
                     
                     
     elif args.command == 'create_dns':
-        if dns_api_token:
             dns_manager = DNSManager(dns_api_token, zone_name)
             ip_address = manager.get_vm_ip()
             dns_manager.create_dns_record(domain, ip_address)
-        else:
-            print("DNS_API_TOKEN not set")
 
     elif args.command == 'setup_nginx':
         if not manager.vm:
@@ -102,11 +98,6 @@ def main():
         dns_manager = DNSManager(dns_api_token, zone_name='comquent.academy')
         dns_manager.delete_dns_record(domain)
 
-    else:
-        manager.create_vm(os_type, server_type, ssh_key)
-        env_manager.setup_jenkins()
-        env_manager.test_jenkins()
-        env_manager.cleanup()
 
 
 if __name__ == '__main__':

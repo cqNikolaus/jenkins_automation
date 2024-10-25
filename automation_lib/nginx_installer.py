@@ -63,12 +63,15 @@ class NginxInstaller:
 
         print("Restarting Nginx...")
         self.ssh_manager.execute_command("systemctl restart nginx")
+        
+        
 
     def obtain_ssl_certificate(self):
         # Certbot installieren
         self.ssh_manager.execute_command(
             "DEBIAN_FRONTEND=noninteractive apt-get install certbot python3-certbot-nginx -y")
         # SSL-Zertifikat beantragen
+        print(f"Get certificate for {self.domain}")
         result = self.ssh_manager.execute_command(
             f"certbot --nginx -d {self.domain} --non-interactive --agree-tos -m {self.ssl_email}")
         if not result:
