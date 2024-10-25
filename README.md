@@ -1,385 +1,169 @@
+# Dokumentation: Jenkins Service für Automatisierte Instanz-Erstellung
 
-# Jenkins Automation with Hetzner Cloud and Docker
+## Einführung
 
-Automate the setup of a Jenkins instance on a Hetzner Cloud VM using Docker, with customizable configurations and automated SSL provisioning.
+Diese Dokumentation dient als Einführung und Leitfaden für die Nutzung unseres Jenkins Services, der es ermöglicht, automatisiert neue Jenkins-Instanzen in Docker-Containern auf einer Hetzner Cloud VM aufzusetzen. Der Service übernimmt dabei das Einrichten eines gewünschten DNS-Eintrags, die Generierung eines SSL-Zertifikats und die Installation von Nginx als Reverse Proxy für HTTPS.
 
-<br>
+**Hinweis**: Diese Dokumentation richtet sich an interne Kollegen und dient der Demonstration der aktuellen Funktionalität des Projekts.
 
-## Table of Contents
+---
 
-- [Features](#features)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-  - [Clone the Repository](#clone-the-repository)
-  - [Set Up Environment Variables](#set-up-environment-variables)
-  - [Install Dependencies](#install-dependencies)
-- [Usage](#usage)
-  - [Running the Script](#running-the-script)
-  - [Customizing Jenkins Configuration](#customizing-jenkins-configuration)
-    - [Customizing the Initial Test Job](#customizing-the-initial-test-job)
-- [Environment Variables](#environment-variables)
-- [Running in a Jenkins Pipeline](#running-in-a-jenkins-pipeline)
-  - [Jenkins Pipeline Requirements](#jenkins-pipeline-requirements) 
-  - [Using `create_environment.py` with `Jenkinsfile_setup`](#using-create_environmentpy-with-jenkinsfile_setup)
-  - [CI/CD Pipeline with `main.py` and `Jenkinsfile`](#cicd-pipeline-with-mainpy-and-jenkinsfile)
-- [Project Structure](#project-structure)
-<br>
+## Überblick über den Service
 
-## Features
+Der Jenkins Service ermöglicht es, basierend auf einem bereitgestellten Konfigurations-Repository:
 
-- **Automated VM Creation**: Spin up a new VM in Hetzner Cloud with Ubuntu 22.04.
-- **Jenkins Installation**: Install Jenkins inside a Docker container on the VM.
-- **Custom Jenkins Configuration**: Use your own Jenkins configuration repository to set up plugins and settings.
-- **Automated SSL Setup**: Obtain an SSL certificate from Let's Encrypt and configure Nginx as a reverse proxy.
-- **Initial Job Execution**: Automatically create and run an initial Jenkins job to verify the setup.
-- **Domain Configuration**: Create a DNS record pointing to the Jenkins instance under your specified domain.
-- **CI/CD Pipeline Testing**: Validate the entire setup process using a Jenkins pipeline.
-<br>
+- **Automatisiertes Aufsetzen** einer neuen Jenkins-Instanz.
+- **Anbindung an einen DNS-Eintrag** unter der Domain `*.comquent.academy`.
+- **SSL-Verschlüsselung** durch automatische Zertifikatserstellung.
+- **Einrichtung eines Reverse Proxys** mittels Nginx für HTTPS-Zugriff.
 
-## Prerequisites
+---
 
-- **Python 3.6 or higher**
-- **Git**
-- **Pip**
-- **Hetzner Cloud Account** with API and DNS API tokens
-- **SSH Key** registered in Hetzner Cloud
-- **Domain Name** managed via Hetzner DNS (or compatible with Hetzner DNS API)
-<br>
+## Voraussetzungen für die Nutzung
 
+Um den Service nutzen zu können, benötigen Sie:
 
-## Installation
+1. **Zugang zu Jenkins**: Sie erhalten von uns einen Zugang zu einer bestehenden Jenkins-Instanz.
+2. **Konfigurations-Repository**: Ein GitHub-Repository, das Ihre individuellen Konfigurationsdateien enthält (siehe unten).
+3. **Start des passenden Jenkins-Jobs**: Entweder den `jenkins-setup` Job oder den `jenkins-env-automation` Job, je nach Bedarf.
 
-### Clone the Repository
+---
 
-```bash
-git clone https://github.com/cqNikolaus/jenkins_automation.git
-cd jenkins_automation
-```
-<br>
+## Verfügbare Jenkins-Jobs
 
-### Set Up Environment Variables
+### 1. **`BuildImage`**
 
-Copy the example environment file and fill in your details:
+- **Funktion**: Erstellt das Python-Image, das für die Ausführung der anderen beiden Jobs erforderlich ist.
+- **Hinweis**: Dieser Job muss **einmalig ausgeführt werden**, bevor die Jobs `jenkins-setup` und `jenkins-env-automation` genutzt werden können.
 
-```bash
-cp .env.example .env
-```
+### 2. **`jenkins-setup`**
 
-Edit the `.env` file and replace placeholder values with your actual credentials and configurations.
+- **Funktion**: Setzt eine neue Jenkins-Instanz mit der gewünschten Konfiguration auf.
+- **Parameter**:
+  - **Domain**: Muss aktuell auf `.comquent.academy` enden.
+  - **Konfigurations-Repository**: URL zu Ihrem GitHub-Repository.
+  - **Branch** (optional): Falls Sie einen spezifischen Branch nutzen möchten.
 
-<br>
+### 3. **`jenkins-env-automation`**
 
+- **Funktion**: Führt das komplette Setup durch, inklusive Aufbau und Abbau der Umgebung. Dient als Test-Pipeline.
+- **Parameter**: Gleich wie bei `jenkins-setup`.
 
-### Install Dependencies
+### 4. **`docker-test`**
 
-Create a virtual environment and install required packages:
+- **Funktion**: Wird automatisch beim Start ausgeführt, um die Docker-Funktionalität zu testen.
+- **Hinweis**: Um den `docker-test` Job nutzen zu können, muss Ihr Docker-Image entsprechend konfiguriert sein (siehe weiter unten).
+---
 
-```bash
-python3 -m venv venv
-```
-```bash
-.\venv\Scripts\activate    # Windows
-source venv/bin/activate   # Linux/Mac
-```
-```bash
-pip install -r requirements.txt
-```
-<br>
+## Aufbau des Konfigurations-Repositories
 
-## Usage
+Ihr Repository muss folgende Dateien enthalten:
 
-### Running the Script
+1. **YAML-Datei(en)**: Definieren die Jenkins-Konfiguration mittels [Jenkins Configuration as Code (JCasC)](https://jenkins.io/projects/jcasc/).
+2. **`plugins.txt`**: Liste der gewünschten Jenkins-Plugins, die installiert werden sollen.
+3. **`Dockerfile`**: Konfiguration des Jenkins-Docker-Images.
 
-Execute the `create_environment.py` script with your Jenkins configuration repository:
+### Anforderungen an die YAML-Konfigurationsdateien
 
-```bash
-python scripts/create_environment.py --config-repo https://github.com/yourusername/yourjenkinsconfigs.git
-```
+- **Benutzerverwaltung**: Da das Credential Management noch nicht vollständig implementiert ist, muss in der YAML-Konfiguration folgendes festgelegt werden:
 
-- Replace `https://github.com/yourusername/yourjenkinsconfigs.git` with your Jenkins configuration repository URL.
-- Ensure all required environment variables are set, either in the `.env` file or your system environment.
-
-  <br>
-
-### Customizing Jenkins Configuration
-
-You can customize Jenkins by providing your own configuration repository. Your repository should include:
-
-- **plugins.txt**: List of Jenkins plugins to install.
-  - Must include the following default plugins:
-    ```
-    git
-    workflow-aggregator
-    configuration-as-code
-    locale
-    job-dsl
-    docker-workflow
-    ```
-- **jenkins.yaml**: Jenkins Configuration as Code file.
-  - Use `${JENKINS_USER}` and `${JENKINS_PASS}` placeholders in the `users` section to inject admin credentials from environment variables.
-  - Use `${DOMAIN}` in the `location` section if needed.
-
-You can fork and modify the [default Jenkins configurations](https://github.com/cqNikolaus/jenkins_configs) as a starting point.
-
-<br>
-
-#### Customizing the Initial Test Job
-
-The initial test job is defined in the `jenkins.yaml` file using [Job DSL](https://plugins.jenkins.io/job-dsl/) and [Jenkins Configuration as Code (JCasC)](https://plugins.jenkins.io/configuration-as-code/). To customize this job:
-
-- **Modify the Job Definition**: Edit the `jenkins.yaml` file in your configuration repository to change the job's settings, scripts, or parameters according to your needs.
-- **Rename the Job**:
-  - If you change the job's name in `jenkins.yaml`, you must also update the `JOB_NAME` environment variable in your `.env` file or system environment to match the new name.
-  - This ensures that the script knows which job to trigger and monitor after the setup.
-
-**Example**:
-
-If you rename the job from `docker-test` to `my-custom-job` in `jenkins.yaml`:
-
-- Update the `JOB_NAME` in your `.env` file:
-
-  ```dotenv
-  JOB_NAME=my-custom-job
+  ```yaml
+  jenkins:
+    securityRealm:
+      local:
+        allowsSignup: false
+        users:
+          - id: "${ADMIN_USER}"
+            password: "${ADMIN_PASS}"
   ```
 
-- Ensure that the job definition in `jenkins.yaml` uses the same name.
+  - **`${ADMIN_USER}`** und **`${ADMIN_PASS}`** sind Platzhalter, die durch die entsprechenden Umgebungsvariablen ersetzt werden.
+  - **Hinweis**: Dies ist ein temporärer Workaround und wird in zukünftigen Versionen durch eine sichere Credential-Verwaltung ersetzt.
 
-**Note**: When customizing the job, adhere to the Job DSL and JCasC guidelines to ensure compatibility.
+---
 
-<br><br>
+## Anleitung zur Erstellung des Dockerfiles
 
-## Environment Variables
+Ihr `Dockerfile` sollte ähnlich wie das folgende Beispiel aufgebaut sein und muss den Namen 'Dockerfile' tragen:
 
-The script relies on several environment variables for configuration. Below is the list of required variables:
+```dockerfile
+FROM jenkins/jenkins:lts
 
-| Variable            | Description                                                |
-|---------------------|------------------------------------------------------------|
-| `API_TOKEN`         | Hetzner Cloud API token                                    |
-| `DNS_API_TOKEN`     | Hetzner DNS API token                                      |
-| `DOMAIN`            | Full domain for the Jenkins instance (e.g., `jenkins.example.com`) |
-| `ZONE_NAME`         | DNS zone name (e.g., `example.com`)                        |
-| `SSH_KEY_NAME`      | Name or ID of your SSH key in Hetzner Cloud                |
-| `SSH_PRIVATE_KEY`   | Your private SSH key (enclosed in double quotes)           |
-| `JENKINS_USER`      | Jenkins admin username                                     |
-| `JENKINS_PASS`      | Jenkins admin password                                     |
-| `JOB_NAME`          | Name of the initial Jenkins job to create and run          |
-| `SSL_EMAIL`         | Email address for Let's Encrypt SSL certificate            |
+USER root
 
-<br>
+# Installation von notwendigen Paketen und Docker CLI
+RUN apt-get update && \
+    apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && \
+    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" && \
+    apt-get update && \
+    apt-get install -y docker-ce-cli
 
-### Example `.env` File
+# Hinzufügen des Jenkins-Benutzers zur Docker-Gruppe
+RUN groupadd -f docker && usermod -aG docker jenkins
 
-```dotenv
-# Hetzner Cloud API Token
-API_TOKEN=your_hetzner_api_token_here
+# Kopieren der Plugins-Liste und Installation der Plugins
+COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
 
-# Hetzner DNS API Token
-DNS_API_TOKEN=your_hetzner_dns_api_token_here
+# Kopieren der eigenen YAML-Konfigurationen
+COPY *.yaml /var/jenkins_home/casc_configs/
 
-# Domain for Jenkins instance
-DOMAIN=jenkins.example.com
+# Klonen des notwendigen Repositories für den `docker-test` Job
+RUN mkdir -p /var/jenkins_home/casc_configs && \
+    chown -R jenkins:jenkins /var/jenkins_home/casc_configs && \
+    git clone https://github.com/cqNikolaus/jenkins_automation /tmp/repo && \
+    cp /tmp/repo/*.yaml /var/jenkins_home/casc_configs/ && \
+    rm -rf /tmp/repo
 
-# DNS Zone name
-ZONE_NAME=example.com
+# Setzen der Umgebungsvariablen für JCasC und Deaktivierung des Setup-Wizards
+ENV CASC_JENKINS_CONFIG /var/jenkins_home/casc_configs
+ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 
-# SSH Key Name or ID in Hetzner Cloud
-SSH_KEY_NAME=your_ssh_key_name_here
-
-# Jenkins Admin Credentials
-JENKINS_USER=admin
-JENKINS_PASS=your_secure_password
-
-# Private SSH Key for accessing the VM
-SSH_PRIVATE_KEY="-----BEGIN OPENSSH PRIVATE KEY-----
-...
------END OPENSSH PRIVATE KEY-----"
-
-# Initial Jenkins Job Name
-JOB_NAME=docker-test
-
-# Email for SSL Certificate
-SSL_EMAIL=youremail@example.com
+USER jenkins
 ```
 
-<br>
+### Wichtige Punkte:
 
-## Running in a Jenkins Pipeline
+- **Docker CLI Installation**: Die Installation von `docker-ce-cli` (oder alternativ `docker.io`) ist notwendig, damit der Container auf die Docker-Funktionen des Hosts zugreifen kann, was für den `docker-test` Job erforderlich ist.
 
-You can also run the setup within a Jenkins pipeline, which allows you to automate the entire process as part of your CI/CD workflow.
+- **Hinzufügen zur Docker-Gruppe**: Durch `groupadd` und `usermod` wird der `jenkins` Benutzer zur Docker-Gruppe hinzugefügt, um die notwendigen Berechtigungen zu erhalten.
 
-<br>
+- **Klonen des Repositories**: Das Klonen des Repositories `jenkins_automation` ist notwendig, um den `docker-test` Job und weitere Pipelines einzubinden.
 
+  ```dockerfile
+  RUN mkdir -p /var/jenkins_home/casc_configs && \
+      chown -R jenkins:jenkins /var/jenkins_home/casc_configs && \
+      git clone https://github.com/cqNikolaus/jenkins_automation /tmp/repo && \
+      cp /tmp/repo/*.yaml /var/jenkins_home/casc_configs/ && \
+      rm -rf /tmp/repo
+  ```
 
-### Jenkins Pipeline Requirements
+- **Setzen der Umgebungsvariablen**: `CASC_JENKINS_CONFIG` weist Jenkins an, die Konfigurationen aus dem angegebenen Verzeichnis zu laden.
 
-To use the provided Jenkins pipelines (`Jenkinsfile` and `Jenkinsfile_setup`), it is necessary to have a Docker image available in your Jenkins environment. This image must be named **`python-build`** and should contain the following tools pre-installed:
+- **Deaktivierung des Setup-Wizards**: Durch Setzen von `JAVA_OPTS` wird der initiale Setup-Wizard von Jenkins übersprungen.
 
-- Python
-- Git
-- pip
-- dnsutils (for DNS checks)
-- openssl (for SSL certificate validation)
-
-<br>
-
-### Using `create_environment.py` with `Jenkinsfile_setup`
-
-This method uses the `create_environment.py` script and the `Jenkinsfile_setup` to set up the environment.
+- **Benutzerwechsel**: Am Ende wird zurück zum `jenkins` Benutzer gewechselt.
 
 
+---
 
-#### Steps
+## Zusätzliche Hinweise
 
-1. **Set Up Credentials**: In your Jenkins instance, configure the necessary credentials:
-   - **HETZNER_API_TOKEN**: Hetzner Cloud API token
-   - **HETZNER_DNS_API_TOKEN**: Hetzner DNS API token
-   - **SSH_PRIVATE_KEY**: Your private SSH key
-   - **JENKINS_ADMIN_CREDENTIALS**: Jenkins admin username and password
+- **Berechtigungen**: Es ist wichtig, dass die Berechtigungen für `/var/jenkins_home/casc_configs` korrekt gesetzt sind, damit Jenkins darauf zugreifen kann.
 
+- **Plugins**: Stellen Sie sicher, dass Ihre `plugins.txt` alle benötigten Plugins enthält und korrekt kopiert und installiert wird.
 
+- **Flexibilität**: Obwohl das obige `Dockerfile` ein Beispiel ist, können Sie Anpassungen vornehmen, solange die grundlegenden Anforderungen erfüllt sind.
 
-2. **Configure the Pipeline**: Use the provided `Jenkinsfile_setup` in your Jenkins job. Update environment variables as needed.
-3. Replace "https://github.com/yourusername/yourjenkinsconfigs.git" in `Jenkinsfile_setup` with your Jenkins configuration repository.
+---
 
-   ```groovy
-   pipeline {
-       agent {
-           docker {
-               image 'python:3.8-slim'
-               args '-u root:root'
-           }
-       }
-       environment {
-           API_TOKEN = credentials('HETZNER_API_TOKEN')
-           DNS_API_TOKEN = credentials('HETZNER_DNS_API_TOKEN')
-           DOMAIN = "jenkins-${env.BUILD_NUMBER}.example.com"
-           ZONE_NAME = "example.com"
-           SSH_KEY_NAME = 'your_ssh_key_name_here'
-           JOB_NAME = 'docker-test' // Update if you changed the job name
-           SSL_EMAIL = 'youremail@example.com'
-       }
-       stages {
-           stage('Setup Environment') {
-               steps {
-                   withCredentials([
-                       sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE'),
-                       usernamePassword(credentialsId: 'JENKINS_ADMIN_CREDENTIALS', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS')
-                   ]) {
-                       sh '''
-                           set -e
-                           echo "Setting up the environment"
-                           chmod 600 $SSH_KEY_FILE
-                           export SSH_PRIVATE_KEY="$(cat $SSH_KEY_FILE)"
-                           pip install -r requirements.txt
-                           python scripts/create_environment.py --config-repo https://github.com/yourusername/yourjenkinsconfigs.git
-                       '''
-                   }
-               }
-           }
-       }
-   }
-   ```
+## Aktuelle Einschränkungen und zukünftige Entwicklungen
+
+- **Credential Management**: Derzeit werden die Zugangsdaten unsicher eingebunden. In zukünftigen Versionen wird ein zentrales Credential Management (z.B. mittels HashiCorp Vault) implementiert.
+
+- **Parameterisierung**: Geplant ist eine erweiterte Parameterisierung, um beispielsweise die Anzahl der zu erstellenden Jenkins-Instanzen festlegen zu können.
+
+- **Fehlerbehandlung**: Die Skripte werden in zukünftigen Versionen eine umfangreichere Fehlerbehandlung erhalten.
 
 
-4. **Run the Pipeline**: Execute the pipeline, which will:
-   - Spin up the VM
-   - Install Jenkins in Docker
-   - Configure Jenkins with your custom settings
-   - Set up DNS and SSL
-
-  
-     <br>
-     
-
-### CI/CD Pipeline with `main.py` and `Jenkinsfile`
-
-The project also includes a `main.py` script and a `Jenkinsfile` that define a comprehensive CI/CD pipeline for testing the entire environment setup. 
-
-#### Purpose
-
-- **Testing and Validation**: The `main.py` script, along with its `Jenkinsfile`, automates the creation of the Jenkins instance, runs a test job, sets up DNS and SSL, and then tears down the environment.
-- **Continuous Integration**: This allows you to ensure that changes to the setup scripts or configurations do not break the deployment process.
-
-#### Steps
-
-1. **Set Up Credentials**: Similar to the previous method, ensure all necessary credentials are configured in your Jenkins instance.
-
-
-2. **Configure the Pipeline**: Use the provided `Jenkinsfile` in your Jenkins job.
-
-   ```groovy
-   pipeline {
-     agent {
-       docker {
-         image 'python:3.8-slim'
-         args '-u root:root'
-       }
-     }
-     environment {
-       API_TOKEN = credentials('HETZNER_API_TOKEN')
-       DNS_API_TOKEN = credentials('HETZNER_DNS_API_TOKEN')
-       DOMAIN = "jenkins-${env.BUILD_NUMBER}.example.com"
-       ZONE_NAME = "example.com"
-       SSH_KEY_NAME = 'your_ssh_key_name_here'
-       JOB_NAME = 'docker-test' // Update if you changed the job name
-       SSL_EMAIL = 'youremail@example.com'
-     }
-     stages {
-       stage('Create Jenkins Instance') {
-         steps {
-           withCredentials([
-             sshUserPrivateKey(credentialsId: 'SSH_PRIVATE_KEY', keyFileVariable: 'SSH_KEY_FILE'),
-             usernamePassword(credentialsId: 'JENKINS_ADMIN_CREDENTIALS', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS')
-           ]) {
-             sh '''
-               set -e
-               echo "Creating Jenkins instance"
-               chmod 600 $SSH_KEY_FILE
-               export SSH_PRIVATE_KEY="$(cat $SSH_KEY_FILE)"
-               pip install -r requirements.txt
-               python scripts/main.py create_jenkins --config-repo https://github.com/yourusername/yourjenkinsconfigs.git
-             '''
-           }
-         }
-       }
-
-   [...]
-
-    ```
-
-
-4. **Run the Pipeline**: This pipeline will:
-   - Create the Jenkins instance
-   - Run the initial test job
-   - Set up DNS and SSL
-   - Validate the DNS and SSL configurations
-   - Clean up the environment by deleting the VM and DNS records
-
-**Note**: This pipeline is mainly for testing purposes and demonstrates how the entire setup can be automated and validated. 
-
-<br>
-
-## Project Structure
-
-```
-jenkins_automation/
-├── scripts/
-│   ├── create_environment.py    # Main script to set up the environment
-│   └── main.py                  # Script defining the CI/CD pipeline for testing
-├── automation_lib/
-│   ├── __init__.py              # Initialization file for the package
-│   ├── vm_manager.py            # Manages VM creation and deletion
-│   ├── ssh_manager.py           # Handles SSH connections and commands
-│   ├── jenkins_installer.py     # Installs Jenkins on the VM
-│   ├── jenkins_job_manager.py   # Manages Jenkins jobs
-│   ├── nginx_installer.py       # Sets up Nginx and SSL
-│   └── dns_manager.py           # Manages DNS records
-├── setup.py                     # Setup script to install automation_lib as a package
-├── requirements.txt             # Python dependencies
-├── Dockerfile                   # Dockerfile used in Jenkins setup
-├── .env.example                 # Example environment variables file
-├── Jenkinsfile                  # Jenkinsfile for CI/CD pipeline testing with main.py
-├── Jenkinsfile_setup            # Jenkinsfile for running create_environment.py in a Jenkins pipeline
-└── README.md                    # Project documentation
-
-```
