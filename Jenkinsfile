@@ -12,7 +12,6 @@ pipeline {
     JOB_NAME = 'docker-test'
     SSL_EMAIL = 'clemens.nikolaus@comquent.de'
     CONFIG_REPO = "${params.CONFIG_REPO}"
-    BRANCH = "${params.BRANCH ?: ''}"
   }
   stages {
     stage('Checkout Workspace') {
@@ -29,12 +28,13 @@ pipeline {
           string(credentialsId: 'hetzner-dns-api-token', variable: 'H_DNS_API_TOKEN')
         ]) {
           script {
-            def branchOption = BRANCH ? "--branch '${BRANCH}'" : ""
+            def branchParam = params.BRANCH ?: ''
+            def branchOption = branchParam ? "--branch ${branchParam}" : ""
             sh """
               set -e
               echo "create jenkins instance"
               pip install -e .
-              python scripts/main.py create_jenkins --config-repo '${env.CONFIG_REPO}' ${env.branchOption}
+              python scripts/main.py create_jenkins --config-repo ${params.CONFIG_REPO} ${branchOption}
             """
           }
         }
@@ -74,7 +74,7 @@ pipeline {
         sh """
           set -e
           echo "test dns record"
-          dig +short ${DOMAIN} @8.8.8.8
+          dig +short ${env.DOMAIN} @8.8.8.8
           if [ \$? -ne 0 ]; then
             echo "DNS record does not exist or cannot be resolved."
             exit 1
@@ -100,7 +100,7 @@ pipeline {
         sh """
           set -e
           echo "test ssl certificate"
-          CERT_INFO=\$(echo | openssl s_client -connect ${DOMAIN}:443 -servername ${DOMAIN} 2>/dev/null | openssl x509 -noout -dates -subject)
+          CERT_INFO=\$(echo | openssl s_client -connect ${env.DOMAIN}:443 -servername ${env.DOMAIN} 2>/dev/null | openssl x509 -noout -dates -subject)
           if [ -z "\$CERT_INFO" ]; then
             echo "SSL certificate is not valid or cannot be retrieved."
             exit 1
