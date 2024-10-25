@@ -1,23 +1,12 @@
-FROM jenkins/jenkins:lts
-
-USER root
+FROM python
 
 RUN apt-get update && \
-    apt-get install -y apt-transport-https ca-certificates curl gnupg2 software-properties-common && \
-    curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - && \
-    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" && \
-    apt-get update && \
-    apt-get install -y docker-ce-cli
+    apt-get install -y --no-install-recommends dnsutils openssl git && \
+    rm -rf /var/lib/apt/lists/*
+    
+WORKDIR /code
 
-RUN groupadd docker && usermod -aG docker jenkins
+RUN git clone https://github.com/cqNikolaus/jenkins_automation.git /code
 
-COPY jenkins_configs/plugins.txt /usr/share/jenkins/ref/plugins.txt
-RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
-
-COPY jenkins_configs/jenkins.yaml /var/jenkins_home/casc_configs/jenkins.yaml
-
-ENV CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs/jenkins.yaml
-ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
-
-USER jenkins
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
