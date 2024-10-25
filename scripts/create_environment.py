@@ -14,8 +14,8 @@ def main():
     config_repo_url = f"--branch {branch} {config_repo}" if branch else config_repo
     
     
-    api_token = os.getenv('API_TOKEN')
-    dns_api_token = os.getenv('DNS_API_TOKEN')
+    api_token = os.getenv('H_API_TOKEN')
+    dns_api_token = os.getenv('H_DNS_API_TOKEN')
     jenkins_user = os.getenv('JENKINS_USER')
     jenkins_pass = os.getenv('JENKINS_PASS')
     domain = os.getenv('DOMAIN')
@@ -28,7 +28,7 @@ def main():
 
     os_type = "ubuntu-22.04"
     server_type = "cpx11"
-    print(f"API Token: {os.getenv('API_TOKEN')}")
+    print(f"API Token: {api_token}")
     print(f"juser: {jenkins_user}, {jenkins_pass}")
 
     manager = VMManager(api_token)
