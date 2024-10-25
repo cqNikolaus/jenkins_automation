@@ -11,7 +11,7 @@ class DNSManager:
 
     def create_dns_record(self, domain, ip_address):
         url = "https://dns.hetzner.com/api/v1/records"
-        subdomain = domain.split('.')[0],
+        subdomain = domain.split('.')[0]
         print(f"Creating DNS record for {domain} with {subdomain} ")
         headers = {
             "Auth-API-Token": self.dns_api_token,
@@ -26,7 +26,7 @@ class DNSManager:
             "value": ip_address,
             "ttl": 3600,
             "type": "A",
-            "name": domain.split('.')[0],  # Subdomain
+            "name": subdomain,  # Subdomain
             "zone_id": zone_id
         }
 
