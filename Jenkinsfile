@@ -11,6 +11,8 @@ pipeline {
     SSH_KEY_NAME = 'clemens.nikolaus@comquent.de'
     JOB_NAME = 'docker-test'
     SSL_EMAIL= 'clemens.nikolaus@comquent.de'
+    CONFIG_REPO = "${params.CONFIG_REPO}"
+    BRANCH = "${params.BRANCH}"
   }
   stages {
     stage('Checkout Workspace') {
