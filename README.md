@@ -77,7 +77,7 @@ Ihr Repository muss folgende Dateien enthalten:
             password: "${ADMIN_PASS}"
   ```
 
-  - **`${ADMIN_USER}`** und **`${ADMIN_PASS}`** sind Platzhalter, die durch die entsprechenden Umgebungsvariablen ersetzt werden.
+  - ${ADMIN_USER} und ${ADMIN_PASS} müssen als id und password in der YAML-Konfiguration festgelegt sein. Dadurch werden die Zugangsdaten von der ursprünglichen Jenkins-Instanz auf die neue Instanz übertragen, sodass Benutzername und Passwort beim Einloggen identisch sind.
   - **Hinweis**: Dies ist ein temporärer Workaround und wird in zukünftigen Versionen durch eine sichere Credential-Verwaltung ersetzt.
 
 ---
