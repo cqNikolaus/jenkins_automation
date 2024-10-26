@@ -1,4 +1,4 @@
-# Dokumentation: Jenkins Service für Automatisierte Instanz-Erstellung
+# Dokumentation: Jenkins-Service für automatisierte Instanzerstellungen
 
 ## Einführung
 
