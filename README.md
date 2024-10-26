@@ -79,6 +79,19 @@ Ihr Repository muss folgende Dateien enthalten:
 
   - ${ADMIN_USER} und ${ADMIN_PASS} müssen als id und password in der YAML-Konfiguration festgelegt sein. Dadurch werden die Zugangsdaten von der ursprünglichen Jenkins-Instanz auf die neue Instanz übertragen, sodass Benutzername und Passwort beim Einloggen identisch sind.
   - **Hinweis**: Dies ist ein temporärer Workaround und wird in zukünftigen Versionen durch eine sichere Credential-Verwaltung ersetzt.
+---
+### Möglichkeit zum Bootstrap der Jenkins-Instanz
+
+Sie können auch eine Kopie der Ausgangsinstanz erstellen, indem Sie das folgende Konfigurations-Repository und den entsprechenden Branch verwenden:
+
+```
+Konfigurations-Repository: https://github.com/cqNikolaus/jenkins_configs
+Branch: bootstrap
+```
+
+Hinweis: Diese Funktion kann nützlich sein, um eine identische Kopie der bestehenden Jenkins-Instanz zu erstellen oder um schnell eine vorkonfigurierte Umgebung zu erhalten.
+
+
 
 ---
 
