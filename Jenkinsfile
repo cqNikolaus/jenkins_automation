@@ -60,6 +60,8 @@ pipeline {
       steps {
         withCredentials([
           sshUserPrivateKey(credentialsId: 'ssh-private-key', keyFileVariable: 'H_SSH_PRIVATE_KEY'),
+          usernamePassword(credentialsId: 'jenkins-admin-credentials', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS'),
+          string(credentialsId: 'hetzner-api-token', variable: 'H_API_TOKEN'),
           string(credentialsId: 'hetzner-dns-api-token', variable: 'H_DNS_API_TOKEN')
         ]) {
           sh '''
@@ -86,7 +88,10 @@ pipeline {
     stage('Setup Nginx and SSL') { 
       steps {
         withCredentials([
-          sshUserPrivateKey(credentialsId: 'ssh-private-key', keyFileVariable: 'H_SSH_PRIVATE_KEY')
+          sshUserPrivateKey(credentialsId: 'ssh-private-key', keyFileVariable: 'H_SSH_PRIVATE_KEY'),
+          usernamePassword(credentialsId: 'jenkins-admin-credentials', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS'),
+          string(credentialsId: 'hetzner-api-token', variable: 'H_API_TOKEN'),
+          string(credentialsId: 'hetzner-dns-api-token', variable: 'H_DNS_API_TOKEN')
         ]) {
           sh '''
             set -e
