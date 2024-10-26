@@ -101,19 +101,19 @@ class DNSManager:
 
 
 
-def wait_for_dns_propagation(self, domain, expected_ip, timeout=300):
-        start_time = time.time()
-        resolver = dns.resolver.Resolver()
-        while time.time() - start_time < timeout:
-            try:
-                answers = resolver.resolve(domain, 'A')
-                for rdata in answers:
-                    if rdata.to_text() == expected_ip:
-                        print(f"DNS entry for {domain} successfully propagated.")
-                        return True
-            except Exception:
-                pass
-            print(f"Waiting for DNS propagation for {domain}...")
-            time.sleep(10)
-        print(f"Timeout while waiting for DNS propagation for {domain}.")
-        return False
+    def wait_for_dns_propagation(self, domain, expected_ip, timeout=300):
+            start_time = time.time()
+            resolver = dns.resolver.Resolver()
+            while time.time() - start_time < timeout:
+                try:
+                    answers = resolver.resolve(domain, 'A')
+                    for rdata in answers:
+                        if rdata.to_text() == expected_ip:
+                            print(f"DNS entry for {domain} successfully propagated.")
+                            return True
+                except Exception:
+                    pass
+                print(f"Waiting for DNS propagation for {domain}...")
+                time.sleep(10)
+            print(f"Timeout while waiting for DNS propagation for {domain}.")
+            return False
