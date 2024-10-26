@@ -24,7 +24,7 @@ class DNSManager:
 
         data = {
             "value": ip_address,
-            "ttl": 3600,
+            "ttl": 300,
             "type": "A",
             "name": subdomain,  # Subdomain
             "zone_id": zone_id

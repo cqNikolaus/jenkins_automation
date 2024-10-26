@@ -3,6 +3,7 @@ requests
 paramiko
 python-jenkins
 scp
+dnspython
 python-dotenv
 .
 
