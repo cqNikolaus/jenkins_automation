@@ -1,4 +1,7 @@
 import requests
+import time
+import dns.resolver
+
 
 class DNSManager:
     def __init__(self, dns_api_token, zone_name):
@@ -36,6 +39,12 @@ class DNSManager:
         else:
             print("Failed to create DNS record", response.status_code)
             print(response.json())
+            
+        if self.wait_for_dns_propagation(domain, ip_address):
+            print("DNS propagation completed.")
+        else:
+            print("DNS propagation not successful.")
+
             
             
             
@@ -92,4 +101,19 @@ class DNSManager:
 
 
 
-
+def wait_for_dns_propagation(self, domain, expected_ip, timeout=300):
+        start_time = time.time()
+        resolver = dns.resolver.Resolver()
+        while time.time() - start_time < timeout:
+            try:
+                answers = resolver.resolve(domain, 'A')
+                for rdata in answers:
+                    if rdata.to_text() == expected_ip:
+                        print(f"DNS entry for {domain} successfully propagated.")
+                        return True
+            except Exception:
+                pass
+            print(f"Waiting for DNS propagation for {domain}...")
+            time.sleep(10)
+        print(f"Timeout while waiting for DNS propagation for {domain}.")
+        return False
