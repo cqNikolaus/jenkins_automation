@@ -59,7 +59,8 @@ pipeline {
     stage('Create DNS Record') {
       steps {
         withCredentials([
-          sshUserPrivateKey(credentialsId: 'ssh-private-key', keyFileVariable: 'H_SSH_PRIVATE_KEY')
+          sshUserPrivateKey(credentialsId: 'ssh-private-key', keyFileVariable: 'H_SSH_PRIVATE_KEY'),
+          string(credentialsId: 'hetzner-dns-api-token', variable: 'H_DNS_API_TOKEN')
         ]) {
           sh '''
             set -e
