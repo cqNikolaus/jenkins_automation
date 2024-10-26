@@ -1,4 +1,4 @@
-# Dokumentation: Jenkins Service für Automatisierte Instanz-Erstellung
+# Dokumentation: Jenkins-Service für automatisierte Instanzerstellungen
 
 ## Einführung
 
@@ -25,34 +25,9 @@ Um den Service nutzen zu können, benötigen Sie:
 
 1. **Zugang zu Jenkins**: Sie erhalten von uns einen Zugang zu einer bestehenden Jenkins-Instanz.
 2. **Konfigurations-Repository**: Ein GitHub-Repository, das Ihre individuellen Konfigurationsdateien enthält (siehe unten).
-3. **Start des passenden Jenkins-Jobs**: Entweder den `jenkins-setup` Job oder den `jenkins-env-automation` Job, je nach Bedarf.
+3. **Ausführen des `BuildImage` Jobs**: Dieser Job muss einmalig ausgeführt werden, um die Python Umgebung für die anschließenden Jobs bereitzustellen.
+4. **Start des passenden Jenkins-Jobs**: Entweder den `jenkins-setup` Job oder den `jenkins-env-automation` Job, je nach Bedarf.
 
----
-
-## Verfügbare Jenkins-Jobs
-
-### 1. **`BuildImage`**
-
-- **Funktion**: Erstellt das Python-Image, das für die Ausführung der anderen beiden Jobs erforderlich ist.
-- **Hinweis**: Dieser Job muss **einmalig ausgeführt werden**, bevor die Jobs `jenkins-setup` und `jenkins-env-automation` genutzt werden können.
-
-### 2. **`jenkins-setup`**
-
-- **Funktion**: Setzt eine neue Jenkins-Instanz mit der gewünschten Konfiguration auf.
-- **Parameter**:
-  - **Domain**: Muss aktuell auf `.comquent.academy` enden.
-  - **Konfigurations-Repository**: URL zu Ihrem GitHub-Repository.
-  - **Branch** (optional): Falls Sie einen spezifischen Branch nutzen möchten.
-
-### 3. **`jenkins-env-automation`**
-
-- **Funktion**: Führt das komplette Setup durch, inklusive Aufbau und Abbau der Umgebung. Dient als Test-Pipeline.
-- **Parameter**: Gleich wie bei `jenkins-setup`.
-
-### 4. **`docker-test`**
-
-- **Funktion**: Wird automatisch beim Start ausgeführt, um die Docker-Funktionalität zu testen.
-- **Hinweis**: Um den `docker-test` Job nutzen zu können, muss Ihr Docker-Image entsprechend konfiguriert sein (siehe weiter unten).
 ---
 
 ## Aufbau des Konfigurations-Repositories
@@ -79,20 +54,6 @@ Ihr Repository muss folgende Dateien enthalten:
 
   - ${ADMIN_USER} und ${ADMIN_PASS} müssen als id und password in der YAML-Konfiguration festgelegt sein. Dadurch werden die Zugangsdaten von der ursprünglichen Jenkins-Instanz auf die neue Instanz übertragen, sodass Benutzername und Passwort beim Einloggen identisch sind.
   - **Hinweis**: Dies ist ein temporärer Workaround und wird in zukünftigen Versionen durch eine sichere Credential-Verwaltung ersetzt.
----
-### Möglichkeit zum Bootstrap der Jenkins-Instanz
-
-Sie können auch eine Kopie der Ausgangsinstanz erstellen, indem Sie das folgende Konfigurations-Repository und den entsprechenden Branch verwenden:
-
-```
-Konfigurations-Repository: https://github.com/cqNikolaus/jenkins_configs
-Branch: bootstrap
-```
-
-Hinweis: Diese Funktion kann nützlich sein, um eine identische Kopie der bestehenden Jenkins-Instanz zu erstellen oder um schnell eine vorkonfigurierte Umgebung zu erhalten.
-
-
-
 ---
 
 ## Anleitung zur Erstellung des Dockerfiles
@@ -169,6 +130,46 @@ USER jenkins
 
 - **Flexibilität**: Obwohl das obige `Dockerfile` ein Beispiel ist, können Sie Anpassungen vornehmen, solange die grundlegenden Anforderungen erfüllt sind.
 
+---
+
+### Möglichkeit zum Bootstrap der Jenkins-Instanz
+
+Sie können auch eine Kopie der Ausgangsinstanz erstellen, indem Sie das folgende Konfigurations-Repository und den entsprechenden Branch verwenden:
+
+```
+Konfigurations-Repository: https://github.com/cqNikolaus/jenkins_configs
+Branch: bootstrap
+```
+
+Hinweis: Diese Funktion kann nützlich sein, um eine identische Kopie der bestehenden Jenkins-Instanz zu erstellen oder um schnell eine vorkonfigurierte Umgebung zu erhalten.
+
+
+---
+
+## Verfügbare Jenkins-Jobs
+
+### 1. **`BuildImage`**
+
+- **Funktion**: Erstellt das Python-Image, das für die Ausführung der anderen beiden Jobs erforderlich ist.
+- **Hinweis**: Dieser Job muss **einmalig ausgeführt werden**, bevor die Jobs `jenkins-setup` und `jenkins-env-automation` genutzt werden können.
+
+### 2. **`jenkins-setup`**
+
+- **Funktion**: Setzt eine neue Jenkins-Instanz mit der gewünschten Konfiguration auf.
+- **Parameter**:
+  - **Domain**: Muss aktuell auf `.comquent.academy` enden.
+  - **Konfigurations-Repository**: URL zu Ihrem GitHub-Repository.
+  - **Branch** (optional): Falls Sie einen spezifischen Branch nutzen möchten.
+
+### 3. **`jenkins-env-automation`**
+
+- **Funktion**: Führt das komplette Setup durch, inklusive Aufbau und Abbau der Umgebung. Dient als Test-Pipeline.
+- **Parameter**: Gleich wie bei `jenkins-setup`.
+
+### 4. **`docker-test`**
+
+- **Funktion**: Wird automatisch beim Start ausgeführt, um die Docker-Funktionalität zu testen.
+- **Hinweis**: Um den `docker-test` Job nutzen zu können, muss Ihr Docker-Image entsprechend konfiguriert sein (siehe weiter unten).
 ---
 
 ## Aktuelle Einschränkungen und zukünftige Entwicklungen
