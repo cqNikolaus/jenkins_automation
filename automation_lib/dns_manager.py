@@ -93,7 +93,6 @@ class DNSManager:
                         print("Failed to delete DNS record", delete_response.status_code)
                         print(delete_response.json())
                         return
-            print("DNS record not found.")
         else:
             print("Failed to retrieve DNS records", response.status_code)
             print(response.json())    
