@@ -127,6 +127,7 @@ class EnvironmentManager:
         if os.path.exists('vm_info.json'):
             os.remove('vm_info.json')
 
+
     def setup_nginx(self, domain):
         if not self.ssh_manager:
             self.ssh_manager = SSHManager(self.vm_ip, self.key_file)

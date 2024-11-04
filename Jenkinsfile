@@ -106,7 +106,10 @@ pipeline {
         sh """
           set -e
           echo "test ssl certificate"
-          CERT_INFO=\$(echo | openssl s_client -connect ${env.DOMAIN}:443 -servername ${env.DOMAIN} 2>/dev/null | openssl x509 -noout -dates -subject)
+          sleep 10
+          CERT_INFO=$(echo | openssl s_client -connect ${env.DOMAIN}:443 -servername ${env.DOMAIN} -showcerts 2>/dev/null \
+          | sed -n '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' \
+          | openssl x509 -noout -dates -subject)
           if [ -z "\$CERT_INFO" ]; then
             echo "SSL certificate is not valid or cannot be retrieved."
             exit 1
