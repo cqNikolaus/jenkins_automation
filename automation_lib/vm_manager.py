@@ -6,14 +6,19 @@ import json
 class VMManager:
 
     def __init__(self, api_token):
-        self.vm = None
+        self.controller_vm = None
+        self.agent_vm = None
         self.api_token = api_token
 
-        if os.path.exists('vm_info.json'):
-            with open('vm_info.json', 'r') as f:
-                self.vm = json.load(f)
+        if os.path.exists('controller_vm_info.json'):
+            with open('controller_vm_info.json', 'r') as f:
+                self.controller_vm = json.load(f)
+                
+        if os.path.exists('agent_vm_info.json'):
+            with open('agent_vm_info.json', 'r') as f:
+                self.agent_vm = json.load(f)
 
-    def create_master_vm(self, os_type, server_type, ssh_key):
+    def create_vm(self, vm_type, os_type, server_type, ssh_key):
         url = "https://api.hetzner.cloud/v1/servers"
         headers = {
             "Authorization": f"Bearer {self.api_token}",
@@ -32,35 +37,51 @@ class VMManager:
         response = requests.post(url, headers=headers, json=data)
 
         if response.status_code == 201:
-            self.vm = response.json()
-            print("VM created successfully")
-            with open('vm_info.json', 'w') as f:
-                json.dump(self.vm, f)
+            if vm_type == "controller":
+                self.controller_vm = response.json()
+                print("Controller VM created successfully")
+                with open('controller_vm_info.json', 'w') as f:
+                    json.dump(self.controller_vm, f)
+            if vm_type == "agent":
+                self.agent_vm = response.json()
+                print("Agent VM created successfully")
+                with open('agent_vm_info.json', 'w') as f:
+                    json.dump(self.agent_vm, f)
         else:
             print("Failed to create VM", response.status_code)
             print(response.json())
+            
+            
+            
 
-    def get_vm_ip(self):
-        if self.vm:
-            return self.vm["server"]["public_net"]["ipv4"]["ip"]
-        return None
+    def get_vm_ip(self, vm_type):
+        if vm_type == "controller":
+            return self.controller_vm["server"]["public_net"]["ipv4"]["ip"]
+        elif vm_type == "agent":
+            return self.agent_vm["server"]["public_net"]["ipv4"]["ip"]
+            
 
-    def delete_vm(self):
-        if self.vm:
-            server_id = self.vm["server"]["id"]
-            url = f"https://api.hetzner.cloud/v1/servers/{server_id}"
-            headers = {
-                "Authorization": f"Bearer {self.api_token}",
-            }
-            response = requests.delete(url, headers=headers)
-            if response.status_code in [200, 202, 204]:
-                print("VM deleted successfully")
-                self.vm = None
+    def delete_vms(self):
+        for vm, vm_type in [(self.controller_vm, "controller"), (self.agent_vm, "agent")]:
+            if vm:
+                server_id = vm["server"]["id"]
+                url = f"https://api.hetzner.cloud/v1/servers/{server_id}"
+                headers = {
+                    "Authorization": f"Bearer {self.api_token}",
+                }
+                response = requests.delete(url, headers=headers)
+                if response.status_code in [200, 202, 204]:
+                    print(f" {vm_type} VM deleted successfully")
+                    if vm_type == "controller":
+                        self.controller_vm = None
+                    else:
+                        self.agent_vm = None
+                else:
+                    print(f"Failed to delete {vm_type} VM", response.status_code)
+                    print(response.json())
             else:
-                print("Failed to delete VM", response.status_code)
-                print(response.json())
-        else:
-            print("No VM to delete")
+                print("No VM to delete")
+                
 
     def wait_for_vm_running(self, server_id, timeout=300, interval=10):
         url = f"https://api.hetzner.cloud/v1/servers/{server_id}"

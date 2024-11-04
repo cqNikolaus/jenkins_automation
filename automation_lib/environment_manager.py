@@ -32,12 +32,12 @@ class EnvironmentManager:
         self.jenkins_job_manager = None
         
         
-    def wait_until_ready(self):
+    def wait_until_ready(self, vm_type):
         server_id = self.vm_manager.vm['server']['id']
         print("Server ID:", server_id)
         if self.vm_manager.wait_for_vm_running(server_id):
             if not self.vm_ip:
-                self.vm_ip = self.vm_manager.get_vm_ip()
+                self.vm_ip = self.vm_manager.get_vm_ip(vm_type)
             print(f"VM IP address: {self.vm_ip}")
             while not is_ssh_port_open(self.vm_ip):
                 print(f"SSH port not open on {self.vm_ip}. Waiting...")
@@ -58,7 +58,7 @@ class EnvironmentManager:
         
     def test_jenkins(self):
         if not self.vm_ip:
-            self.vm_ip = self.vm_manager.get_vm_ip()
+            self.vm_ip = self.vm_manager.get_vm_ip("controller")
         if self.vm_ip:
             self.jenkins_url = f"http://{self.vm_ip}:8080"
             max_retries = 10
@@ -122,10 +122,14 @@ class EnvironmentManager:
             self.ssh_manager.close()
 
         if delete_vm:
-            self.vm_manager.delete_vm()
+            self.vm_manager.delete_vms()
 
-        if os.path.exists('vm_info.json'):
-            os.remove('vm_info.json')
+        if os.path.exists('controller_vm_info.json'):
+            os.remove('controller_vm_info.json')
+            
+        
+        if os.path.exists('agent_vm_info.json'):
+            os.remove('agent_vm_info.json')
 
 
     def setup_nginx(self, domain):

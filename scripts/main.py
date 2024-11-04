@@ -40,13 +40,15 @@ def main():
     os_type = "ubuntu-22.04"
     server_type = "cpx11"
 
-    manager = VMManager(api_token)
-    env_manager = EnvironmentManager(manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
+    vm_manager = VMManager(api_token)
+    env_manager = EnvironmentManager(vm_manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
     
     if args.command == 'create_jenkins':
-        manager.create_master_vm(os_type, server_type, ssh_key)
+        vm_manager.create_vm("controller", os_type, server_type, ssh_key)
+        vm_manager.create_vm("agent", os_type, server_type, ssh_key)
+
         try:
-            if env_manager.wait_until_ready():
+            if env_manager.wait_until_ready("controller"):
                 env_manager.setup_jenkins(config_repo_url)
                 if env_manager.test_jenkins():
                     print("Jenkins is up and running")
@@ -58,12 +60,15 @@ def main():
             sys.exit(1)
                 
     elif args.command == 'test_pipeline':
-        if not manager.vm:
-            if os.path.exists('vm_info.json'):
-                with open('vm_info.json', 'r') as f:
-                    manager.vm = json.load(f)     
+        if not vm_manager.vm:
+            if os.path.exists('controller_vm_info.json'):
+                with open('controller_vm_info.json', 'r') as f:
+                    vm_manager.controller_vm = json.load(f)
+            if os.path.exists('agent_vm_info.json'):
+                with open('agent_vm_info.json', 'r') as f:
+                    vm_manager.agent_vm = json.load(f)
                     
-        env_manager.vm_ip = manager.get_vm_ip()
+        env_manager.vm_ip = vm_manager.get_vm_ip("controller")
         if env_manager.vm_ip:
             if env_manager.initialize_jenkins_job_manager():
                 if env_manager.trigger_and_monitor_job():
@@ -78,18 +83,18 @@ def main():
                     
     elif args.command == 'create_dns':
             dns_manager = DNSManager(dns_api_token, zone_name)
-            ip_address = manager.get_vm_ip()
+            ip_address = vm_manager.get_vm_ip("controller")
             dns_manager.create_dns_record(domain, ip_address)
 
     elif args.command == 'setup_nginx':
-        if not manager.vm:
-            if os.path.exists('vm_info.json'):
-                with open('vm_info.json', 'r') as f:
-                    manager.vm = json.load(f)
+        if not vm_manager.vm:
+            if os.path.exists('controller_vm_info.json'):
+                with open('controller_vm_info.json', 'r') as f:
+                    vm_manager.controller_vm = json.load(f)
             else:
-                print("vm_info.json not found. Cannot proceed with setup_nginx.")
+                print("controller_vm_info.json not found. Cannot proceed with setup_nginx.")
                 sys.exit(1)
-        if env_manager.wait_until_ready(): 
+        if env_manager.wait_until_ready("controller"): 
             env_manager.setup_nginx(domain)
 
 
