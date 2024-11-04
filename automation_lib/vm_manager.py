@@ -26,7 +26,7 @@ class VMManager:
         }
 
         data = {
-            "name": f"jenkins-server-{int(time.time())}",
+            "name": f"jenkins-server-{int(time.time())}{vm_type}",
             "server_type": server_type,
             "image": os_type,
             "location": "nbg1",
