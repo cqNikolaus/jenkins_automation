@@ -60,7 +60,7 @@ def main():
             sys.exit(1)
                 
     elif args.command == 'test_pipeline':
-        if not vm_manager.cotnroller_vm:
+        if not vm_manager.controller_vm:
             if os.path.exists('controller_vm_info.json'):
                 with open('controller_vm_info.json', 'r') as f:
                     vm_manager.controller_vm = json.load(f)
