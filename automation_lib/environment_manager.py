@@ -33,7 +33,10 @@ class EnvironmentManager:
         
         
     def wait_until_ready(self, vm_type):
-        server_id = self.vm_manager.vm['server']['id']
+        if vm_type == "controller":
+            server_id = self.vm_manager.controller_vm['server']['id']
+        elif vm_type == "agent":
+            server_id = self.vm_manager.agent_vm['server']['id]']
         print("Server ID:", server_id)
         if self.vm_manager.wait_for_vm_running(server_id):
             if not self.vm_ip:

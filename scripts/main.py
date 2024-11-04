@@ -60,13 +60,11 @@ def main():
             sys.exit(1)
                 
     elif args.command == 'test_pipeline':
-        if not vm_manager.vm:
+        if not vm_manager.cotnroller_vm:
             if os.path.exists('controller_vm_info.json'):
                 with open('controller_vm_info.json', 'r') as f:
                     vm_manager.controller_vm = json.load(f)
-            if os.path.exists('agent_vm_info.json'):
-                with open('agent_vm_info.json', 'r') as f:
-                    vm_manager.agent_vm = json.load(f)
+
                     
         env_manager.vm_ip = vm_manager.get_vm_ip("controller")
         if env_manager.vm_ip:
@@ -87,7 +85,7 @@ def main():
             dns_manager.create_dns_record(domain, ip_address)
 
     elif args.command == 'setup_nginx':
-        if not vm_manager.vm:
+        if not vm_manager.controller_vm:
             if os.path.exists('controller_vm_info.json'):
                 with open('controller_vm_info.json', 'r') as f:
                     vm_manager.controller_vm = json.load(f)
