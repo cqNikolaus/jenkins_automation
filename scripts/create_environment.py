@@ -29,11 +29,11 @@ def main():
     os_type = "ubuntu-22.04"
     server_type = "cpx11"
 
-    manager = VMManager(api_token)
-    manager.create_vm(os_type, server_type, ssh_key)
+    vm_manager = VMManager(api_token)
+    vm_manager.create_master_vm(os_type, server_type, ssh_key)
     
     
-    env_manager = EnvironmentManager(manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
+    env_manager = EnvironmentManager(vm_manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
     
     try:
         if env_manager.wait_until_ready():
@@ -48,7 +48,7 @@ def main():
             # Create DNS record
             if dns_api_token and domain and zone_name:
                 dns_manager = DNSManager(dns_api_token, zone_name)
-                ip_address = manager.get_vm_ip()
+                ip_address = vm_manager.get_vm_ip()
                 dns_manager.create_dns_record(domain, ip_address)
             else:
                 print("DNS configuration missing")

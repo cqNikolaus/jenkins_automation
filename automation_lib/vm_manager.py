@@ -13,7 +13,7 @@ class VMManager:
             with open('vm_info.json', 'r') as f:
                 self.vm = json.load(f)
 
-    def create_vm(self, os_type, server_type, ssh_key):
+    def create_master_vm(self, os_type, server_type, ssh_key):
         url = "https://api.hetzner.cloud/v1/servers"
         headers = {
             "Authorization": f"Bearer {self.api_token}",

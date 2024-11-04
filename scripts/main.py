@@ -44,7 +44,7 @@ def main():
     env_manager = EnvironmentManager(manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
     
     if args.command == 'create_jenkins':
-        manager.create_vm(os_type, server_type, ssh_key)
+        manager.create_master_vm(os_type, server_type, ssh_key)
         try:
             if env_manager.wait_until_ready():
                 env_manager.setup_jenkins(config_repo_url)
