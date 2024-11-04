@@ -107,19 +107,18 @@ pipeline {
           set -e
           echo "test ssl certificate"
           sleep 10
-          CERT_INFO=\$(echo | openssl s_client -connect $${env.DOMAIN}:443 -servername $${env.DOMAIN} -showcerts 2>/dev/null \\
+          CERT_INFO=\$(echo | openssl s_client -connect ${env.DOMAIN}:443 -servername ${env.DOMAIN} -showcerts 2>/dev/null \\
           | sed -n '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' \\
           | openssl x509 -noout -dates -subject)
-          if [ -z "\$CERT_INFO" ]; then
+          if [ -z "\\\$CERT_INFO" ]; then
             echo "SSL certificate is not valid or cannot be retrieved."
             exit 1
           else
-            echo "\$CERT_INFO"
+            echo "\\\$CERT_INFO"
           fi
         """
+      }
     }
-}
-
     stage('Shutdown Jenkins Instance') {
       steps {
         echo "kill jenkins"
