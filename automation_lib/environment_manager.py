@@ -32,24 +32,21 @@ class EnvironmentManager:
         self.jenkins_job_manager = None
         
         
-    def wait_until_ready(self, vm_type, index=None, timeout=300):
+    def wait_until_ready(self, vm_type, index=None, timeout=600):
         if vm_type == "controller":
-            server_id = self.vm_manager.controller_vm['server']['id']
             vm_ip = self.vm_manager.get_vm_ip("controller")
         elif vm_type == "agent":
-            if index is not None and 0 <= index < len(self.vm_manager.agent_vms):
-                server_id = self.vm_manager.agent_vms[index]['server']['id']
-                vm_ip = self.vm_manager.get_vm_ip("agent", index=index)
-            else:
-                print("Invalid agent index")
-                return False
+            vm_ip = self.vm_manager.get_vm_ip("agent", index=index)
         else:
             print("Invalid vm_type")
             return False
 
-        print("Server ID:", server_id)
+        if vm_ip is None:
+            print(f"Could not retrieve IP for {vm_type} VM.")
+            return False
+
+        print(f"VM IP address: {vm_ip}")
         if self.vm_manager.wait_for_vm_running(vm_type, index=index, timeout=timeout):
-            print(f"VM IP address: {vm_ip}")
             while not is_ssh_port_open(vm_ip):
                 print(f"SSH port not open on {vm_ip}. Waiting...")
                 time.sleep(10)
@@ -57,7 +54,8 @@ class EnvironmentManager:
             return True
         else:
             print("VM is not ready or failed to become reachable.")
-            raise Exception("VM is not ready or failed to become reachable.")
+            return False
+
 
 
     def setup_jenkins(self, config_repo_url):

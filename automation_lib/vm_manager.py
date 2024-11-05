@@ -40,20 +40,23 @@ class VMManager:
         response = requests.post(url, headers=headers, json=data)
 
         if response.status_code == 201:
+            vm_info = response.json()
             if vm_type == "controller":
-                self.controller_vm = response.json()
+                self.controller_vm = vm_info
                 print("Controller VM created successfully")
                 with open('controller_vm_info.json', 'w') as f:
                     json.dump(self.controller_vm, f)
             elif vm_type == "agent":
-                vm_info = response.json()
                 self.agent_vms.append(vm_info)
                 print(f"Agent VM {vm_name} created successfully")
                 with open('agent_vms_info.json', 'w') as f:
                     json.dump(self.agent_vms, f)
+            return vm_info  # Erfolg, VM-Info zurückgeben
         else:
-            print("Failed to create VM", response.status_code)
+            print(f"Failed to create {vm_type} VM", response.status_code)
             print(response.json())
+            return None  # Fehler, None zurückgeben
+
             
             
             
@@ -112,7 +115,7 @@ class VMManager:
 
                 
 
-    def wait_for_vm_running(self, vm_type, index=None, timeout=300, interval=10):
+    def wait_for_vm_running(self, vm_type, index=None, timeout=600, interval=10):
         if vm_type == "controller":
             vm = self.controller_vm
         elif vm_type == "agent":
@@ -124,9 +127,9 @@ class VMManager:
         else:
             print("Invalid vm_type")
             return False
-        
+
         if vm is None:
-            print(f"{vm_type} VM not available.")
+            print(f"{vm_type.capitalize()} VM not available.")
             return False
 
         server_id = vm["server"]["id"]
@@ -138,14 +141,13 @@ class VMManager:
         while elapsed < timeout:
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
-                server_status = response.json().get('server', {}).get('status')
+                server_status = response.json()['server']['status']
+                print(f"Server status: {server_status}.")
                 if server_status == 'running':
                     print("Server is running.")
                     return True
-                elif server_status == 'off':
-                    print(f"Server status: {server_status}. Waiting...")
                 else:
-                    print(f"Unexpected server status: {server_status}")
+                    print(f"Server status: {server_status}. Waiting...")
             elif response.status_code == 404:
                 print(f"Server with ID '{server_id}' not found. Possible deletion.")
                 return False
@@ -156,3 +158,4 @@ class VMManager:
             elapsed += interval
         print("Timeout waiting for server to be ready.")
         return False
+
