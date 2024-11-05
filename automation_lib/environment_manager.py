@@ -70,6 +70,7 @@ class EnvironmentManager:
 
         
     def test_jenkins(self):
+        self.controller_ip = self.vm_manager.get_vm_ip("controller")
         if not self.vm_ip:
             self.vm_ip = self.vm_manager.get_vm_ip("controller")
         if self.vm_ip:
