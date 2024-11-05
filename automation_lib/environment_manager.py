@@ -30,6 +30,7 @@ class EnvironmentManager:
         self.jenkins_url = None
         self.job_name = job_name
         self.jenkins_job_manager = None
+        self.controller_ip = None
         
         
     def wait_until_ready(self, vm_type, index=None, timeout=600):
@@ -97,6 +98,7 @@ class EnvironmentManager:
             
     def initialize_jenkins_job_manager(self):
         if not self.jenkins_job_manager:
+            self.controller_ip = self.vm_manager.get_vm_ip("controller")
             self.jenkins_url = f"http://{self.controller_ip}:8080"
             try:
                 self.jenkins_job_manager = JenkinsJobManager(jenkins_url = self.jenkins_url, user=self.jenkins_user, password=self.jenkins_pass)
