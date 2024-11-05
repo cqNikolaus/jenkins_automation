@@ -26,7 +26,6 @@ class EnvironmentManager:
         self.jenkins_user = jenkins_user
         self.jenkins_pass = jenkins_pass
         self.vm_ip = None
-        self.vm_ip_con = None
         self.ssh_manager = None
         self.jenkins_url = None
         self.job_name = job_name
@@ -35,7 +34,7 @@ class EnvironmentManager:
         
     def wait_until_ready(self, vm_type, index=None, timeout=600):
         if vm_type == "controller":
-            self.vm_ip_con = self.vm_manager.get_vm_ip("controller")
+            self.vm_ip = self.vm_manager.get_vm_ip("controller")
         elif vm_type == "agent":
             self.vm_ip = self.vm_manager.get_vm_ip("agent", index=index)
         else:
