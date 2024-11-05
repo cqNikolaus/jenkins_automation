@@ -42,7 +42,7 @@ class EnvironmentManager:
             print("Invalid vm_type")
             return False
 
-        if self.vm_ip is None:
+        if self.vm_ip_con is None:
             print(f"Could not retrieve IP for {vm_type} VM.")
             return False
 
