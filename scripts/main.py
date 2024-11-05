@@ -75,6 +75,12 @@ def main():
         except Exception as e:
             print(f"Failed to create Jenkins: {e}")
             sys.exit(1)
+            
+            if env_manager.initialize_jenkins_job_manager():
+                env_manager.setup_agents()
+                
+                
+                
                 
     elif args.command == 'test_pipeline':
         if not vm_manager.controller_vm:

@@ -61,3 +61,42 @@ class JenkinsJobManager:
 
         print("Timeout waiting for build to finish")
         return False      
+    
+    
+    
+    
+    
+    
+    def create_agent_node(self, agent_name):
+        node_params = {
+            'name': agent_name,
+            'nodeDescription': 'Automatically created agent',
+            'remoteFS': '/home/ubuntu',
+            'numExecutors': 2,
+            'labels': 'linux',
+            'exclusive': False,
+            'launcher': {
+                'stapler-class': 'hudson.slaves.JNLPLauncher',
+            },
+            'retentionStrategy': {
+                'stapler-class': 'hudson.slaves.RetentionStrategy$Always'
+            },
+            'nodeProperties': {}
+        }
+        try:
+            self.server.create_node(
+                agent_name,
+                numExecutors=node_params['numExecutors'],
+                nodeDescription=node_params['nodeDescription'],
+                remoteFS=node_params['remoteFS'],
+                labels=node_params['labels'],
+                exclusive=node_params['exclusive'],
+                launcher=node_params['launcher'],
+                retentionStrategy=node_params['retentionStrategy'],
+                nodeProperties=node_params['nodeProperties']
+            )
+            print(f"Agent node {agent_name} created in Jenkins.")
+            return True
+        except Exception as e:
+            print(f"Failed to create agent node {agent_name}: {e}")
+            return False

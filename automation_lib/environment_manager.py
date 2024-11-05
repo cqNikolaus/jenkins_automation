@@ -3,7 +3,7 @@ import sys
 import time
 import socket
 import jenkins
-from automation_lib import SSHManager, JenkinsInstaller, JenkinsJobManager, NginxInstaller, VMManager
+from automation_lib import SSHManager, JenkinsInstaller, JenkinsJobManager, NginxInstaller, VMManager, JenkinsAgentInstaller
 
 
 
@@ -30,7 +30,6 @@ class EnvironmentManager:
         self.jenkins_url = None
         self.job_name = job_name
         self.jenkins_job_manager = None
-        self.controller_ip = None
         
         
     def wait_until_ready(self, vm_type, index=None, timeout=600):
@@ -66,7 +65,7 @@ class EnvironmentManager:
         installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
         installer.install_jenkins()
         print("Waiting for Jenkins to initialize...")
-        time.sleep(50)
+        time.sleep(40)
         
 
         
@@ -109,6 +108,31 @@ class EnvironmentManager:
                 return False
         else:
             return True
+        
+    def setup_agents(self):
+        agent_count = len(self.vm_manager.agent_vms)
+        for index in range(agent_count):
+            agent_ip = self.vm_manager.get_vm_ip("agent", index=index)
+            if not agent_ip:
+                print(f"Could not retrieve IP for agent {index}")
+                continue
+            print(f"Setting up agent {index} at IP {agent_ip}")
+            ssh_manager = SSHManager(agent_ip, self.key_file)
+            agent_name = f"agent-{index}"
+            agent_installer = JenkinsAgentInstaller(
+                ssh_manager,
+                self.jenkins_url,
+                self.jenkins_user,
+                self.jenkins_pass
+            )
+            agent_installer.install_agent()
+            
+            if self.jenkins_job_manager.create_agent_node(agent_name):
+                agent_installer.start_agent(agent_name)
+            else:
+                print(f"Failed to create agent node {agent_name}")
+                
+                
             
     def trigger_and_monitor_job(self):
         if not self.jenkins_job_manager:
