@@ -144,7 +144,7 @@ class VMManager:
                 server_status = response.json()['server']['status']
                 print(f"Server status: {server_status}.")
                 if server_status == 'running':
-                    print("{vm_type} Server is running.")
+                    print(f"{vm_type} Server is running.")
                     return True
                 else:
                     print(f"Server status: {server_status}. Waiting...")
