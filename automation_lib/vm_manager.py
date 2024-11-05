@@ -49,6 +49,7 @@ class VMManager:
             elif vm_type == "agent":
                 self.agent_vms.append(vm_info)
                 print(f"Agent VM {vm_name} created successfully")
+                print(self.agent_vms)
                 with open('agent_vms_info.json', 'w') as f:
                     json.dump(self.agent_vms, f)
             return vm_info  # Erfolg, VM-Info zurückgeben
