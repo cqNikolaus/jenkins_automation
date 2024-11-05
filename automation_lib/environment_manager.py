@@ -42,7 +42,7 @@ class EnvironmentManager:
             print("Invalid vm_type")
             return False
 
-        if self.vm_ip_con is None:
+        if self.vm_ip is None:
             print(f"Could not retrieve IP for {vm_type} VM.")
             return False
 
@@ -60,7 +60,9 @@ class EnvironmentManager:
 
 
     def setup_jenkins(self, config_repo_url):
-        self.ssh_manager = SSHManager(self.vm_ip_con, self.key_file)
+        self.controller_ip = self.vm_manager.get_vm_ip("controller")
+        print(f"self controller ip: {self.controller_ip}")
+        self.ssh_manager = SSHManager(self.controller_ip, self.key_file)
         installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
         installer.install_jenkins()
         print("Waiting for Jenkins to initialize...")
