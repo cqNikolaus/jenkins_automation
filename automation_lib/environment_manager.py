@@ -34,21 +34,21 @@ class EnvironmentManager:
         
     def wait_until_ready(self, vm_type, index=None, timeout=600):
         if vm_type == "controller":
-            vm_ip = self.vm_manager.get_vm_ip("controller")
+            self.vm_ip = self.vm_manager.get_vm_ip("controller")
         elif vm_type == "agent":
-            vm_ip = self.vm_manager.get_vm_ip("agent", index=index)
+            self.vm_ip = self.vm_manager.get_vm_ip("agent", index=index)
         else:
             print("Invalid vm_type")
             return False
 
-        if vm_ip is None:
+        if self.vm_ip is None:
             print(f"Could not retrieve IP for {vm_type} VM.")
             return False
 
-        print(f"VM IP address: {vm_ip}")
+        print(f"VM IP address: {self.vm_ip}")
         if self.vm_manager.wait_for_vm_running(vm_type, index=index, timeout=timeout):
-            while not is_ssh_port_open(vm_ip):
-                print(f"SSH port not open on {vm_ip}. Waiting...")
+            while not is_ssh_port_open(self.vm_ip):
+                print(f"SSH port not open on {self.vm_ip}. Waiting...")
                 time.sleep(10)
             print("VM is fully ready and reachable via SSH.")
             return True
