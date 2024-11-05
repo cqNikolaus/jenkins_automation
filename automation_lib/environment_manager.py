@@ -50,7 +50,7 @@ class EnvironmentManager:
         print("Server ID:", server_id)
         if self.vm_manager.wait_for_vm_running(vm_type, index=index, timeout=timeout):
             print(f"VM IP address: {vm_ip}")
-            while not self.is_ssh_port_open(vm_ip):
+            while not is_ssh_port_open(vm_ip):
                 print(f"SSH port not open on {vm_ip}. Waiting...")
                 time.sleep(10)
             print("VM is fully ready and reachable via SSH.")
