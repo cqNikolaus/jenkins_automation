@@ -59,7 +59,8 @@ class EnvironmentManager:
 
 
     def setup_jenkins(self, config_repo_url):
-        self.ssh_manager = SSHManager(self.vm_ip, self.key_file)
+        controller_ip = self.vm_manager.get_vm_ip("controller")
+        self.ssh_manager = SSHManager(controller_ip, self.key_file)
         installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
         installer.install_jenkins()
         print("Waiting for Jenkins to initialize...")
