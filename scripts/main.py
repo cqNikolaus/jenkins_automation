@@ -45,12 +45,12 @@ def main():
     env_manager = EnvironmentManager(vm_manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
     
     if args.command == 'create_jenkins':
+        vm_manager.create_vm("controller", os_type, server_type, ssh_key)
         num_agents = 3   # change to parameter on later updates
         for i in range(num_agents):
             agent_name = f"jenkins-agent-{i}-{int(time.time())}"
             vm_manager.create_vm("agent", os_type, server_type, ssh_key, vm_name=agent_name)
         
-        vm_manager.create_vm("controller", os_type, server_type, ssh_key)
         
         try:
             if env_manager.wait_until_ready("controller"):
