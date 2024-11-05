@@ -73,7 +73,7 @@ class EnvironmentManager:
         if not self.vm_ip:
             self.vm_ip = self.vm_manager.get_vm_ip("controller")
         if self.vm_ip:
-            self.jenkins_url = f"http://{self.vm_ip}:8080"
+            self.jenkins_url = f"http://{self.controller_ip}:8080"
             max_retries = 10
             wait_seconds = 10
             for attempt in range(1, max_retries + 1):
@@ -96,7 +96,7 @@ class EnvironmentManager:
             
     def initialize_jenkins_job_manager(self):
         if not self.jenkins_job_manager:
-            self.jenkins_url = f"http://{self.vm_ip}:8080"
+            self.jenkins_url = f"http://{self.controller_ip}:8080"
             try:
                 self.jenkins_job_manager = JenkinsJobManager(jenkins_url = self.jenkins_url, user=self.jenkins_user, password=self.jenkins_pass)
                 print("Initialized Jenkins job manager")
