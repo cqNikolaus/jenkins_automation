@@ -66,7 +66,7 @@ class EnvironmentManager:
         installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
         installer.install_jenkins()
         print("Waiting for Jenkins to initialize...")
-        time.sleep(30)
+        time.sleep(50)
         
 
         
