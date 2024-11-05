@@ -124,6 +124,11 @@ class VMManager:
         else:
             print("Invalid vm_type")
             return False
+        
+        if vm is None:
+            print(f"{vm_type} VM not available.")
+            return False
+
         server_id = vm["server"]["id"]
         url = f"https://api.hetzner.cloud/v1/servers/{server_id}"
         headers = {
@@ -133,12 +138,17 @@ class VMManager:
         while elapsed < timeout:
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
-                server_status = response.json()['server']['status']
+                server_status = response.json().get('server', {}).get('status')
                 if server_status == 'running':
                     print("Server is running.")
                     return True
-                else:
+                elif server_status == 'off':
                     print(f"Server status: {server_status}. Waiting...")
+                else:
+                    print(f"Unexpected server status: {server_status}")
+            elif response.status_code == 404:
+                print(f"Server with ID '{server_id}' not found. Possible deletion.")
+                return False
             else:
                 print(f"Failed to get server status: {response.text}")
                 return False
