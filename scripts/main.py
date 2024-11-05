@@ -39,7 +39,7 @@ def main():
     
     
     os_type = "ubuntu-22.04"
-    server_type = "cpx11"
+    server_type = "cx22"
 
     vm_manager = VMManager(api_token)
     env_manager = EnvironmentManager(vm_manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
