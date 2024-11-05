@@ -46,6 +46,12 @@ def main():
     
     if args.command == 'create_jenkins':
         vm_manager.create_vm("controller", os_type, server_type, ssh_key)
+        
+        # Reset agent_vms list and remove old agent_vms_info.json
+        vm_manager.agent_vms = []
+        if os.path.exists('agent_vms_info.json'):
+            os.remove('agent_vms_info.json')
+            
         num_agents = 3   # change to parameter on later updates
         for i in range(num_agents):
             agent_name = f"jenkins-agent-{i}-{int(time.time())}"
