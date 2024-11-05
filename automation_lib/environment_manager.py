@@ -32,23 +32,33 @@ class EnvironmentManager:
         self.jenkins_job_manager = None
         
         
-    def wait_until_ready(self, vm_type):
+    def wait_until_ready(self, vm_type, index=None, timeout=300):
         if vm_type == "controller":
             server_id = self.vm_manager.controller_vm['server']['id']
+            vm_ip = self.vm_manager.get_vm_ip("controller")
         elif vm_type == "agent":
-            server_id = self.vm_manager.agent_vm['server']['id]']
+            if index is not None and 0 <= index < len(self.vm_manager.agent_vms):
+                server_id = self.vm_manager.agent_vms[index]['server']['id']
+                vm_ip = self.vm_manager.get_vm_ip("agent", index=index)
+            else:
+                print("Invalid agent index")
+                return False
+        else:
+            print("Invalid vm_type")
+            return False
+
         print("Server ID:", server_id)
-        if self.vm_manager.wait_for_vm_running(server_id):
-            if not self.vm_ip:
-                self.vm_ip = self.vm_manager.get_vm_ip(vm_type)
-            print(f"VM IP address: {self.vm_ip}")
-            while not is_ssh_port_open(self.vm_ip):
-                print(f"SSH port not open on {self.vm_ip}. Waiting...")
+        if self.vm_manager.wait_for_vm_running(vm_type, index=index, timeout=timeout):
+            print(f"VM IP address: {vm_ip}")
+            while not self.is_ssh_port_open(vm_ip):
+                print(f"SSH port not open on {vm_ip}. Waiting...")
                 time.sleep(10)
             print("VM is fully ready and reachable via SSH.")
             return True
-        print("VM is not ready or failed to become reachable.")
-        raise Exception("VM is not ready or failed to become reachable.")
+        else:
+            print("VM is not ready or failed to become reachable.")
+            raise Exception("VM is not ready or failed to become reachable.")
+
 
     def setup_jenkins(self, config_repo_url):
         self.ssh_manager = SSHManager(self.vm_ip, self.key_file)

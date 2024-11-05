@@ -1,6 +1,7 @@
 import sys
 import argparse
 import os
+import time
 import json
 from automation_lib import VMManager, EnvironmentManager, DNSManager
 from dotenv import load_dotenv
@@ -44,11 +45,19 @@ def main():
     env_manager = EnvironmentManager(vm_manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
     
     if args.command == 'create_jenkins':
+        num_agents = 3   # change to parameter on later updates
+        for i in range(num_agents):
+            agent_name = f"jenkins-agent-{i}-{int(time.time())}"
+            vm_manager.create_vm("agent", os_type, server_type, ssh_key, vm_name=agent_name)
+        
         vm_manager.create_vm("controller", os_type, server_type, ssh_key)
-        vm_manager.create_vm("agent", os_type, server_type, ssh_key)
-
+        
         try:
             if env_manager.wait_until_ready("controller"):
+                for i in range(num_agents):
+                    if not env_manager.wait_until_ready("agent", index=i):
+                        print(f"Agent VM {i} is not ready")
+                        sys.exit(1)
                 env_manager.setup_jenkins(config_repo_url)
                 if env_manager.test_jenkins():
                     print("Jenkins is up and running")
