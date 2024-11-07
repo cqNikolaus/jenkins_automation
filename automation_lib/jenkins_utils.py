@@ -1,5 +1,5 @@
 import requests
-import jenkins
+from jenkins.requester import Requester
 
 def get_jenkins_crumb(jenkins_url, user, password):
     response = requests.get(f'{jenkins_url}/crumbIssuer/api/json', auth=(user, password))
