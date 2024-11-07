@@ -72,31 +72,23 @@ class JenkinsJobManager:
     
     def create_agent_node(self, agent_name, agent_host, ssh_credentials_id, label='linux'):
         try:
-            launcher = {
-                'stapler-class': 'hudson.plugins.sshslaves.SSHLauncher',
-                '$class': 'hudson.plugins.sshslaves.SSHLauncher',
-                'host': agent_host,
-                'port': 22,
+            launcher_params = {
+                'port': '22',
+                'username': 'root',  
                 'credentialsId': ssh_credentials_id,
-                'sshHostKeyVerificationStrategy': {
-                    'stapler-class': 'hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy'
-                }
+                'host': agent_host,
             }
 
-            node_params = {
-                'name': agent_name,
-                'nodeDescription': 'Automatisch erstellter SSH-Agent',
-                'remoteFS': '/home/ubuntu',
-                'numExecutors': 2,
-                'mode': 'NORMAL',  # 'NORMAL' für allgemeine Nutzung
-                'labels': label,
-                'launcher': launcher,
-                'retentionStrategy': {'stapler-class': 'hudson.slaves.RetentionStrategy$Always'},
-                'nodeProperties': {'stapler-class-bag': 'true'},
-                'type': 'hudson.slaves.DumbSlave'
-            }
-
-            self.server.create_node(**node_params)
+            self.server.create_node(
+                name=agent_name,
+                nodeDescription='Automatisch erstellter SSH-Agent',
+                remoteFS='/root',
+                labels=label,
+                exclusive=False,  
+                launcher=jenkins.LAUNCHER_SSH,
+                launcher_params=launcher_params,
+                numExecutors=2
+            )
             print(f"Agent-Knoten {agent_name} in Jenkins erstellt.")
             return True
         except Exception as e:
