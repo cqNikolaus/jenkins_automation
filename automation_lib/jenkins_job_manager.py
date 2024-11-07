@@ -72,29 +72,26 @@ class JenkinsJobManager:
     
     def create_agent_node(self, agent_name, label='linux'):
         try:
-            node_config = f"""<?xml version='1.0' encoding='UTF-8'?>
-            <slave>
-            <name>{agent_name}</name>
-            <description>Automatically created agent</description>
-            <remoteFS>/home/ubuntu</remoteFS>
-            <numExecutors>2</numExecutors>
-            <mode>NORMAL</mode>
-            <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
-            <launcher class="hudson.slaves.JNLPLauncher"/>
-            <label>{label}</label>
-            <nodeProperties/>
-            </slave>"""
+            # Für JNLP-Agenten setzen wir den Launcher auf 'JNLPLauncher'
+            launcher = 'JNLPLauncher'
 
+            # Erstelle den Agenten
             self.server.create_node(
                 name=agent_name,
-                config=node_config
+                nodeDescription='Automatically created agent',
+                remoteFS='/home/ubuntu',
+                labels=label,
+                exclusive=False,
+                launcher=launcher,
+                numExecutors=2
             )
             print(f"Agent node {agent_name} created in Jenkins.")
 
             # Abrufen des Agenten-Secrets
             agent_info = self.server.get_node_info(agent_name)
-            agent_secret = agent_info.get('secret', None) or agent_info.get('jnlpAgentSecret', None)
+            agent_secret = agent_info.get('secret') or agent_info.get('jnlpAgentSecret')
             return agent_secret
         except Exception as e:
             print(f"Failed to create agent node {agent_name}: {e}")
             return None
+
