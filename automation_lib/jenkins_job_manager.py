@@ -1,7 +1,8 @@
 import jenkins
 import sys
 import time
-from automation_lib.jenkins_utils import generate_api_token, CrumbRequester
+from automation_lib.jenkins_helpers import generate_api_token, CrumbRequester
+
 
 
 class JenkinsJobManager:
@@ -12,16 +13,18 @@ class JenkinsJobManager:
             print('Failed to generate API token.')
             sys.exit(1)
             
+        session = CrumbRequester(
+        username=user,
+        password=api_token,
+        baseurl=jenkins_url
+    )
         self.server = jenkins.Jenkins(
-                jenkins_url,
-                username=user,
-                password=api_token,
-                requester=CrumbRequester(
-                    username=user,
-                    password=api_token,
-                    baseurl=jenkins_url
-                )
-            )
+            jenkins_url,
+            username=user,
+            password=api_token,
+            requester=session
+    )
+
             
             
     def trigger_job(self, job_name):
