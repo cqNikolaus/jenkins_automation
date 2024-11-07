@@ -59,8 +59,6 @@ def main():
             # Install Jenkins
             env_manager.setup_jenkins(config_repo_url)
             print("Jenkins installed")
-            print("wait 50 secs for jenkins to initialize")
-            time.sleep(50)
             if env_manager.test_jenkins():
                     print("Jenkins is up and running")
             else:
