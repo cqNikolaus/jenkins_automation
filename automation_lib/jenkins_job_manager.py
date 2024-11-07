@@ -74,10 +74,12 @@ class JenkinsJobManager:
     def create_agent_node(self, agent_name, agent_host, ssh_credentials_id, label='linux'):
         try:
             launcher_params = {
-                'port': '22',
-                'username': 'root',  
-                'credentialsId': os.getenv('H_SSH_PRIVATE_KEY'),
+                'port': '22', 
+                'credentialsId': ssh_credentials_id,
                 'host': agent_host,
+                'sshHostKeyVerificationStrategy': {
+                    'stapler-class': 'hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy'
+                }
             }
 
             self.server.create_node(
