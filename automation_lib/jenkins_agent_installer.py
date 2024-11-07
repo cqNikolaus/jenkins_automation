@@ -7,7 +7,7 @@ class JenkinsAgentInstaller:
     def install_dependencies(self):
         commands = [
             "sudo apt-get update",
-            "sudo apt-get install -y openjdk-11-jre-headless",
+            "sudo apt-get install -y openjdk-17-jre-headless",
         ]
         for cmd in commands:
             self.ssh_manager.execute_command(cmd)
