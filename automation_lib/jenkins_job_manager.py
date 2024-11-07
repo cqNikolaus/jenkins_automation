@@ -1,29 +1,22 @@
 import jenkins
 import sys
 import time
-from automation_lib.jenkins_helpers import generate_api_token, CrumbRequester
 
 
 
 class JenkinsJobManager:
-    
     def __init__(self, jenkins_url, user, password):
-        api_token = generate_api_token(jenkins_url, user, password)
-        if not api_token:
-            print('Failed to generate API token.')
-            sys.exit(1)
-            
-        session = CrumbRequester(
-        username=user,
-        password=api_token,
-        baseurl=jenkins_url
-    )
         self.server = jenkins.Jenkins(
             jenkins_url,
             username=user,
-            password=api_token,
-            requester=session
-    )
+            password=password
+        )
+        try:
+            user_info = self.server.get_whoami()
+            print(f"Erfolgreich mit Jenkins verbunden als {user_info['fullName']}")
+        except jenkins.JenkinsException as e:
+            print(f"Fehler beim Verbinden mit Jenkins: {e}")
+            sys.exit(1)
 
             
             
@@ -79,9 +72,6 @@ class JenkinsJobManager:
     
     def create_agent_node(self, agent_name, label='linux'):
         try:
-            # Define the launcher for a JNLP agent
-            launcher = {'jnlp': True}
-
             # Create the agent node
             self.server.create_node(
                 name=agent_name,
@@ -89,7 +79,7 @@ class JenkinsJobManager:
                 remoteFS='/home/ubuntu',
                 labels=label,
                 exclusive=False,
-                launcher=launcher,
+                launcher={'jnlp': True},
                 numExecutors=2
             )
             print(f"Agent node {agent_name} created in Jenkins.")
