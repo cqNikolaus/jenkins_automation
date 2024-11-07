@@ -72,30 +72,22 @@ class JenkinsJobManager:
     
     def create_agent_node(self, agent_name, label='linux'):
         try:
-            # Definiere die Parameter für den Agenten
-            node_params = {
-                'numExecutors': 2,
-                'nodeDescription': 'Automatically created agent',
-                'remoteFS': '/home/ubuntu',
-                'labels': label,
-                'exclusive': False,
-                'launcher': {
-                    'stapler-class': 'hudson.slaves.JNLPLauncher',
-                },
-                'retentionStrategy': {
-                    'stapler-class': 'hudson.slaves.RetentionStrategy$Always',
-                },
-                'nodeProperties': {
-                    'stapler-class-bag': 'true'
-                },
-                'type': 'hudson.slaves.DumbSlave',
-                'mode': 'NORMAL',  # 'NORMAL' für Verwendung durch alle Jobs, 'EXCLUSIVE' für exklusive Nutzung
-            }
+            node_config = f"""<?xml version='1.0' encoding='UTF-8'?>
+            <slave>
+            <name>{agent_name}</name>
+            <description>Automatically created agent</description>
+            <remoteFS>/home/ubuntu</remoteFS>
+            <numExecutors>2</numExecutors>
+            <mode>NORMAL</mode>
+            <retentionStrategy class="hudson.slaves.RetentionStrategy$Always"/>
+            <launcher class="hudson.slaves.JNLPLauncher"/>
+            <label>{label}</label>
+            <nodeProperties/>
+            </slave>"""
 
-            # Erstelle den Agenten
             self.server.create_node(
                 name=agent_name,
-                **node_params
+                config=node_config
             )
             print(f"Agent node {agent_name} created in Jenkins.")
 
@@ -105,8 +97,4 @@ class JenkinsJobManager:
             return agent_secret
         except Exception as e:
             print(f"Failed to create agent node {agent_name}: {e}")
-            if hasattr(e, 'response'):
-                print(f"Response status code: {e.response.status_code}")
-                print(f"Response content: {e.response.content}")
             return None
-
