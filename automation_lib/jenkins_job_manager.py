@@ -1,6 +1,7 @@
 import jenkins
 import sys
 import time
+import os
 
 
 
@@ -75,7 +76,7 @@ class JenkinsJobManager:
             launcher_params = {
                 'port': '22',
                 'username': 'root',  
-                'credentialsId': ssh_credentials_id,
+                'credentialsId': os.getenv('H_SSH_PRIVATE_KEY'),
                 'host': agent_host,
             }
 
