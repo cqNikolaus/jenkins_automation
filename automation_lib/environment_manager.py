@@ -127,11 +127,14 @@ class EnvironmentManager:
                 self.jenkins_pass
             )
             agent_installer.install_agent()
-            
-            if self.jenkins_job_manager.create_agent_node(agent_name, label=agent_label):
-                agent_installer.start_agent(agent_name)
+
+            # Erstellen des Agenten-Knotens und Abrufen des Secrets
+            agent_secret = self.jenkins_job_manager.create_agent_node(agent_name, label=agent_label)
+            if agent_secret:
+                agent_installer.start_agent(agent_name, agent_secret)
             else:
                 print(f"Failed to create agent node {agent_name}")
+
                 
                 
             

@@ -68,35 +68,26 @@ class JenkinsJobManager:
     
     
     def create_agent_node(self, agent_name, label='linux'):
-        node_params = {
-            'name': agent_name,
-            'nodeDescription': 'Automatically created agent',
-            'remoteFS': '/home/ubuntu',
-            'numExecutors': 2,
-            'labels': label,
-            'exclusive': False,
-            'launcher': {
-                'stapler-class': 'hudson.slaves.JNLPLauncher',
-            },
-            'retentionStrategy': {
-                'stapler-class': 'hudson.slaves.RetentionStrategy$Always'
-            },
-            'nodeProperties': {}
-        }
         try:
+            # Define the launcher for a JNLP agent
+            launcher = {'jnlp': True}
+
+            # Create the agent node
             self.server.create_node(
-                agent_name,
-                numExecutors=node_params['numExecutors'],
-                nodeDescription=node_params['nodeDescription'],
-                remoteFS=node_params['remoteFS'],
-                labels=node_params['labels'],
-                exclusive=node_params['exclusive'],
-                launcher=node_params['launcher'],
-                retentionStrategy=node_params['retentionStrategy'],
-                nodeProperties=node_params['nodeProperties']
+                name=agent_name,
+                nodeDescription='Automatically created agent',
+                remoteFS='/home/ubuntu',
+                labels=label,
+                exclusive=False,
+                launcher=launcher,
+                numExecutors=2
             )
             print(f"Agent node {agent_name} created in Jenkins.")
-            return True
+
+            # Retrieve the agent secret
+            agent_info = self.server.get_node_info(agent_name)
+            agent_secret = agent_info['jnlpAgentSecret']
+            return agent_secret
         except Exception as e:
             print(f"Failed to create agent node {agent_name}: {e}")
-            return False
+            return None
