@@ -5,4 +5,3 @@ from .jenkins_installer import JenkinsInstaller
 from .jenkins_job_manager import JenkinsJobManager
 from .nginx_installer import NginxInstaller
 from .jenkins_agent_installer import JenkinsAgentInstaller
-import jenkins_helpers
