@@ -15,7 +15,7 @@ class JenkinsAgentInstaller:
                 self.jenkins_user, self.jenkins_pass, self.jenkins_url)
         ]
         for cmd in commands:
-            self.ssh_manager.run_command(cmd)
+            self.ssh_manager.execute_command(cmd)
         print("Jenkins agent installed.")
 
     def start_agent(self, agent_name):
@@ -25,5 +25,5 @@ class JenkinsAgentInstaller:
             "-jnlpCredentials {}:{} "
             "-workDir /home/ubuntu/agent > agent.log 2>&1 &"
         ).format(self.jenkins_url, agent_name, self.jenkins_user, self.jenkins_pass)
-        self.ssh_manager.run_command(cmd)
+        self.ssh_manager.execute_command(cmd)
         print("Jenkins agent started.")
