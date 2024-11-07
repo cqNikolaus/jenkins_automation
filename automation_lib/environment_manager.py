@@ -120,20 +120,13 @@ class EnvironmentManager:
             ssh_manager = SSHManager(agent_ip, self.key_file)
             agent_name = f"agent-{index}"
             agent_label = f"agent-label-{index}"
-            agent_installer = JenkinsAgentInstaller(
-                ssh_manager,
-                self.jenkins_url,
-                self.jenkins_user,
-                self.jenkins_pass
-            )
-            agent_installer.install_agent()
+            agent_installer = JenkinsAgentInstaller(ssh_manager)
+            agent_installer.install_dependencies()
+            
+            success = self.jenkins_job_manager.create_agent_node(agent_name=agent_name, agent_host=agent_ip, ssh_credentials_id='ssh-private-key', label=agent_label)
 
-            # Erstellen des Agenten-Knotens und Abrufen des Secrets
-            agent_secret = self.jenkins_job_manager.create_agent_node(agent_name, label=agent_label)
-            if agent_secret:
-                agent_installer.start_agent(agent_name, agent_secret)
-            else:
-                print(f"Failed to create agent node {agent_name}")
+            if not success:
+                print(f"Fehler beim Erstellen des Agent Knotens {agent_name}")
 
                 
                 

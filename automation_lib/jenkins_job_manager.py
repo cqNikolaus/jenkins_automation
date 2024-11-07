@@ -70,28 +70,36 @@ class JenkinsJobManager:
     
     
     
-    def create_agent_node(self, agent_name, label='linux'):
+    def create_agent_node(self, agent_name, agent_host, ssh_credentials_id, label='linux'):
         try:
-            # Für JNLP-Agenten setzen wir den Launcher auf 'JNLPLauncher'
-            launcher = 'JNLPLauncher'
+            launcher = {
+                'stapler-class': 'hudson.plugins.sshslaves.SSHLauncher',
+                '$class': 'hudson.plugins.sshslaves.SSHLauncher',
+                'host': agent_host,
+                'port': 22,
+                'credentialsId': ssh_credentials_id,
+                'sshHostKeyVerificationStrategy': {
+                    'stapler-class': 'hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy'
+                }
+            }
 
-            # Erstelle den Agenten
-            self.server.create_node(
-                name=agent_name,
-                nodeDescription='Automatically created agent',
-                remoteFS='/home/ubuntu',
-                labels=label,
-                exclusive=False,
-                launcher=launcher,
-                numExecutors=2
-            )
-            print(f"Agent node {agent_name} created in Jenkins.")
+            node_params = {
+                'name': agent_name,
+                'nodeDescription': 'Automatisch erstellter SSH-Agent',
+                'remoteFS': '/home/ubuntu',
+                'numExecutors': 2,
+                'mode': 'NORMAL',  # 'NORMAL' für allgemeine Nutzung
+                'labels': label,
+                'launcher': launcher,
+                'retentionStrategy': {'stapler-class': 'hudson.slaves.RetentionStrategy$Always'},
+                'nodeProperties': {'stapler-class-bag': 'true'},
+                'type': 'hudson.slaves.DumbSlave'
+            }
 
-            # Abrufen des Agenten-Secrets
-            agent_info = self.server.get_node_info(agent_name)
-            agent_secret = agent_info.get('secret') or agent_info.get('jnlpAgentSecret')
-            return agent_secret
+            self.server.create_node(**node_params)
+            print(f"Agent-Knoten {agent_name} in Jenkins erstellt.")
+            return True
         except Exception as e:
-            print(f"Failed to create agent node {agent_name}: {e}")
-            return None
+            print(f"Fehler beim Erstellen des Agent-Knotens {agent_name}: {e}")
+            return False
 
