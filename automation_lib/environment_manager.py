@@ -119,6 +119,7 @@ class EnvironmentManager:
             print(f"Setting up agent {index} at IP {agent_ip}")
             ssh_manager = SSHManager(agent_ip, self.key_file)
             agent_name = f"agent-{index}"
+            agent_label = f"agent-label-{index}"
             agent_installer = JenkinsAgentInstaller(
                 ssh_manager,
                 self.jenkins_url,
@@ -127,7 +128,7 @@ class EnvironmentManager:
             )
             agent_installer.install_agent()
             
-            if self.jenkins_job_manager.create_agent_node(agent_name):
+            if self.jenkins_job_manager.create_agent_node(agent_name, label=agent_label):
                 agent_installer.start_agent(agent_name)
             else:
                 print(f"Failed to create agent node {agent_name}")

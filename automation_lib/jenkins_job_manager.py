@@ -67,13 +67,13 @@ class JenkinsJobManager:
     
     
     
-    def create_agent_node(self, agent_name):
+    def create_agent_node(self, agent_name, label='linux'):
         node_params = {
             'name': agent_name,
             'nodeDescription': 'Automatically created agent',
             'remoteFS': '/home/ubuntu',
             'numExecutors': 2,
-            'labels': 'linux',
+            'labels': label,
             'exclusive': False,
             'launcher': {
                 'stapler-class': 'hudson.slaves.JNLPLauncher',
