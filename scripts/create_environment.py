@@ -28,17 +28,25 @@ def main():
 
 
     os_type = "ubuntu-22.04"
-    server_type = "cpx11"
+    server_type = "cx22"
 
     vm_manager = VMManager(api_token)
+    env_manager = EnvironmentManager(vm_manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
     vm_manager.create_vm("controller", os_type, server_type, ssh_key)
+    
+    # Reset agent_vms list and remove old agent_vms_info.json
+    vm_manager.agent_vms = []
+    if os.path.exists('agent_vms_info.json'):
+        os.remove('agent_vms_info.json')
     
     num_agents = 3 # change to parameter on later updates
     for i in range(num_agents):
         agent_name = f"jenkins-agent-{i}-{int(time.time())}"
-        vm_manager.create_vm("agent", os_type, server_type, ssh_key, vm_name=agent_name)
+        agent_vm_info = vm_manager.create_vm("agent", os_type, server_type, ssh_key, vm_name=agent_name)
+        if agent_vm_info is None:
+            print(f"Agent VM {i} could not be created. Exiting.")
+            sys.exit(1)
     
-    env_manager = EnvironmentManager(vm_manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
     
     try:
         if env_manager.wait_until_ready("controller"):
@@ -50,9 +58,18 @@ def main():
             # Install Jenkins
             env_manager.setup_jenkins(config_repo_url)
             print("Jenkins installed")
+            if env_manager.test_jenkins():
+                    print("Jenkins is up and running")
+            else:
+                print("Jenkins is not running")
+                sys.exit(1)
+            
+            
+            # Set up agents
+            if env_manager.initialize_jenkins_job_manager():
+                env_manager.setup_agents()
             
             # Create Jenkins Job
-            env_manager.initialize_jenkins_job_manager()
             env_manager.trigger_and_monitor_job()
 
             # Create DNS record
