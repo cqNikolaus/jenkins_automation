@@ -8,7 +8,7 @@ class JenkinsJobManager:
     def __init__(self, jenkins_url, user, password):
         try: 
             print(f"Trying to connect to Jenkins server {jenkins_url}")
-            self.server = jenkins.Jenkins(jenkins_url, username=user, password=password)
+            self.server = jenkins.Jenkins(jenkins_url, username=user, password=password, use_crumb=True)
             user_info = self.server.get_whoami()
             version = self.server.get_version()
             print(f"Connected to Jenkins {version} as {user_info['fullName']}")
