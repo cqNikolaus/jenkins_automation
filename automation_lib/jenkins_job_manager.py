@@ -1,20 +1,27 @@
 import jenkins
 import sys
 import time
+from automation_lib.jenkins_utils import generate_api_token, CrumbRequester
 
 
 class JenkinsJobManager:
     
     def __init__(self, jenkins_url, user, password):
-        try: 
-            print(f"Trying to connect to Jenkins server {jenkins_url}")
-            self.server = jenkins.Jenkins(jenkins_url, username=user, password=password, use_crumb=True)
-            user_info = self.server.get_whoami()
-            version = self.server.get_version()
-            print(f"Connected to Jenkins {version} as {user_info['fullName']}")
-        except jenkins.JenkinsException as e:
-            print(f"Failed to connect to Jenkins: {e}")
+        api_token = generate_api_token(jenkins_url, user, password)
+        if not api_token:
+            print('Failed to generate API token.')
             sys.exit(1)
+            
+        self.server = jenkins.Jenkins(
+                jenkins_url,
+                username=user,
+                password=api_token,
+                requester=CrumbRequester(
+                    username=user,
+                    password=api_token,
+                    baseurl=jenkins_url
+                )
+            )
             
             
     def trigger_job(self, job_name):
