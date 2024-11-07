@@ -56,7 +56,7 @@ class JenkinsJobManager:
                     print("Build successful")
                     return 'SUCCESS'
                 elif status == 'FAILURE':
-                    print(f"Build failed")
+                    print("Build failed")
                     return 'FAILURE'
                 else:
                     print(f"Build ended with status: {status}")
