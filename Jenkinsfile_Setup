@@ -1,10 +1,5 @@
 pipeline {
-    agent {
-        docker { 
-            image 'python-build'
-            args '-u root:root'
-        }
-    }
+    agent any
     environment {
         ZONE_NAME = "comquent.academy"
         SSH_KEY_NAME = 'clemens.nikolaus@comquent.de'
