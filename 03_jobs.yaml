@@ -6,7 +6,7 @@ jobs:
             script('''
               pipeline {
                 agent {
-                  label 'agent-1'
+                  label 'agent-label-1'
                 }
                 stages {
                   stage('test docker') {
@@ -73,7 +73,7 @@ jobs:
         definition {
           cps {
             script('''
-              node('agent-1') {
+              node() {
                 git branch: 'main', url: 'https://github.com/cqNikolaus/jenkins_automation.git'
                 sh "ls -lart"
                 sh "docker build --no-cache -t python-build ."

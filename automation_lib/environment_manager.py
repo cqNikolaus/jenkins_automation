@@ -119,7 +119,7 @@ class EnvironmentManager:
             print(f"Setting up agent {index} at IP {agent_ip}")
             ssh_manager = SSHManager(agent_ip, self.key_file)
             agent_name = f"agent-{index}"
-            agent_label = f"agent-{index}"
+            agent_label = f"agent-label-{index}"
             agent_installer = JenkinsAgentInstaller(ssh_manager)
             agent_installer.install_dependencies()
             
