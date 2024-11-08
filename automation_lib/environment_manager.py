@@ -112,7 +112,7 @@ class EnvironmentManager:
     def setup_agents(self):
         agent_count = len(self.vm_manager.agent_vms)
         for index in range(agent_count):
-            agent_ip = self.vm_manager.get_vm_ip("agent", index=index+1)
+            agent_ip = self.vm_manager.get_vm_ip("agent", index=index)
             if not agent_ip:
                 print(f"Could not retrieve IP for agent {index}")
                 continue
