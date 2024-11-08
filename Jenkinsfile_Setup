@@ -1,6 +1,7 @@
 pipeline {
     agent {
         docker { 
+            label params.AGENT_LABEL ?: 'any'
             image 'python-build'
             args '-u root:root'
         }
