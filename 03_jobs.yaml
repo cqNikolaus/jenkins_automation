@@ -5,9 +5,7 @@ jobs:
           cps {
             script('''
               pipeline {
-                agent {
-                  label 'agent-label-1'
-                }
+                agent any
                 stages {
                   stage('test docker') {
                     steps {
