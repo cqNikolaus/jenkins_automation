@@ -6,7 +6,7 @@ jobs:
             script('''
               pipeline {
                 agent {
-                  label 'agent-label-2'
+                  label 'agent-label-1'
                 }
                 stages {
                   stage('test docker') {
@@ -30,6 +30,7 @@ jobs:
           stringParam('CONFIG_REPO', '', 'GitHub link to the configuration repository.')
           stringParam('BRANCH', '', 'Branch of the configuration repository to use (optional).')
         }
+        label('agent-1')
         definition {
           cpsScm {
             scm {
@@ -53,6 +54,7 @@ jobs:
           stringParam('CONFIG_REPO', '', 'GitHub link to the configuration repository.')
           stringParam('BRANCH', '', 'Branch of the configuration repository to use (optional).')
         }
+        label('agent-1')
         definition {
           cpsScm {
             scm {
@@ -68,13 +70,12 @@ jobs:
         }
       }
 
-
   - script: >
       pipelineJob('BuildImage') {
         definition {
           cps {
             script('''
-              node() {
+              node('agent-1') {
                 git branch: 'main', url: 'https://github.com/cqNikolaus/jenkins_automation.git'
                 sh "ls -lart"
                 sh "docker build --no-cache -t python-build ."
