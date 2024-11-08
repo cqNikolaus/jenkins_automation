@@ -25,7 +25,7 @@ def main():
     zone_name = os.getenv('ZONE_NAME')
     ssh_key = os.getenv('SSH_KEY_NAME')
     job_name = os.getenv('JOB_NAME')
-    num_agents = os.getenv('NUM_AGENTS')
+    num_agents = int(os.getenv('NUM_AGENTS'))
     
 
 
