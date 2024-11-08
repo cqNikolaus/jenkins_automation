@@ -50,6 +50,7 @@ jobs:
           stringParam('DOMAIN', '', 'Specify the domain for the Jenkins instance, e.g. jenkinsinstance.comquent.academy')
           stringParam('CONFIG_REPO', '', 'GitHub link to the configuration repository.')
           stringParam('BRANCH', '', 'Branch of the configuration repository to use (optional).')
+          
         }
         definition {
           cpsScm {
