@@ -42,7 +42,7 @@ def main():
     
     num_agents = 1 # change to parameter on later updates
     for i in range(num_agents):
-        agent_name = f"jenkins-agent-{i}-{int(time.time())}"
+        agent_name = f"jenkins-agent-{i+1}-{int(time.time())}"
         agent_vm_info = vm_manager.create_vm("agent", os_type, server_type, ssh_key, vm_name=agent_name)
         if agent_vm_info is None:
             print(f"Agent VM {i} could not be created. Exiting.")
