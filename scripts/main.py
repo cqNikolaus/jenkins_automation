@@ -77,8 +77,11 @@ def main():
             print(f"Failed to create Jenkins: {e}")
             sys.exit(1)
             
-            if env_manager.initialize_jenkins_job_manager():
-                env_manager.setup_agents()
+        if env_manager.initialize_jenkins_job_manager():
+            env_manager.setup_agents()
+        else:
+            print(f"Failed to setup agents")
+            sys.exit(1)
                 
                 
                 
