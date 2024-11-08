@@ -40,7 +40,7 @@ def main():
     if os.path.exists('agent_vms_info.json'):
         os.remove('agent_vms_info.json')
     
-    num_agents = 2 # change to parameter on later updates
+    num_agents = 1 # change to parameter on later updates
     for i in range(num_agents):
         agent_name = f"jenkins-agent-{i}-{int(time.time())}"
         agent_vm_info = vm_manager.create_vm("agent", os_type, server_type, ssh_key, vm_name=agent_name)
