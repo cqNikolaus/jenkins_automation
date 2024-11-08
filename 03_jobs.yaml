@@ -6,7 +6,7 @@ jobs:
             script('''
               pipeline {
                 agent {
-                  label 'agent-label-1'
+                  label 'agent-1'
                 }
                 stages {
                   stage('test docker') {
@@ -30,7 +30,6 @@ jobs:
           stringParam('CONFIG_REPO', '', 'GitHub link to the configuration repository.')
           stringParam('BRANCH', '', 'Branch of the configuration repository to use (optional).')
         }
-        label('agent-1')
         definition {
           cpsScm {
             scm {
@@ -54,7 +53,6 @@ jobs:
           stringParam('CONFIG_REPO', '', 'GitHub link to the configuration repository.')
           stringParam('BRANCH', '', 'Branch of the configuration repository to use (optional).')
         }
-        label('agent-1')
         definition {
           cpsScm {
             scm {
