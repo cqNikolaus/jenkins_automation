@@ -32,12 +32,13 @@ def main():
     dns_api_token = os.getenv('H_DNS_API_TOKEN')
     jenkins_user = os.getenv('JENKINS_USER')
     jenkins_pass = os.getenv('JENKINS_PASS')
-    domain = os.getenv('DOMAIN')
+    subdomain = os.getenv('SUBDOMAIN')
     ssh_private_key = os.getenv('H_SSH_PRIVATE_KEY')
     zone_name = os.getenv('ZONE_NAME')
     ssh_key = os.getenv('SSH_KEY_NAME')
     job_name = os.getenv('JOB_NAME')
     num_agents = 1  # Modify this value to test the pipeline with a specific number of agents
+    domain = f"{subdomain}.{zone_name}"
     
     
     os_type = "ubuntu-22.04"
