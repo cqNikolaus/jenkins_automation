@@ -12,6 +12,8 @@ pipeline {
     JOB_NAME = 'docker-test'
     SSL_EMAIL = 'clemens.nikolaus@comquent.de'
     CONFIG_REPO = "${params.CONFIG_REPO}"
+    SERVER_TYPE = "${params.SERVER_TYPE}"
+
   }
   stages {
     stage('Checkout Workspace') {

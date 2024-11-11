@@ -31,7 +31,7 @@ def main():
 
 
     os_type = "ubuntu-22.04"
-    server_type = "cx22"
+    server_type = os.getenv('SERVER_TYPE')
     
     
     for instance_number in range(1, num_instances + 1):

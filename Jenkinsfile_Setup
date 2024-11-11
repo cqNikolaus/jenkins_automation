@@ -13,6 +13,7 @@ pipeline {
         SUBDOMAIN = "${params.SUBDOMAIN}"
         CONFIG_REPO = "${params.CONFIG_REPO}"
         NUM_INSTANCES = "${params.NUM_INSTANCES}"
+        SERVER_TYPE = "${params.SERVER_TYPE}"
     }
     stages {
         stage('Checkout Workspace') {
