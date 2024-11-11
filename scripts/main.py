@@ -37,7 +37,7 @@ def main():
     zone_name = os.getenv('ZONE_NAME')
     ssh_key = os.getenv('SSH_KEY_NAME')
     job_name = os.getenv('JOB_NAME')
-    num_agents = int(os.getenv('NUM_AGENTS'))
+    num_agents = 1  # Modify this value to test the pipeline with a specific number of agents
     
     
     os_type = "ubuntu-22.04"

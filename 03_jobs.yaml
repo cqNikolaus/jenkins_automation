@@ -27,7 +27,6 @@ jobs:
           stringParam('SUBDOMAIN', '', 'Specify the subdomain for the Jenkins instance, e.g. "jenkins-instance"')
           stringParam('CONFIG_REPO', '', 'GitHub link to the configuration repository.')
           stringParam('BRANCH', '', 'Branch of the configuration repository to use (optional).')
-          stringParam('NUM_AGENTS', '1', 'Specify the number of agents.')
         }
         definition {
           cpsScm {
