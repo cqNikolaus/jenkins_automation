@@ -162,7 +162,7 @@ class EnvironmentManager:
         if not self.jenkins_job_manager:
             self.initialize_jenkins_job_manager()
         try:
-            node_name = 'built-in node'
+            node_name = 'Built-In Node'
             node_config_xml = self.jenkins_job_manager.server.get_node_config(node_name)
             root = ET.fromstring(node_config_xml)
             
