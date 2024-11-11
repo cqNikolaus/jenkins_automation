@@ -36,7 +36,7 @@ def main():
     
     for instance_number in range(1, num_instances + 1):
         domain = f"{subdomain}-{instance_number}.{zone_name}"
-        print(f"Creating instance {instance_number} for domain {domain}")
+        print(f"Creating instance {instance_number}/{num_instances} for domain {domain}")
     
 
         vm_manager = VMManager(api_token)
