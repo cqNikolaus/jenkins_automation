@@ -159,13 +159,13 @@ class EnvironmentManager:
                 
     def set_label_on_controller(self, label, num_agents):
         try:
-            node_config = self.jenkins_job_manager.get_node_info('(master)')
+            node_config = self.jenkins_job_manager.get_node_info('Built-In Node')
             node_config['labelString'] = label
             if num_agents >= 1:
                 node_config['numExecutors'] = 0
             else:
                 node_config['numExecutors'] = 2
-            self.jenkins_job_manager.server.reconfig_node('(master)', node_config)
+            self.jenkins_job_manager.server.reconfig_node('Built-In Node', node_config)
             print(f"Label {label} set on controller node")
         except Exception as e:
             print(f"Error setting label on controller node: {e}")
