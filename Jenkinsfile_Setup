@@ -10,9 +10,10 @@ pipeline {
         SSH_KEY_NAME = 'clemens.nikolaus@comquent.de'
         JOB_NAME = 'docker-test'
         SSL_EMAIL = 'clemens.nikolaus@comquent.de'
-        DOMAIN = "${params.DOMAIN}"
+        SUBDOMAIN = "${params.SUBDOMAIN}"
         CONFIG_REPO = "${params.CONFIG_REPO}"
         NUM_AGENTS = "${params.NUM_AGENTS}"
+        NUM_INSTANCES = "${params.NUM_INSTANCES}"
     }
     stages {
         stage('Checkout Workspace') {
@@ -33,7 +34,7 @@ pipeline {
                         def branchOption = branchParam ? "--branch ${branchParam}" : ""
                         def command = """
                             set -e
-                            echo "Setting up the environment with DOMAIN=${env.DOMAIN}"
+                            echo "Setting up the environment with DOMAIN=${env.SUBDOMAIN}.${env.ZONE_NAME}"
                             pip install -e .
                             python scripts/create_environment.py --config-repo ${env.CONFIG_REPO} ${branchOption}
                         """

@@ -6,7 +6,7 @@ pipeline {
     }
   }
   environment {
-    DOMAIN = "${params.DOMAIN}"
+    SUBDOMAIN = "${params.SUBDOMAIN}"
     ZONE_NAME = "comquent.academy" 
     SSH_KEY_NAME = 'clemens.nikolaus@comquent.de'
     JOB_NAME = 'docker-test'
@@ -78,7 +78,7 @@ pipeline {
         sh """
           set -e
           echo "test dns record"
-          dig +short ${env.DOMAIN} @8.8.8.8
+          dig +short ${env.SUBDOMAIN}.${env.ZONE_NAME} @8.8.8.8
           if [ \$? -ne 0 ]; then
             echo "DNS record does not exist or cannot be resolved."
             exit 1
@@ -108,7 +108,7 @@ pipeline {
           set -e
           echo "test ssl certificate"
           sleep 10
-          CERT_INFO=\$(echo | openssl s_client -connect ${env.DOMAIN}:443 -servername ${env.DOMAIN} -showcerts 2>/dev/null \\
+          CERT_INFO=\$(echo | openssl s_client -connect ${env.SUBDOMAIN}.${env.ZONE_NAME}:443 -servername ${env.SUBDOMAIN}.${env.ZONE_NAME} -showcerts 2>/dev/null \\
           | sed -n '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' \\
           | openssl x509 -noout -dates -subject)
           if [ -z "\\\$CERT_INFO" ]; then
