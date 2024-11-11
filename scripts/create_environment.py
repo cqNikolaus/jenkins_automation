@@ -76,9 +76,6 @@ def main():
                     sys.exit(1)
                     
                 
-                # Set label on controler node
-                env_manager.set_label_on_controller('build-node', num_agents)
-                
                 # Set up agents 
                 if num_agents >=1:
                     if env_manager.initialize_jenkins_job_manager():
