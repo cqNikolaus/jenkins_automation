@@ -164,7 +164,7 @@ class EnvironmentManager:
             
         # show node names (debug)
         print("node names:")
-        print("self.jenkins_job_manager.server.get_nodes()")
+        print(self.jenkins_job_manager.server.get_nodes())
         
         try:
             node_name = 'Built-In Node'
