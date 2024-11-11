@@ -3,6 +3,7 @@ import sys
 import time
 import socket
 import jenkins
+import xml.etree.ElementTree as ET
 from automation_lib import SSHManager, JenkinsInstaller, JenkinsJobManager, NginxInstaller, VMManager, JenkinsAgentInstaller
 
 
@@ -161,16 +162,31 @@ class EnvironmentManager:
         if not self.jenkins_job_manager:
             self.initialize_jenkins_job_manager()
         try:
-            node_config = self.jenkins_job_manager.server.get_node_info('Built-In Node')
-            node_config['labelString'] = label
-            if num_agents >= 1:
-                node_config['numExecutors'] = 0
+            node_name = 'built-in'
+            node_config_xml = self.jenkins_job_manager.server.get_node_config(node_name)
+            root = ET.fromstring(node_config_xml)
+            
+            label_elem = root.find("label")
+            if label_elem is not None:
+                label_elem.text = label
             else:
-                node_config['numExecutors'] = 2
-            self.jenkins_job_manager.server.reconfig_node('Built-In Node', node_config)
-            print(f"Label {label} set on controller node")
+                label_elem = ET.SubElement(root, "label")
+                label_elem.text = label
+            
+            num_executors_elem = root.find("numExecutors")
+            if num_executors_elem is not None:
+                num_executors_elem.text = "0" if num_agents >= 1 else "2"
+
+            new_node_config_xml = ET.tostring(root, encoding="unicode")
+
+            self.jenkins_job_manager.server.reconfig_node(node_name, new_node_config_xml)
+            print(f"Label '{label}' and executor count on the controller node '{node_name}' successfully set.")
+            
+        except jenkins.NotFoundException:
+            print(f"Node '{node_name}' not found. Check the name of the controller node.")
+            
         except Exception as e:
-            print(f"Error setting label on controller node: {e}")
+            print(f"Error setting the label on the controller node: {e}")
 
         
             
