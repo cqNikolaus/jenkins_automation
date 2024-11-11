@@ -42,7 +42,7 @@ def main():
         vm_manager = VMManager(api_token)
         env_manager = EnvironmentManager(vm_manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
         
-        controller_name = f"jenkins-controller-{instance_number}"
+        controller_name = f"jenkins-controller-{instance_number}-{int(time.time())}"
         vm_manager.create_vm("controller", os_type, server_type, ssh_key, vm_name=controller_name)
         
         # Reset agent_vms list and remove old agent_vms_info.json
