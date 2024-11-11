@@ -158,6 +158,8 @@ class EnvironmentManager:
                 
                 
     def set_label_on_controller(self, label, num_agents):
+        if not self.jenkins_job_manager:
+            self.initialize_jenkins_job_manager()
         try:
             node_config = self.jenkins_job_manager.get_node_info('Built-In Node')
             node_config['labelString'] = label
