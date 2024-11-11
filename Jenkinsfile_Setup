@@ -34,7 +34,7 @@ pipeline {
                         def branchOption = branchParam ? "--branch ${branchParam}" : ""
                         def command = """
                             set -e
-                            echo "Setting up the environment with DOMAIN=${env.SUBDOMAIN}.${env.ZONE_NAME}"
+                            echo "Setting up the environment"
                             pip install -e .
                             python scripts/create_environment.py --config-repo ${env.CONFIG_REPO} ${branchOption}
                         """
