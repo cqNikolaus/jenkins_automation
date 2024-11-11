@@ -51,7 +51,6 @@ jobs:
           stringParam('CONFIG_REPO', '', 'GitHub link to the configuration repository.')
           stringParam('BRANCH', '', 'Branch of the configuration repository to use (optional).')
           stringParam('NUM_INSTANCES', '1', 'Specify the number of Jenkins instances to set up.')
-          stringParam('NUM_AGENTS', '1', 'Specify the number of agents per Jenkins instance.')
         }
         definition {
           cpsScm {

@@ -152,54 +152,6 @@ class EnvironmentManager:
             agent_installer = JenkinsAgentInstaller(ssh_manager)
             agent_installer.install_dependencies()
             
-            success = self.jenkins_job_manager.create_agent_node(agent_name=agent_name, agent_host=agent_ip, ssh_credentials_id='ssh-private-key', label=agent_label)
-
-            if not success:
-                print(f"Fehler beim Erstellen des Agent Knotens {agent_name}")
-                
-                
-    def set_label_on_controller(self, label, num_agents):
-        if not self.jenkins_job_manager:
-            self.initialize_jenkins_job_manager()
-            
-        # show node names (debug)
-        print("node names:")
-        print(self.jenkins_job_manager.server.get_nodes())
-        
-        try:
-            node_name = 'Built-In Node'
-            node_config_xml = self.jenkins_job_manager.server.get_node_config(node_name)
-            root = ET.fromstring(node_config_xml)
-            
-            label_elem = root.find("label")
-            if label_elem is not None:
-                label_elem.text = label
-            else:
-                label_elem = ET.SubElement(root, "label")
-                label_elem.text = label
-            
-            num_executors_elem = root.find("numExecutors")
-            if num_executors_elem is not None:
-                num_executors_elem.text = "0" if num_agents >= 1 else "2"
-
-            new_node_config_xml = ET.tostring(root, encoding="unicode")
-
-            self.jenkins_job_manager.server.reconfig_node(node_name, new_node_config_xml)
-            print(f"Label '{label}' and executor count on the controller node '{node_name}' successfully set.")
-            
-        except jenkins.NotFoundException:
-            print(f"Node '{node_name}' not found. Check the name of the controller node.")
-            
-        except Exception as e:
-            print(f"Error setting the label on the controller node: {e}")
-
-        
-            
-            
-            
-            
-            
-            
             
 
     def cleanup(self, delete_vm=True):

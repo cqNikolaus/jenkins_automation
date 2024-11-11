@@ -67,34 +67,4 @@ class JenkinsJobManager:
         return False      
     
     
-    
-    
-    
-    
-    def create_agent_node(self, agent_name, agent_host, ssh_credentials_id, label='linux'):
-        try:
-            launcher_params = {
-                'port': '22', 
-                'credentialsId': ssh_credentials_id,
-                'host': agent_host,
-                'sshHostKeyVerificationStrategy': {
-                    'stapler-class': 'hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy'
-                }
-            }
-
-            self.server.create_node(
-                name=agent_name,
-                nodeDescription='Automatisch erstellter SSH-Agent',
-                remoteFS='/root',
-                labels=label,
-                exclusive=False,  
-                launcher=jenkins.LAUNCHER_SSH,
-                launcher_params=launcher_params,
-                numExecutors=2
-            )
-            print(f"Agent-Knoten {agent_name} in Jenkins erstellt.")
-            return True
-        except Exception as e:
-            print(f"Fehler beim Erstellen des Agent-Knotens {agent_name}: {e}")
-            return False
 

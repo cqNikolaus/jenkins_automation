@@ -12,7 +12,6 @@ pipeline {
         SSL_EMAIL = 'clemens.nikolaus@comquent.de'
         SUBDOMAIN = "${params.SUBDOMAIN}"
         CONFIG_REPO = "${params.CONFIG_REPO}"
-        NUM_AGENTS = "${params.NUM_AGENTS}"
         NUM_INSTANCES = "${params.NUM_INSTANCES}"
     }
     stages {
