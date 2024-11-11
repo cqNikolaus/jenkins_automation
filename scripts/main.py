@@ -37,7 +37,7 @@ def main():
     zone_name = os.getenv('ZONE_NAME')
     ssh_key = os.getenv('SSH_KEY_NAME')
     job_name = os.getenv('JOB_NAME')
-    num_agents = 1  # Modify this value to test the pipeline with a specific number of agents
+    num_agents = 0  # int(os.getenv('NUM_AGENTS'))
     domain = f"{subdomain}.{zone_name}"
     
     
@@ -55,20 +55,21 @@ def main():
         if os.path.exists('agent_vms_info.json'):
             os.remove('agent_vms_info.json')
             
-
-        for i in range(num_agents):
-            agent_name = f"jenkins-agent-{i+1}-{int(time.time())}"
-            agent_vm_info = vm_manager.create_vm("agent", os_type, server_type, ssh_key, vm_name=agent_name)
-            if agent_vm_info is None:
-                print(f"Agent VM {i} could not be created. Exiting.")
-                sys.exit(1)
+        if num_agents >= 1:
+            for i in range(num_agents):
+                agent_name = f"jenkins-agent-{i+1}-{int(time.time())}"
+                agent_vm_info = vm_manager.create_vm("agent", os_type, server_type, ssh_key, vm_name=agent_name)
+                if agent_vm_info is None:
+                    print(f"Agent VM {i} could not be created. Exiting.")
+                    sys.exit(1)
         
         try:
             if env_manager.wait_until_ready("controller"):
-                for i in range(num_agents):
-                    if not env_manager.wait_until_ready("agent", index=i):
-                        print(f"Agent VM {i} is not ready")
-                        sys.exit(1)
+                if num_agents >= 1:
+                    for i in range(num_agents):
+                        if not env_manager.wait_until_ready("agent", index=i):
+                            print(f"Agent VM {i} is not ready")
+                            sys.exit(1)
                 env_manager.setup_jenkins(config_repo_url)
                 if env_manager.test_jenkins():
                     print("Jenkins is up and running")
@@ -78,12 +79,7 @@ def main():
         except Exception as e:
             print(f"Failed to create Jenkins: {e}")
             sys.exit(1)
-            
-        if env_manager.initialize_jenkins_job_manager():
-            env_manager.setup_agents()
-        else:
-            print(f"Failed to setup agents")
-            sys.exit(1)
+
                 
                 
                 

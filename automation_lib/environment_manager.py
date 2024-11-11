@@ -3,7 +3,6 @@ import sys
 import time
 import socket
 import jenkins
-import xml.etree.ElementTree as ET
 from automation_lib import SSHManager, JenkinsInstaller, JenkinsJobManager, NginxInstaller, VMManager, JenkinsAgentInstaller
 
 
