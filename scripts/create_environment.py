@@ -75,6 +75,7 @@ def main():
                     print("Jenkins is not running")
                     sys.exit(1)
                     
+                
                 # Set label on controler node
                 env_manager.set_label_on_controller('build-node', num_agents)
                 

@@ -161,6 +161,10 @@ class EnvironmentManager:
     def set_label_on_controller(self, label, num_agents):
         if not self.jenkins_job_manager:
             self.initialize_jenkins_job_manager()
+            
+        # show node names (debug)
+        print("node names:")
+        self.jenkins_job_manager.server.get_nodes()
         try:
             node_name = 'Built-In Node'
             node_config_xml = self.jenkins_job_manager.server.get_node_config(node_name)
