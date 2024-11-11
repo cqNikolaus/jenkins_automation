@@ -109,27 +109,6 @@ class EnvironmentManager:
         else:
             return True
         
-    def setup_agents(self):
-        agent_count = len(self.vm_manager.agent_vms)
-        for index in range(agent_count):
-            agent_ip = self.vm_manager.get_vm_ip("agent", index=index)
-            if not agent_ip:
-                print(f"Could not retrieve IP for agent {index}")
-                continue
-            print(f"Setting up agent {index} at IP {agent_ip}")
-            ssh_manager = SSHManager(agent_ip, self.key_file)
-            agent_name = f"agent-{index + 1}"
-            agent_label = f"agent-label-{index + 1}"
-            agent_installer = JenkinsAgentInstaller(ssh_manager)
-            agent_installer.install_dependencies()
-            
-            success = self.jenkins_job_manager.create_agent_node(agent_name=agent_name, agent_host=agent_ip, ssh_credentials_id='ssh-private-key', label=agent_label)
-
-            if not success:
-                print(f"Fehler beim Erstellen des Agent Knotens {agent_name}")
-
-                
-                
             
     def trigger_and_monitor_job(self):
         if not self.jenkins_job_manager:
@@ -153,6 +132,49 @@ class EnvironmentManager:
         else:
             print(f"Job ended with status: {result}")
             sys.exit(1)        
+            
+            
+    def setup_agents(self):
+        agent_count = len(self.vm_manager.agent_vms)
+        for index in range(agent_count):
+            agent_ip = self.vm_manager.get_vm_ip("agent", index=index)
+            if not agent_ip:
+                print(f"Could not retrieve IP for agent {index}")
+                continue
+            print(f"Setting up agent {index} at IP {agent_ip}")
+            ssh_manager = SSHManager(agent_ip, self.key_file)
+            agent_name = f"agent-{index + 1}"
+            agent_label = f"agent-label-{index + 1}"
+            agent_installer = JenkinsAgentInstaller(ssh_manager)
+            agent_installer.install_dependencies()
+            
+            success = self.jenkins_job_manager.create_agent_node(agent_name=agent_name, agent_host=agent_ip, ssh_credentials_id='ssh-private-key', label=agent_label)
+
+            if not success:
+                print(f"Fehler beim Erstellen des Agent Knotens {agent_name}")
+                
+                
+    def set_label_on_controller(self, label, num_agents):
+        try:
+            node_config = self.jenkins_job_manager.get_node_info('(master)')
+            node_config['labelString'] = label
+            if num_agents >= 1:
+                node_config['numExecutors'] = 0
+            else:
+                node_config['numExecutors'] = 2
+            self.jenkins_job_manager.server.reconfig_node('(master)', node_config)
+            print(f"Label {label} set on controller node")
+        except Exception as e:
+            print(f"Error setting label on controller node: {e}")
+
+        
+            
+            
+            
+            
+            
+            
+            
 
     def cleanup(self, delete_vm=True):
         if self.ssh_manager:
