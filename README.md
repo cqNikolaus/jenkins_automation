@@ -12,7 +12,7 @@ Diese Dokumentation dient als Einführung und Leitfaden für die Nutzung unseres
 
 Der Jenkins Service ermöglicht es, basierend auf einem bereitgestellten Konfigurations-Repository:
 
-- **Automatisiertes Aufsetzen** einer neuen Jenkins-Instanz.
+- **Automatisiertes Aufsetzen** einer oder mehrerer neuer Jenkins-Instanzen.
 - **Anbindung an einen DNS-Eintrag** unter der Domain `*.comquent.academy`.
 - **SSL-Verschlüsselung** durch automatische Zertifikatserstellung.
 - **Einrichtung eines Reverse Proxys** mittels Nginx für HTTPS-Zugriff.
@@ -52,8 +52,9 @@ Ihr Repository muss folgende Dateien enthalten:
             password: "${ADMIN_PASS}"
   ```
 
-  - ${ADMIN_USER} und ${ADMIN_PASS} müssen als id und password in der YAML-Konfiguration festgelegt sein. Dadurch werden die Zugangsdaten von der ursprünglichen Jenkins-Instanz auf die neue Instanz übertragen, sodass Benutzername und Passwort beim Einloggen identisch sind.
+  - `${ADMIN_USER}` und `${ADMIN_PASS}` müssen als `id` und `password` in der YAML-Konfiguration festgelegt sein. Dadurch werden die Zugangsdaten von der ursprünglichen Jenkins-Instanz auf die neue Instanz übertragen, sodass Benutzername und Passwort beim Einloggen identisch sind.
   - **Hinweis**: Dies ist ein temporärer Workaround und wird in zukünftigen Versionen durch eine sichere Credential-Verwaltung ersetzt.
+
 ---
 
 ## Anleitung zur Erstellung des Dockerfiles
@@ -119,7 +120,6 @@ USER jenkins
 
 - **Benutzerwechsel**: Am Ende wird zurück zum `jenkins` Benutzer gewechselt.
 
-
 ---
 
 ## Zusätzliche Hinweise
@@ -143,7 +143,6 @@ Branch: bootstrap
 
 Hinweis: Diese Funktion kann nützlich sein, um eine identische Kopie der bestehenden Jenkins-Instanz zu erstellen oder um schnell eine vorkonfigurierte Umgebung zu erhalten.
 
-
 ---
 
 ## Verfügbare Jenkins-Jobs
@@ -155,29 +154,34 @@ Hinweis: Diese Funktion kann nützlich sein, um eine identische Kopie der besteh
 
 ### 2. **`jenkins-setup`**
 
-- **Funktion**: Setzt eine neue Jenkins-Instanz mit der gewünschten Konfiguration auf.
+- **Funktion**: Setzt eine oder mehrere neue Jenkins-Instanzen mit der gewünschten Konfiguration auf.
 - **Parameter**:
-  - **Domain**: Muss aktuell auf `.comquent.academy` enden.
+  - **Subdomain**: Der vollständige Domainname endet immer auf `.comquent.academy`. Die Subdomain: z.B. `jenkins` für `jenkins.comquent.academy`.
   - **Konfigurations-Repository**: URL zu Ihrem GitHub-Repository.
   - **Branch** (optional): Falls Sie einen spezifischen Branch nutzen möchten.
+  - **Anzahl der Instanzen (NUM_INSTANCES)**: Gibt an, wie viele Jenkins-Instanzen erstellt werden sollen. Die Subdomains werden dabei durchnummeriert, z.B. `jenkins-1.comquent.academy`, `jenkins-2.comquent.academy` usw.
+  - **Server-Typ**: Spezifiziert den Hetzner Server-Typ für alle VMs. Mögliche Eingaben sind `cx22`, `cpx11`, `cpx21`, `cpx31`, `cpx41`.
 
 ### 3. **`jenkins-env-automation`**
 
 - **Funktion**: Führt das komplette Setup durch, inklusive Aufbau und Abbau der Umgebung. Dient als Test-Pipeline.
-- **Parameter**: Gleich wie bei `jenkins-setup`.
+- **Parameter**:
+  - **Subdomain**: Der vollständige Domainname endet immer auf `.comquent.academy`. Die Subdomain: z.B. `jenkins` für `jenkins.comquent.academy`.
+  - **Konfigurations-Repository**: URL zu Ihrem GitHub-Repository.
+  - **Branch** (optional): Falls Sie einen spezifischen Branch nutzen möchten.
+  - **Server-Typ**: Spezifiziert den Hetzner Server-Typ für alle VMs. Mögliche Eingaben sind `cx22`, `cpx11`, `cpx21`, `cpx31`, `cpx41`.
 
 ### 4. **`docker-test`**
 
 - **Funktion**: Wird automatisch beim Start ausgeführt, um die Docker-Funktionalität zu testen.
-- **Hinweis**: Um den `docker-test` Job nutzen zu können, muss Ihr Docker-Image entsprechend konfiguriert sein (siehe weiter unten).
+- **Hinweis**: Um den `docker-test` Job nutzen zu können, muss Ihr Docker-Image entsprechend konfiguriert sein (siehe weiter oben).
+
 ---
 
 ## Aktuelle Einschränkungen und zukünftige Entwicklungen
 
 - **Credential Management**: Derzeit werden die Zugangsdaten unsicher eingebunden. In zukünftigen Versionen wird ein zentrales Credential Management (z.B. mittels HashiCorp Vault) implementiert.
 
-- **Parameterisierung**: Geplant ist eine erweiterte Parameterisierung, um beispielsweise die Anzahl der zu erstellenden Jenkins-Instanzen festlegen zu können.
+- **Automatisierte Agent-Erstellung aus YAML**: Zukünftig sollen die Jenkins-Agenten direkt aus der eigenen YAML-Konfiguration erstellt werden. Das Skript wird die Anzahl der Agenten aus der YAML-Datei auslesen, die entsprechenden VM-Instanzen erstellen und die Konfiguration automatisiert anpassen.
 
 - **Fehlerbehandlung**: Die Skripte werden in zukünftigen Versionen eine umfangreichere Fehlerbehandlung erhalten.
-
-
