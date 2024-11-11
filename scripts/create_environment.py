@@ -74,11 +74,14 @@ def main():
                 else:
                     print("Jenkins is not running")
                     sys.exit(1)
+                    
+                # Set label on controler node
+                env_manager.set_label_on_controller('build-node', num_agents)
                 
-                
-                # Set up agents
-                if env_manager.initialize_jenkins_job_manager():
-                    env_manager.setup_agents()
+                # Set up agents 
+                if num_agents >=1:
+                    if env_manager.initialize_jenkins_job_manager():
+                        env_manager.setup_agents()
                 
                 # Create Jenkins Job
                 env_manager.trigger_and_monitor_job()

@@ -73,7 +73,7 @@ jobs:
         definition {
           cps {
             script('''
-              node() {
+              node("build-node") {
                 git branch: 'main', url: 'https://github.com/cqNikolaus/jenkins_automation.git'
                 sh "ls -lart"
                 sh "docker build --no-cache -t python-build ."
