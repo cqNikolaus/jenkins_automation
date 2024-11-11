@@ -74,17 +74,10 @@ jobs:
         definition {
           cps {
             script('''
-              pipeline {
-                agent any
-                stages {
-                  stage('Checkout and Build') {
-                    steps {
-                      git branch: 'main', url: 'https://github.com/cqNikolaus/jenkins_automation.git'
-                      sh "ls -lart"
-                      sh "docker build --no-cache -t python-build ."
-                    }
-                  }
-                }
+              node('any') {
+                git branch: 'main', url: 'https://github.com/cqNikolaus/jenkins_automation.git'
+                sh "ls -lart"
+                sh "docker build --no-cache -t python-build ."
               }
             ''')
             sandbox()
