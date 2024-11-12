@@ -1,6 +1,10 @@
 import os
 import sys
 import shlex
+import tempfile
+import shutil
+import subprocess
+import yaml
 
 
 class JenkinsInstaller:
@@ -13,6 +17,7 @@ class JenkinsInstaller:
         self.api_token = os.getenv('H_API_TOKEN')
         self.dns_api_token = os.getenv('H_DNS_API_TOKEN')
         self.ssh_private_key = os.getenv('H_SSH_PRIVATE_KEY')
+        self.local_repo_path = None
         
 
     def install_docker(self):
@@ -32,6 +37,15 @@ class JenkinsInstaller:
         for cmd in commands:
             self.ssh_manager.execute_command(cmd)
             
+    def clone_config_repo_local(self):
+        self.local_repo_path = tempfile.mkdtemp()
+        try:
+            clone_cmd = f("git clone {self.config_repo_url} {self.local_repo_path}")
+            subprocess.run(clone_cmd, shell=True, check=True)
+            print(f"Config repo cloned to {self.local_repo_path}")
+        except subprocess.CalledProcessError as e:
+            print(f"Error cloning config repo: {e}")
+            sys.exit(1)
 
     def build_jenkins_docker_image(self):
         self.ssh_manager.execute_command(

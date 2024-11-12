@@ -1,10 +1,10 @@
-setuptools
+ setuptools
 requests
 paramiko
 python-jenkins
 scp
 dnspython
-python-dotenv
+PyYAML
 .
 
 

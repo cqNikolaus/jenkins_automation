@@ -24,7 +24,7 @@ jobs:
       pipelineJob('jenkins-env-automation') {
         description('This job automates Jenkins setup, testing, and environment management.')
         parameters {
-          stringParam('SUBDOMAIN', '', 'Specify the subdomain for the Jenkins instance, e.g. "jenkins-instance"')
+          stringParam('SUBDOMAIN', '', 'Specify the subdomain for the Jenkins instance, e.g. "jenkinsinstance"')
           stringParam('CONFIG_REPO', '', 'GitHub link to the configuration repository.')
           stringParam('BRANCH', '', 'Branch of the configuration repository to use (optional).')
           stringParam('SERVER_TYPE', 'cx22', 'Specify the Hetzner server type for the Jenkins instance VM. Options are: cx22, cpx11, cpx21, cpx31, cpx41')
@@ -48,7 +48,7 @@ jobs:
       pipelineJob('jenkins-setup') {
         description('This job sets up Jenkins using the Jenkinsfile_setup.')
         parameters {
-          stringParam('SUBDOMAIN', '', 'Specify the subdomain for the Jenkins instances, e.g. jenkins-instance')
+          stringParam('SUBDOMAIN', '', 'Specify the subdomain for the Jenkins instances, e.g. jenkinsinstance')
           stringParam('CONFIG_REPO', '', 'GitHub link to the configuration repository.')
           stringParam('BRANCH', '', 'Branch of the configuration repository to use (optional).')
           stringParam('SERVER_TYPE', 'cx22', 'Specify the Hetzner server type for the Jenkins instance VM. Options are: cx22, cpx11, cpx21, cpx31, cpx41')
