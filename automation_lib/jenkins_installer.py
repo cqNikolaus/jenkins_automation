@@ -46,6 +46,10 @@ class JenkinsInstaller:
         except subprocess.CalledProcessError as e:
             print(f"Error cloning config repo: {e}")
             sys.exit(1)
+            
+    def cleanup_local_repo(self):
+        if self.local_repo_path and os.path.exists(self.local_repo_path):
+            shutil.rmtree(self.local_repo_path)
 
     def build_jenkins_docker_image(self):
         self.ssh_manager.execute_command(
