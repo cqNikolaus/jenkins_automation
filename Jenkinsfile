@@ -16,11 +16,6 @@ pipeline {
 
   }
   stages {
-    stage('Checkout Workspace') {
-      steps {
-        git branch: 'main', url: 'https://github.com/cqNikolaus/jenkins_automation.git'
-      }
-    }
     stage('Create Jenkins Instance') {
       steps {
         withCredentials([
