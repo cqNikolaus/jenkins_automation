@@ -87,7 +87,6 @@ class EnvironmentManager:
             for attempt in range(1, max_retries + 1):
                 try: 
                     self.jenkins_job_manager = JenkinsJobManager(self.jenkins_url, self.jenkins_user, self.jenkins_pass)
-                    print("Jenkins is up and running")
                     return True
                 except Exception as e:
                     print(f"Attempt {attempt}: Failed to connect to Jenkins: {e}")
