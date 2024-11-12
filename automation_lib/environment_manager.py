@@ -66,11 +66,14 @@ class EnvironmentManager:
         installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
         installer.install_jenkins()
         print("Waiting for Jenkins to initialize...")
+        print("print before sleep)")
         time.sleep(40)
-        
+        print("print before clone repo")
         installer.clone_config_repo_local()
+        print("repo cloned")
         # Parse and retrieve agent definitions from the Jenkins YAML configuration files
         agents = installer.parse_jenkins_yaml_files()
+        print("agents parsed")
         num_agents = len(agents)
         print(f"Number of agents specified in YAML file: {num_agents}")
         
