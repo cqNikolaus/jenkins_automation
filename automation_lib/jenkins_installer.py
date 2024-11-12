@@ -40,7 +40,7 @@ class JenkinsInstaller:
     def clone_config_repo_local(self):
         self.local_repo_path = tempfile.mkdtemp()
         try:
-            clone_cmd = f("git clone {self.config_repo_url} {self.local_repo_path}")
+            clone_cmd = (f"git clone {self.config_repo_url} {self.local_repo_path}")
             subprocess.run(clone_cmd, shell=True, check=True)
             print(f"Config repo cloned to {self.local_repo_path}")
         except subprocess.CalledProcessError as e:
@@ -63,6 +63,33 @@ class JenkinsInstaller:
         with open(key_file, 'r') as file:
             key_content = file.read()
         return key_content
+    
+    def parse_jenkins_yaml_files(self):
+        agents = []
+        yaml_files = []
+        # Collect all YAML files in the specified repository path
+        for root, dirs, files in os.walk(self.local_repo_path):
+            for file in files:
+                if file.endswith('.yaml') or file.endswith('.yml'):
+                    yaml_file = os.path.join(root, file)
+                    yaml_files.append(yaml_file)
+        # For each YAML file found, parse its content and create a dictionary for each agent node
+        # containing the YAML file path, node index, and node data
+        for yaml_file in yaml_files:
+            with open(yaml_file, 'r') as f:
+                data = yaml.safe_load(f)
+            if data and 'jenkins' in data and 'nodes' in data['jenkins']:
+                nodes = data['jenkins']['nodes']
+                for index, node in enumerate(nodes):
+                    if 'permanent' in node:
+                        launcher = node['permanent'].get('launcher', {})
+                        if 'ssh' in launcher:
+                            agents.append({
+                                'yaml_file': yaml_file,
+                                'node_index': index,
+                                'node_data': node
+                            })
+        return agents
 
 
 

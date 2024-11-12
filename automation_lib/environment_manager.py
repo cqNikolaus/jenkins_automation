@@ -62,11 +62,18 @@ class EnvironmentManager:
     def setup_jenkins(self, config_repo_url):
         self.controller_ip = self.vm_manager.get_vm_ip("controller")
         print(f"self controller ip: {self.controller_ip}")
-        self.ssh_manager = SSHManager(self.controller_ip, self.key_file)
+        self.ssh_manager = SSHManager(self.controller_ip, self.key_file)     
         installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
         installer.install_jenkins()
         print("Waiting for Jenkins to initialize...")
         time.sleep(40)
+        
+        installer.clone_config_repo_local()
+        # Parse and retrieve agent definitions from the Jenkins YAML configuration files
+        agents = installer.parse_jenkins_yaml_files()
+        num_agents = len(agents)
+        print(f"Number of agents specified in YAML file: {num_agents}")
+        
         
     
         
@@ -135,28 +142,6 @@ class EnvironmentManager:
             sys.exit(1)        
             
             
-    def get_num_agents_from_yaml(self, repo_path):
-        num_agents = 0
-        yaml_files = []
-        # Collect all YAML files in the specified repository path
-        for root, dirs, files in os.walk(repo_path):
-            for file in files:
-                if file.endswith('.yaml') or file.endswith('.yml'):
-                    yaml_file = os.path.join(root, file)
-                    yaml_files.append(yaml_file)
-        # Parse each YAML file in the list
-        for yaml_file in yaml_files:
-            with open(yaml_file, 'r') as f:
-                data = yaml.safe_load(f)
-        # Increment num_agents for each existing SSH agent node found
-            if data and 'jenkins' in data and 'nodes' in data['jenkins']:
-                nodes = data['jenkins']['nodes']
-                for node in nodes:
-                    if 'permanent' in node:
-                        launcher = node['permanent'].get('launcher', {})
-                        if 'ssh' in launcher:
-                            num_agents += 1
-        return num_agents
                             
     def setup_agents(self):
         agent_count = len(self.vm_manager.agent_vms)

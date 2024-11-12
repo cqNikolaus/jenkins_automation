@@ -25,7 +25,6 @@ def main():
     zone_name = os.getenv('ZONE_NAME')
     ssh_key = os.getenv('SSH_KEY_NAME')
     job_name = os.getenv('JOB_NAME')
-    num_agents = 0 # int(os.getenv('NUM_AGENTS'))
     num_instances = int(os.getenv('NUM_INSTANCES'))
     
 
@@ -41,26 +40,16 @@ def main():
 
         vm_manager = VMManager(api_token)
         env_manager = EnvironmentManager(vm_manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
-        
+
+        # Create controller VM
         controller_name = f"jenkins-controller-{instance_number}-{int(time.time())}"
         vm_manager.create_vm("controller", os_type, server_type, ssh_key, vm_name=controller_name)
         
-
-        if num_agents >= 1:
-            for i in range(num_agents):
-                agent_name = f"jenkins-agent-{instance_number}-{i+1}-{int(time.time())}"
-                agent_vm_info = vm_manager.create_vm("agent", os_type, server_type, ssh_key, vm_name=agent_name)
-                if agent_vm_info is None:
-                    print(f"Agent VM {i} could not be created. Exiting.")
-                    sys.exit(1)
-        
-        
+        # temporary for testing purposes
+        num_agents = 0
+                
         try:
             if env_manager.wait_until_ready("controller"):
-                for i in range(num_agents):
-                    if not env_manager.wait_until_ready("agent", index=i):
-                        print(f"Agent VM {i} is not ready")
-                        sys.exit(1)
 
                 # Install Jenkins
                 env_manager.setup_jenkins(config_repo_url)
