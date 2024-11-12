@@ -1,4 +1,4 @@
- setuptools
+setuptools
 requests
 paramiko
 python-jenkins
