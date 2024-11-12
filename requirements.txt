@@ -5,6 +5,7 @@ python-jenkins
 scp
 dnspython
 PyYAML
+dotenv
 .
 
 
