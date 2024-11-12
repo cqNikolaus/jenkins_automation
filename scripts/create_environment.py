@@ -45,10 +45,6 @@ def main():
         controller_name = f"jenkins-controller-{instance_number}-{int(time.time())}"
         vm_manager.create_vm("controller", os_type, server_type, ssh_key, vm_name=controller_name)
         
-        # Reset agent_vms list and remove old agent_vms_info.json
-        vm_manager.agent_vms = []
-        if os.path.exists('agent_vms_info.json'):
-            os.remove('agent_vms_info.json')
 
         if num_agents >= 1:
             for i in range(num_agents):
