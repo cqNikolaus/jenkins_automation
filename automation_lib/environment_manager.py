@@ -3,6 +3,7 @@ import sys
 import time
 import socket
 import jenkins
+import yaml
 from automation_lib import SSHManager, JenkinsInstaller, JenkinsJobManager, NginxInstaller, VMManager, JenkinsAgentInstaller
 
 
@@ -67,7 +68,7 @@ class EnvironmentManager:
         print("Waiting for Jenkins to initialize...")
         time.sleep(40)
         
-
+    
         
     def test_jenkins(self):
         self.controller_ip = self.vm_manager.get_vm_ip("controller")
@@ -134,6 +135,29 @@ class EnvironmentManager:
             sys.exit(1)        
             
             
+    def get_num_agents_from_yaml(self, repo_path):
+        num_agents = 0
+        yaml_files = []
+        # Collect all YAML files in the specified repository path
+        for root, dirs, files in os.walk(repo_path):
+            for file in files:
+                if file.endswith('.yaml') or file.endswith('.yml'):
+                    yaml_file = os.path.join(root, file)
+                    yaml_files.append(yaml_file)
+        # Parse each YAML file in the list
+        for yaml_file in yaml_files:
+            with open(yaml_file, 'r') as f:
+                data = yaml.safe_load(f)
+        # Increment num_agents for each existing SSH agent node found
+            if data and 'jenkins' in data and 'nodes' in data['jenkins']:
+                nodes = data['jenkins']['nodes']
+                for node in nodes:
+                    if 'permanent' in node:
+                        launcher = node['permanent'].get('launcher', {})
+                        if 'ssh' in launcher:
+                            num_agents += 1
+        return num_agents
+                            
     def setup_agents(self):
         agent_count = len(self.vm_manager.agent_vms)
         for index in range(agent_count):
