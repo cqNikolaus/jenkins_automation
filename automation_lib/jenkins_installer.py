@@ -55,9 +55,9 @@ class JenkinsInstaller:
         self.ssh_manager.execute_command(
             "sudo docker build -t jenkins-image /var/jenkins_home/jenkins_configs")
 
-    def clone_config_repo(self):
-        self.ssh_manager.execute_command(
-        f"git clone {self.config_repo_url} /var/jenkins_home/jenkins_configs")
+    # def clone_config_repo(self):
+    #     self.ssh_manager.execute_command(
+    #     f"git clone {self.config_repo_url} /var/jenkins_home/jenkins_configs")
         
     def read_key_file(self, key_file):
         with open(key_file, 'r') as file:
@@ -90,6 +90,49 @@ class JenkinsInstaller:
                                 'node_data': node
                             })
         return agents
+    
+    def update_agent_ips_in_yaml(self, agents, agent_ips):
+        if len(agents) != len(agent_ips):
+            print("Number of agents and IP addresses do not match.")
+            sys.exit(1)
+        modified_files = {}
+
+        for i, agent in enumerate(agents):
+            yaml_file = agent['yaml_file']
+            node_index = agent['node_index']
+            node_data = agent['node_data']
+            
+            # Update IP address
+            node_data['permanent']['launcher']['ssh']['host'] = agent_ips[i]
+            
+            # Mark file as modified
+            if yaml_file not in modified_files:
+                modified_files[yaml_file] = None
+
+        # Write updated YAML files
+        for yaml_file in modified_files.keys():
+            with open(yaml_file, 'r') as f:
+                data = yaml.safe_load(f)
+                
+            with open(yaml_file, 'w') as f:
+                yaml.safe_dump(data, f)    
+            print(f"YAML file {yaml_file} has been updated with agent IP addresses.")
+
+        
+        
+    def upload_config_repo(self):
+        archive_name = os.path.basename(self.local_repo_path.rstrip('/'))
+        archive_path = shutil.make_archive(archive_name, 'gztar', self.local_repo_path)
+        self.ssh_manager.upload_file(archive_path, f"/tmp/{archive_name}.tar.gz")
+        commands = [
+            f"sudo rm -rf /var/jenkins_home/jenkins_configs",
+            f"sudo mkdir -p /var/jenkins_home/jenkins_configs",
+            f"sudo tar -xzvf /tmp/{archive_name}.tar.gz -C /var/jenkins_home/jenkins_configs --strip-components=1",
+            f"sudo chown -R $USER:$USER /var/jenkins_home/jenkins_configs"
+        ]
+        for cmd in commands:
+            self.ssh_manager.execute_command(cmd)
+        os.remove(archive_path)
 
 
 

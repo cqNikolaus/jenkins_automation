@@ -1,4 +1,5 @@
 import paramiko
+import sys
 from scp import SCPClient
 
 class SSHManager:
@@ -65,3 +66,17 @@ class SSHManager:
         except Exception as e:
             print(f"Failed to copy file: {e}")
             return False
+        
+    def upload_file(self, local_path, remote_path):
+        try:
+            transport = paramiko.Transport((self.ip_address, 22))
+            pkey = paramiko.RSAKey.from_private_key_file(self.key_file)
+            transport.connect(username='root', pkey=pkey)
+            sftp = paramiko.SFTPClient.from_transport(transport)
+            sftp.put(local_path, remote_path)
+            sftp.close()
+            transport.close()
+            print(f"File {local_path} has been uploaded to {remote_path}.")
+        except Exception as e:
+            print(f"Failed to upload file {local_path} to {remote_path}: {e}")
+            sys.exit(1)

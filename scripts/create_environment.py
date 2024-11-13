@@ -39,7 +39,7 @@ def main():
     
 
         vm_manager = VMManager(api_token)
-        env_manager = EnvironmentManager(vm_manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
+        env_manager = EnvironmentManager(vm_manager, ssh_private_key, jenkins_user, jenkins_pass, job_name, os_type, server_type, ssh_key)
 
         # Create controller VM
         controller_name = f"jenkins-controller-{instance_number}-{int(time.time())}"
@@ -59,7 +59,6 @@ def main():
                     print("Jenkins is not running")
                     sys.exit(1)
                     
-                env_manager.create_agents(os_type, server_type, ssh_key)
                     
                 
                     
