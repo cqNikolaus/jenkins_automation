@@ -69,8 +69,7 @@ class EnvironmentManager:
         print("Waiting for Jenkins to initialize...")
         time.sleep(40)
         self.installer.clone_config_repo_local()
-        # Parse and retrieve agent definitions from the Jenkins YAML configuration files
-        self.create_agent_vms(num_agents)
+
         
     def get_num_agents(self):
         agents = self.installer.parse_jenkins_yaml_files
