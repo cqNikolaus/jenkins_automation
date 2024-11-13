@@ -31,6 +31,7 @@ class EnvironmentManager:
         self.jenkins_url = None
         self.job_name = job_name
         self.jenkins_job_manager = None
+        self.installer = None
         
         
     def wait_until_ready(self, vm_type, index=None, timeout=600):
@@ -63,23 +64,26 @@ class EnvironmentManager:
         self.controller_ip = self.vm_manager.get_vm_ip("controller")
         print(f"self controller ip: {self.controller_ip}")
         self.ssh_manager = SSHManager(self.controller_ip, self.key_file)     
-        installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
-        installer.install_jenkins()
+        self.installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
+        self.installer.install_jenkins()
         print("Waiting for Jenkins to initialize...")
         time.sleep(40)
-        installer.clone_config_repo_local()
+        self.installer.clone_config_repo_local()
         # Parse and retrieve agent definitions from the Jenkins YAML configuration files
-        agents = installer.parse_jenkins_yaml_files()
-        num_agents = len(agents)
-        print(f"Number of agents specified in YAML file: {num_agents}")
         self.create_agent_vms(num_agents)
         
-        
-    def create_agent_vms(self, num_agents):
+    def get_num_agents(self):
+        agents = self.installer.parse_jenkins_yaml_files
+        num_agents = len(agents)
+        print(f"Number of agents specified in YAML file: {self.num_agents}")
+        return num_agents
+    
+    def create_agents(self, os_type, server_type, ssh_key):
+        self.num_agents = self.get_num_agents()
         agent_ips = []
-        for i in range(num_agents):
+        for i in range(self.num_agents):
             vm_name = f"agent-{i+1}-{int(time.time())}"
-            agent_vm_info = self.vm_manager.create_vm("agent", self.os_type, self.server_type, self.ssh_key, vm_name=vm_name)
+            agent_vm_info = self.vm_manager.create_vm("agent", os_type, server_type, ssh_key, vm_name=vm_name)
             if agent_vm_info is None:
                 print(f"Agent VM {vm_name} could not be created")
                 sys.exit(1)
@@ -92,6 +96,7 @@ class EnvironmentManager:
                 print(f"Failed to retrieve Agent {i+1} IP adress ")
                 sys.exit(1)
             agent_ips.append(agent_ip)    
+        
         
         
     def test_jenkins(self):

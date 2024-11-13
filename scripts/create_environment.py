@@ -60,6 +60,10 @@ def main():
                     print("Jenkins is not running")
                     sys.exit(1)
                     
+                env_manager.create_agents(os_type, server_type, ssh_key)
+                    
+                
+                    
                 
                 # Set up agents 
                 if num_agents >=1:
