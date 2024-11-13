@@ -87,9 +87,9 @@ class EnvironmentManager:
         
     def get_num_agents(self):
         self.agents = self.installer.parse_jenkins_yaml_files()
-        num_agents = len(self.agents)
+        self.num_agents = len(self.agents)
         print(f"Number of agents specified in YAML file: {self.num_agents}")
-        return num_agents
+        return self.num_agents
     
     def create_agents(self, os_type, server_type, ssh_key):
         self.num_agents = self.get_num_agents()
