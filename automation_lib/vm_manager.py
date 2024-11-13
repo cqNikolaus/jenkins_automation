@@ -32,7 +32,7 @@ class VMManager:
             "name": vm_name,
             "server_type": server_type,
             "image": os_type,
-            "location": "fsn1",
+            "location": "nbg1",
             "start_after_create": True,
             "ssh_keys": [ssh_key]
         }
