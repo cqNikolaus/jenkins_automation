@@ -72,9 +72,27 @@ class EnvironmentManager:
         agents = installer.parse_jenkins_yaml_files()
         num_agents = len(agents)
         print(f"Number of agents specified in YAML file: {num_agents}")
+        self.create_agent_vms(num_agents)
         
         
-    
+    def create_agent_vms(self, num_agents):
+        agent_ips = []
+        for i in range(num_agents):
+            vm_name = f"agent-{i+1}-{int(time.time())}"
+            agent_vm_info = self.vm_manager.create_vm("agent", self.os_type, self.server_type, self.ssh_key, vm_name=vm_name)
+            if agent_vm_info is None:
+                print(f"Agent VM {vm_name} could not be created")
+                sys.exit(1)
+            # Wait until agent vm is ready
+            if not self.wait_until_ready("agent", index=i):    
+                print(f"Agent VM {vm_name} not ready")
+                sys.exit(1)
+            agent_ip = self.vm_manager.get_vm_ip("agent", index=i)    
+            if not agent_ip:
+                print(f"Failed to retrieve Agent {i+1} IP adress ")
+                sys.exit(1)
+            agent_ips.append(agent_ip)    
+        
         
     def test_jenkins(self):
         self.controller_ip = self.vm_manager.get_vm_ip("controller")
