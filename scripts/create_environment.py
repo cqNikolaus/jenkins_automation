@@ -45,8 +45,7 @@ def main():
         controller_name = f"jenkins-controller-{instance_number}-{int(time.time())}"
         vm_manager.create_vm("controller", os_type, server_type, ssh_key, vm_name=controller_name)
         
-        # temporary for testing purposes
-        num_agents = 0
+
                 
         try:
             if env_manager.wait_until_ready("controller"):
@@ -64,11 +63,7 @@ def main():
                     
                 
                     
-                
-                # Set up agents 
-                if num_agents >=1:
-                    if env_manager.initialize_jenkins_job_manager():
-                        env_manager.setup_agents()
+            
                 
                 # Create Jenkins Job
                 env_manager.trigger_and_monitor_job()

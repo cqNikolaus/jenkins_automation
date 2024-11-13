@@ -32,6 +32,7 @@ class EnvironmentManager:
         self.job_name = job_name
         self.jenkins_job_manager = None
         self.installer = None
+        self.num_agents = None
         
         
     def wait_until_ready(self, vm_type, index=None, timeout=600):
