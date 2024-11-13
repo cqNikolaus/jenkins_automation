@@ -157,7 +157,7 @@ class JenkinsInstaller:
 
     def install_jenkins(self):
         self.install_docker()
-        self.clone_config_repo()
+        # self.clone_config_repo()
         self.build_jenkins_docker_image()
         self.ssh_key_content = self.read_key_file(self.ssh_private_key)
         self.run_jenkins_container()
