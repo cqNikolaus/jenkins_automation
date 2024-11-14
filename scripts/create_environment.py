@@ -11,7 +11,7 @@ def main():
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Setup Jenkins environment')
-    parser.add_argument('--config-repo', help='The URL of the Jenkins configuration repository')
+    parser.add_argument('--config-repo', help='The URL of the Jenkins configuration repository', required=True)
     parser.add_argument('--branch', help='The branch of the configuration repository to use', default=None)
     args = parser.parse_args()
     

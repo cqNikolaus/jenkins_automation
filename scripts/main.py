@@ -12,7 +12,7 @@ def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='CI Pipeline: Validates the environment setup')
     parser.add_argument('command', choices=['create_jenkins', 'test_pipeline', 'create_dns', 'setup_nginx', 'cleanup'])
-    parser.add_argument('--config-repo', help='URL of the configuration repository', required=True)
+    parser.add_argument('--config-repo', help='URL of the configuration repository')
     parser.add_argument('--branch', help='The branch of the configuration repository to use', default=None)
     args = parser.parse_args()
     
