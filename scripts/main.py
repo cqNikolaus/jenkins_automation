@@ -16,10 +16,15 @@ def main():
     parser.add_argument('--branch', help='The branch of the configuration repository to use', default=None)
     args = parser.parse_args()
     
+    if args.command == 'create_jenkins' and not args.config_repo:
+        print("Error: --config-repo is required for create_jenkins")
+        sys.exit(1)
+    
     # Prepare configuration repository URL
     config_repo = args.config_repo
     branch = args.branch
     config_repo_url = f"--branch {branch} {config_repo}" if branch else config_repo
+    
     
     # Load environment variables
     api_token = os.getenv('H_API_TOKEN')
@@ -68,14 +73,14 @@ def main():
                 print("Controller VM is not ready.")
                 sys.exit(1)
 
-                # Setup Jenkins
-                print("Setting up Jenkins...")
-                env_manager.setup_jenkins(config_repo_url)
-                if env_manager.test_jenkins():
-                    print("Jenkins is up and running")
-                else:
-                    print("Jenkins is not running")
-                    sys.exit(1)
+            # Setup Jenkins
+            print("Setting up Jenkins...")
+            env_manager.setup_jenkins(config_repo_url)
+            if env_manager.test_jenkins():
+                print("Jenkins is up and running")
+            else:
+                print("Jenkins is not running")
+                sys.exit(1)
         except Exception as e:
             print(f"Failed to create Jenkins: {e}")
             sys.exit(1)
