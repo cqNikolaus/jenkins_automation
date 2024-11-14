@@ -95,29 +95,34 @@ class JenkinsInstaller:
         if len(agents) != len(agent_ips):
             print("Number of agents and IP addresses do not match.")
             sys.exit(1)
-        modified_files = {}
+            
+        # Prepare a mapping from yaml_file to data
+        yaml_data_map = {}
 
-        for i, agent in enumerate(agents):
+        # Load all YAML files into yaml_data_map
+        for agent in agents:
             yaml_file = agent['yaml_file']
+            if yaml_file not in yaml_data_map:
+                with open(yaml_file, 'r') as f:
+                    yaml_data_map[yaml_file] = yaml.safe_load(f)
+            
+        # For each agent update the host IP in the data
+        for i, agent in enumerate(agents):
+            yaml_file =  ['yaml_file']
             node_index = agent['node_index']
-            node_data = agent['node_data']
-            
-            # Update IP address
-            node_data['permanent']['launcher']['ssh']['host'] = agent_ips[i]
-            
-            # Mark file as modified
-            if yaml_file not in modified_files:
-                modified_files[yaml_file] = None
-
-        # Write updated YAML files
-        for yaml_file in modified_files.keys():
-            with open(yaml_file, 'r') as f:
-                data = yaml.safe_load(f)
-                
-            with open(yaml_file, 'w') as f:
-                yaml.safe_dump(data, f)    
-            print(f"YAML file {yaml_file} has been updated with agent IP addresses.")
-
+            # Update IP address in the data
+            data = yaml_data_map[yaml_file]
+            if 'jenkins' in data and 'nodes' in data['jenkins']:
+                data_nodes = data['jenkins']['nodes']
+                node_data = data_nodes[node_index]
+                if 'permanent' in node_data:
+                    node_data['permanent']['launcher']['ssh']['host'] = agent_ips[i]
+                    node_data['permanent']['launcher']['ssh']['credentialsId'] = 'ssh_credentials_id' # Temporary workaround until credentials vault is implemented
+                    
+                else:
+                    print(f"No 'permanent' node found for agent at index {node_index} in {yaml_file}")
+            else:
+                print(f"No nodes found in 'jenkins' section in {yaml_file}")
         
         
     def upload_config_repo(self):
