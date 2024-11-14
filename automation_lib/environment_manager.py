@@ -3,6 +3,7 @@ import sys
 import time
 import socket
 import jenkins
+import yaml
 from automation_lib import SSHManager, JenkinsInstaller, JenkinsJobManager, NginxInstaller, VMManager, JenkinsAgentInstaller
 
 
@@ -20,7 +21,7 @@ def is_ssh_port_open(ip, port=22, timeout=5):
 
 class EnvironmentManager:
 
-    def __init__(self, vm_manager, key_file, jenkins_user, jenkins_pass, job_name):
+    def __init__(self, vm_manager, key_file, jenkins_user, jenkins_pass, job_name, os_type, server_type, ssh_key):
         self.vm_manager = vm_manager
         self.key_file = key_file
         self.jenkins_user = jenkins_user
@@ -30,6 +31,13 @@ class EnvironmentManager:
         self.jenkins_url = None
         self.job_name = job_name
         self.jenkins_job_manager = None
+        self.installer = None
+        self.num_agents = None
+        self.os_type = os_type
+        self.server_type = server_type
+        self.ssh_key = ssh_key
+        self.agent_ips = []
+        self.agents = []
         
         
     def wait_until_ready(self, vm_type, index=None, timeout=600):
@@ -59,15 +67,52 @@ class EnvironmentManager:
 
 
     def setup_jenkins(self, config_repo_url):
+        
         self.controller_ip = self.vm_manager.get_vm_ip("controller")
-        print(f"self controller ip: {self.controller_ip}")
-        self.ssh_manager = SSHManager(self.controller_ip, self.key_file)
-        installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
-        installer.install_jenkins()
+        self.ssh_manager = SSHManager(self.controller_ip, self.key_file)  
+        self.installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
+        
+        self.installer.clone_config_repo_local()
+        self.create_agents(self.os_type, self.server_type, self.ssh_key)
+        self.setup_agents()
+        self.installer.update_agent_ips_in_yaml(self.agents, self.agent_ips)
+        self.installer.upload_config_repo()  
+        self.installer.install_jenkins()
+        self.installer.cleanup_local_repo()
         print("Waiting for Jenkins to initialize...")
         time.sleep(40)
-        
 
+
+        
+    def get_num_agents(self):
+        self.agents = self.installer.parse_jenkins_yaml_files()
+        self.num_agents = len(self.agents)
+        if self.num_agents == 0:
+            print("Warning: No agents specified in YAML files. No agent VMs will be created.")
+        else:
+            print(f"Number of agents specified in YAML file: {self.num_agents}")        
+        return self.num_agents
+    
+    def create_agents(self, os_type, server_type, ssh_key):
+        self.num_agents = self.get_num_agents()
+        for i in range(self.num_agents):
+            vm_name = f"agent-{i+1}-{int(time.time())}"
+            agent_vm_info = self.vm_manager.create_vm("agent", os_type, server_type, ssh_key, vm_name=vm_name)
+            if agent_vm_info is None:
+                print(f"Agent VM {vm_name} could not be created")
+                sys.exit(1)
+            # Wait until agent vm is ready
+            if not self.wait_until_ready("agent", index=i):    
+                print(f"Agent VM {vm_name} not ready")
+                sys.exit(1)
+            agent_ip = self.vm_manager.get_vm_ip("agent", index=i)    
+            if not agent_ip:
+                print(f"Failed to retrieve Agent {i+1} IP adress ")
+                sys.exit(1)
+            self.agent_ips.append(agent_ip)    
+        return self.agent_ips
+        
+        
         
     def test_jenkins(self):
         self.controller_ip = self.vm_manager.get_vm_ip("controller")
@@ -80,7 +125,6 @@ class EnvironmentManager:
             for attempt in range(1, max_retries + 1):
                 try: 
                     self.jenkins_job_manager = JenkinsJobManager(self.jenkins_url, self.jenkins_user, self.jenkins_pass)
-                    print("Jenkins is up and running")
                     return True
                 except Exception as e:
                     print(f"Attempt {attempt}: Failed to connect to Jenkins: {e}")
@@ -134,6 +178,7 @@ class EnvironmentManager:
             sys.exit(1)        
             
             
+                            
     def setup_agents(self):
         agent_count = len(self.vm_manager.agent_vms)
         for index in range(agent_count):
@@ -143,11 +188,6 @@ class EnvironmentManager:
                 continue
             print(f"Setting up agent {index} at IP {agent_ip}")
             ssh_manager = SSHManager(agent_ip, self.key_file)
-            agent_name = f"agent-{index + 1}"
-            if index == 0:
-                agent_label = 'build-node'
-            else:
-                agent_label = f"agent-label-{index + 1}"
             agent_installer = JenkinsAgentInstaller(ssh_manager)
             agent_installer.install_dependencies()
             

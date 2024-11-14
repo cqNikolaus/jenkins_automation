@@ -32,7 +32,7 @@ class VMManager:
             "name": vm_name,
             "server_type": server_type,
             "image": os_type,
-            "location": "nbg1",
+            "location": "fsn1",
             "start_after_create": True,
             "ssh_keys": [ssh_key]
         }
@@ -115,7 +115,7 @@ class VMManager:
 
                 
 
-    def wait_for_vm_running(self, vm_type, index=None, timeout=600, interval=10):
+    def wait_for_vm_running(self, vm_type, index=None, timeout=300, interval=10):
         if vm_type == "controller":
             vm = self.controller_vm
         elif vm_type == "agent":
