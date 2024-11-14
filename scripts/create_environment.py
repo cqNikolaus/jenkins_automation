@@ -45,7 +45,7 @@ def main():
         # Initialize EnvironmentManager
         env_manager = EnvironmentManager(
             vm_manager=vm_manager,
-            ssh_private_key=ssh_private_key,
+            key_file=ssh_private_key,
             jenkins_user=jenkins_user,
             jenkins_pass=jenkins_pass,
             job_name=job_name,
@@ -57,7 +57,7 @@ def main():
         # Create Controller-VM with unique name 
         controller_name = f"jenkins-controller-{instance_number}-{int(time.time())}"
         vm_manager.create_vm(
-            role="controller",
+            vm_type="controller",
             os_type=os_type,
             server_type=server_type,
             ssh_key=ssh_key,
