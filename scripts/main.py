@@ -45,7 +45,7 @@ def main():
     server_type = os.getenv('SERVER_TYPE')
 
     vm_manager = VMManager(api_token)
-    env_manager = EnvironmentManager(vm_manager, ssh_private_key, jenkins_user, jenkins_pass, job_name)
+    env_manager = EnvironmentManager(vm_manager, ssh_private_key, jenkins_user, jenkins_pass, job_name, os_type, server_type, ssh_key)
     
     if args.command == 'create_jenkins':
         vm_manager.create_vm("controller", os_type, server_type, ssh_key)
@@ -54,22 +54,9 @@ def main():
         vm_manager.agent_vms = []
         if os.path.exists('agent_vms_info.json'):
             os.remove('agent_vms_info.json')
-            
-        if num_agents >= 1:
-            for i in range(num_agents):
-                agent_name = f"jenkins-agent-{i+1}-{int(time.time())}"
-                agent_vm_info = vm_manager.create_vm("agent", os_type, server_type, ssh_key, vm_name=agent_name)
-                if agent_vm_info is None:
-                    print(f"Agent VM {i} could not be created. Exiting.")
-                    sys.exit(1)
         
         try:
             if env_manager.wait_until_ready("controller"):
-                if num_agents >= 1:
-                    for i in range(num_agents):
-                        if not env_manager.wait_until_ready("agent", index=i):
-                            print(f"Agent VM {i} is not ready")
-                            sys.exit(1)
                 env_manager.setup_jenkins(config_repo_url)
                 if env_manager.test_jenkins():
                     print("Jenkins is up and running")
