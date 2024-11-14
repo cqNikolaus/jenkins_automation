@@ -26,8 +26,6 @@ def main():
     ssh_key = os.getenv('SSH_KEY_NAME')
     job_name = os.getenv('JOB_NAME')
     num_instances = int(os.getenv('NUM_INSTANCES'))
-    
-
 
     os_type = "ubuntu-22.04"
     server_type = os.getenv('SERVER_TYPE')
@@ -55,7 +53,7 @@ def main():
         try:
             if env_manager.wait_until_ready("controller"):
 
-                # Install Jenkins
+                # Install Docker + Jenkins, set up agents if specified in YAML
                 env_manager.setup_jenkins(config_repo_url)
                 print("Jenkins installed")
                 if env_manager.test_jenkins():
@@ -64,11 +62,7 @@ def main():
                     print("Jenkins is not running")
                     sys.exit(1)
                     
-                    
-                
-                    
-            
-                
+
                 # Create Jenkins Job
                 env_manager.trigger_and_monitor_job()
 
