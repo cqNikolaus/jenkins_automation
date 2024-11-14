@@ -76,8 +76,7 @@ class EnvironmentManager:
         self.create_agents(self.os_type, self.server_type, self.ssh_key)
         self.setup_agents()
         self.installer.update_agent_ips_in_yaml(self.agents, self.agent_ips)
-        self.installer.upload_config_repo()
-   
+        self.installer.upload_config_repo()  
         self.installer.install_jenkins()
         self.installer.cleanup_local_repo()
         print("Waiting for Jenkins to initialize...")
@@ -88,7 +87,10 @@ class EnvironmentManager:
     def get_num_agents(self):
         self.agents = self.installer.parse_jenkins_yaml_files()
         self.num_agents = len(self.agents)
-        print(f"Number of agents specified in YAML file: {self.num_agents}")
+        if self.num_agents == 0:
+            print("Warning: No agents specified in YAML files. No agent VMs will be created.")
+        else:
+            print(f"Number of agents specified in YAML file: {self.num_agents}")        
         return self.num_agents
     
     def create_agents(self, os_type, server_type, ssh_key):
@@ -108,6 +110,7 @@ class EnvironmentManager:
                 print(f"Failed to retrieve Agent {i+1} IP adress ")
                 sys.exit(1)
             self.agent_ips.append(agent_ip)    
+        return self.agent_ips
         
         
         
