@@ -31,7 +31,7 @@ pipeline {
               set -e
               echo "create jenkins instance"
               pip install -e .
-              python scripts/main.py create_jenkins --config-repo ${params.CONFIG_REPO} ${branchOption}
+              python scripts/main.py create_jenkins --config-repo ${env.CONFIG_REPO} ${branchOption}
             """
           }
         }
