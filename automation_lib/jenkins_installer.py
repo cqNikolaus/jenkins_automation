@@ -108,7 +108,7 @@ class JenkinsInstaller:
             
         # For each agent update the host IP in the data
         for i, agent in enumerate(agents):
-            yaml_file =  ['yaml_file']
+            yaml_file =  agent['yaml_file']
             node_index = agent['node_index']
             # Update IP address in the data
             data = yaml_data_map[yaml_file]
