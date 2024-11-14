@@ -123,6 +123,12 @@ class JenkinsInstaller:
                     print(f"No 'permanent' node found for agent at index {node_index} in {yaml_file}")
             else:
                 print(f"No nodes found in 'jenkins' section in {yaml_file}")
+                
+        # Write back the modified data to the YAML files
+        for yaml_file, data in yaml_data_map.items():
+            with open(yaml_file, 'w') as f:
+                yaml.safe_dump(data, f)
+            print(f"YAML file {yaml_file} has been updated with agent IP addresses.")
         
         
     def upload_config_repo(self):
