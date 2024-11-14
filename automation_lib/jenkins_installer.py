@@ -54,10 +54,6 @@ class JenkinsInstaller:
     def build_jenkins_docker_image(self):
         self.ssh_manager.execute_command(
             "sudo docker build -t jenkins-image /var/jenkins_home/jenkins_configs")
-
-    # def clone_config_repo(self):
-    #     self.ssh_manager.execute_command(
-    #     f"git clone {self.config_repo_url} /var/jenkins_home/jenkins_configs")
         
     def read_key_file(self, key_file):
         with open(key_file, 'r') as file:
