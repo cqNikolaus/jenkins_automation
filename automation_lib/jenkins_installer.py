@@ -91,6 +91,10 @@ class JenkinsInstaller:
                             })
         return agents
     
+    
+    
+    
+    
     def update_agent_ips_in_yaml(self, agents, agent_ips):
         if len(agents) != len(agent_ips):
             print("Number of agents and IP addresses do not match.")
@@ -117,7 +121,7 @@ class JenkinsInstaller:
                 node_data = data_nodes[node_index]
                 if 'permanent' in node_data:
                     node_data['permanent']['launcher']['ssh']['host'] = agent_ips[i]
-                    node_data['permanent']['launcher']['ssh']['credentialsId'] = 'ssh_credentials_id' # Temporary workaround until credentials vault is implemented
+                    node_data['permanent']['launcher']['ssh']['credentialsId'] = 'ssh-private-key' # Temporary workaround until credentials vault is implemented
                     
                 else:
                     print(f"No 'permanent' node found for agent at index {node_index} in {yaml_file}")
@@ -129,6 +133,11 @@ class JenkinsInstaller:
             with open(yaml_file, 'w') as f:
                 yaml.safe_dump(data, f)
             print(f"YAML file {yaml_file} has been updated with agent IP addresses.")
+        
+        
+        
+        
+        
         
         
     def upload_config_repo(self):
