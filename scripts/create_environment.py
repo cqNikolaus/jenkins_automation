@@ -73,8 +73,8 @@ def main():
 
         # Wait for controller VM to be ready and configure Jenkins
         try:
-                if not env_manager.wait_until_ready(controller_name):
-                    print(f"Controller-VM {controller_name} ist nicht bereit.")
+                if not env_manager.wait_until_ready("controller"):
+                    print(f"Controller-VM ist nicht bereit.")
                     sys.exit(1)
 
                 # Setup Jenkins            
