@@ -128,8 +128,8 @@ def main():
             print("Controller VM is not ready.")
             sys.exit(1)
             
-            env_manager.setup_nginx(domain)
-            print("Nginx setup completed")
+        env_manager.setup_nginx(domain)
+        print("Nginx setup completed")
 
     elif args.command == 'cleanup':
         env_manager.cleanup(delete_vm=True)
