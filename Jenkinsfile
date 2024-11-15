@@ -74,10 +74,12 @@ pipeline {
         sh """
           set -e
           echo "test dns record"
-          dig +short ${env.SUBDOMAIN}.${env.ZONE_NAME} @8.8.8.8
-          if [ \$? -ne 0 ]; then
+          DNS_OUTPUT=\$(dig +short ${env.SUBDOMAIN}.${env.ZONE_NAME} @8.8.8.8)
+          if [ -z "\$DNS_OUTPUT" ]; then
             echo "DNS record does not exist or cannot be resolved."
             exit 1
+          else
+            echo "DNS record exists: \$DNS_OUTPUT"
           fi
         """
       }
