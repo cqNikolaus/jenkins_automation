@@ -99,23 +99,28 @@ pipeline {
       }
     }
     stage('Test SSL Certificate') {
-      steps {
-        sh """
-          set -e
-          echo "test ssl certificate"
-          sleep 10
-          CERT_INFO=\$(echo | openssl s_client -connect ${env.SUBDOMAIN}.${env.ZONE_NAME}:443 -servername ${env.SUBDOMAIN}.${env.ZONE_NAME} -showcerts 2>/dev/null \\
-          | sed -n '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' \\
-          | openssl x509 -noout -dates -subject)
-          if [ -z "\\\$CERT_INFO" ]; then
-            echo "SSL certificate is not valid or cannot be retrieved."
-            exit 1
-          else
-            echo "\\\$CERT_INFO"
-          fi
-        """
-      }
-    }
+  steps {
+    sh """
+      set -e
+      echo "test ssl certificate"
+      MAX_RETRIES=5
+      RETRY_COUNT=0
+      while [ \$RETRY_COUNT -lt \$MAX_RETRIES ]; do
+        CERT_INFO=\$(echo | openssl s_client -connect ${env.SUBDOMAIN}.${env.ZONE_NAME}:443 -servername ${env.SUBDOMAIN}.${env.ZONE_NAME} -showcerts 2>/dev/null | sed -n '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/p' | openssl x509 -noout -dates -subject || true)
+        if [ -n "\$CERT_INFO" ]; then
+          echo "\$CERT_INFO"
+          exit 0
+        else
+          echo "SSL certificate not yet available. Retrying in 30 seconds..."
+          sleep 20
+          RETRY_COUNT=\$((RETRY_COUNT+1))
+        fi
+      done
+      echo "SSL certificate is not valid or cannot be retrieved after multiple attempts."
+      exit 1
+    """
+  }
+}
     stage('Shutdown Jenkins Instance') {
       steps {
         withCredentials([
