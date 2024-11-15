@@ -85,7 +85,8 @@ class EnvironmentManager:
 
         
     def get_num_agents(self):
-        self.agents = self.installer.parse_jenkins_yaml_files()
+        yaml_files = self.installer.collect_yaml_files()
+        self.agents = self.installer.parse_jenkins_yaml_agents(yaml_files)
         self.num_agents = len(self.agents)
         if self.num_agents == 0:
             print("Warning: No agents specified in YAML files. No agent VMs will be created.")
@@ -154,7 +155,7 @@ class EnvironmentManager:
             return True
         
             
-    def trigger_and_monitor_job(self):
+    def trigger_and_monitor_jobs(self):
         if not self.jenkins_job_manager:
             print("Jenkins job manager not initialized")
             return False

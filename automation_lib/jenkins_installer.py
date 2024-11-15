@@ -60,8 +60,7 @@ class JenkinsInstaller:
             key_content = file.read()
         return key_content
     
-    def parse_jenkins_yaml_files(self):
-        agents = []
+    def collect_yaml_files(self):
         yaml_files = []
         # Collect all YAML files in the specified repository path
         for root, dirs, files in os.walk(self.local_repo_path):
@@ -69,6 +68,10 @@ class JenkinsInstaller:
                 if file.endswith('.yaml') or file.endswith('.yml'):
                     yaml_file = os.path.join(root, file)
                     yaml_files.append(yaml_file)
+        return yaml_files
+    
+    def parse_jenkins_yaml_agents(self, yaml_files):
+        agents = []
         # For each YAML file found, parse its content and create a dictionary for each agent node
         # containing the YAML file path, node index, and node data
         for yaml_file in yaml_files:
@@ -86,6 +89,9 @@ class JenkinsInstaller:
                                 'node_data': node
                             })
         return agents
+    
+    def parse_jenkins_yaml_jobs(self, yaml_files):
+        ...
     
     
     

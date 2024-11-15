@@ -101,7 +101,7 @@ def main():
             sys.exit(1)
             
             if env_manager.initialize_jenkins_job_manager():
-                if env_manager.trigger_and_monitor_job():
+                if env_manager.trigger_and_monitor_jobs():
                     print("Pipeline test successful")
                 else:
                     print("Pipeline test failed")

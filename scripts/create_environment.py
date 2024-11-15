@@ -88,7 +88,7 @@ def main():
                     
 
                 # Create Jenkins Job
-                # env_manager.trigger_and_monitor_job()
+                # env_manager.trigger_and_monitor_jobs()
 
                 # Create DNS record
                 if dns_api_token:
