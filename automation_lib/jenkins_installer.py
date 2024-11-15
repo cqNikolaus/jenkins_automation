@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import shlex
 import tempfile
@@ -91,10 +92,23 @@ class JenkinsInstaller:
         return agents
     
     def parse_jenkins_yaml_jobs(self, yaml_files):
-        ...
-    
-    
-    
+        jobs = []
+        job_types = ['pipelineJob', 'freeStyleJob', 'multiJob', 'buildFlowJob', 'job']
+        job_types_regex = '|'.join(job_types)
+
+        # Erstelle einen Regex, der alle Job-Typen erfasst
+        pattern = re.compile(r"(?:{0})\(['\"]([^'\"]+)['\"]\)".format(job_types_regex))
+
+        for yaml_file in yaml_files:
+            with open(yaml_file, 'r') as f:
+                data = yaml.safe_load(f)
+                if data and 'jobs' in data:
+                    for job_entry in data['jobs']:
+                        script_content = job_entry.get('script', '')
+                        # Finde alle Job-Namen unabhängig vom Job-Typ
+                        job_names = pattern.findall(script_content)
+                        jobs.extend(job_names)
+        return jobs
     
     
     def update_agent_ips_in_yaml(self, agents, agent_ips):

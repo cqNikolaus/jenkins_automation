@@ -87,7 +87,9 @@ def main():
                     sys.exit(1)
                     
 
-                # Create Jenkins Job
+                # Trigger Jenkins Testjobs
+                env_manager.initialize_jenkins_job_manager()
+                env_manager.trigger_jobs()
                 # env_manager.trigger_and_monitor_jobs()
 
                 # Create DNS record

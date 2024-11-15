@@ -38,6 +38,7 @@ class EnvironmentManager:
         self.ssh_key = ssh_key
         self.agent_ips = []
         self.agents = []
+        self.jobs = []
         
         
     def wait_until_ready(self, vm_type, index=None, timeout=600):
@@ -81,6 +82,8 @@ class EnvironmentManager:
         self.installer.cleanup_local_repo()
         print("Waiting for Jenkins to initialize...")
         time.sleep(40)
+        yaml_files = self.installer.collect_yaml_files()
+        self.jobs = self.installer.parse_jenkins_yaml_jobs(yaml_files)
 
 
         
@@ -125,7 +128,7 @@ class EnvironmentManager:
             wait_seconds = 10
             for attempt in range(1, max_retries + 1):
                 try: 
-                    self.jenkins_job_manager = JenkinsJobManager(self.jenkins_url, self.jenkins_user, self.jenkins_pass)
+                    self.jenkins_job_manager = JenkinsJobManager(self.jenkins_url, self.jenkins_user, self.jenkins_pass, jobs=None)
                     return True
                 except Exception as e:
                     print(f"Attempt {attempt}: Failed to connect to Jenkins: {e}")
@@ -145,7 +148,7 @@ class EnvironmentManager:
             self.controller_ip = self.vm_manager.get_vm_ip("controller")
             self.jenkins_url = f"http://{self.controller_ip}:8080"
             try:
-                self.jenkins_job_manager = JenkinsJobManager(jenkins_url = self.jenkins_url, user=self.jenkins_user, password=self.jenkins_pass)
+                self.jenkins_job_manager = JenkinsJobManager(jenkins_url = self.jenkins_url, user=self.jenkins_user, password=self.jenkins_pass, jobs=self.jobs)
                 print("Initialized Jenkins job manager")
                 return True
             except jenkins.JenkinsException as e:
@@ -155,28 +158,21 @@ class EnvironmentManager:
             return True
         
             
-    def trigger_and_monitor_jobs(self):
+    def trigger_jobs(self):
+            
         if not self.jenkins_job_manager:
             print("Jenkins job manager not initialized")
             return False
         
-        try:
-            self.jenkins_job_manager.trigger_job(self.job_name)
-        except Exception as e:
-            print("Failed to trigger job {e}")
-            sys.exit(1)
+        for job_name in self.jobs:
+            try:
+                self.jenkins_job_manager.trigger_job(job_name)
+            except Exception as e:
+                print("Failed to trigger job {e}")
+                sys.exit(1)
             
-        result = self.jenkins_job_manager.wait_for_build_to_finish(self.job_name)
         
-        if result == 'SUCCESS':
-            print("Job completed successfully")
-            return True
-        elif result == 'FAILURE':
-            print("Job failed")
-            sys.exit(1)
-        else:
-            print(f"Job ended with status: {result}")
-            sys.exit(1)        
+        
             
             
                             

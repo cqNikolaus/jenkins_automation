@@ -6,18 +6,20 @@ import os
 
 
 class JenkinsJobManager:
-    def __init__(self, jenkins_url, user, password):
+    def __init__(self, jenkins_url, user, password, jobs):
         self.server = jenkins.Jenkins(
             jenkins_url,
             username=user,
             password=password
         )
+        self.jobs = jobs
         try:
             user_info = self.server.get_whoami()
             print(f"Erfolgreich mit Jenkins verbunden als {user_info['fullName']}")
         except jenkins.JenkinsException as e:
             print(f"Fehler beim Verbinden mit Jenkins: {e}")
             sys.exit(1)
+
 
             
             
