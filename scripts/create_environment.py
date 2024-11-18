@@ -87,11 +87,8 @@ def main():
                     sys.exit(1)
                     
 
-<<<<<<< HEAD
-
                 # Create Jenkins Job
                 # env_manager.trigger_and_monitor_job()
->>>>>>>
 
                 # Create DNS record
                 if dns_api_token:
