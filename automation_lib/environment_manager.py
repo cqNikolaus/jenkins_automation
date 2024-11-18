@@ -74,16 +74,16 @@ class EnvironmentManager:
         self.installer = JenkinsInstaller(self.ssh_manager, self.jenkins_user, self.jenkins_pass, config_repo_url)
         
         self.installer.clone_config_repo_local()
-        self.create_agents(self.os_type, self.server_type, self.ssh_key)
-        self.setup_agents()
-        self.installer.update_agent_ips_in_yaml(self.agents, self.agent_ips)
+        # self.create_agents(self.os_type, self.server_type, self.ssh_key)
+        # self.setup_agents()
+        # self.installer.update_agent_ips_in_yaml(self.agents, self.agent_ips)
         self.installer.upload_config_repo()  
         self.installer.install_jenkins()
         self.installer.cleanup_local_repo()
         print("Waiting for Jenkins to initialize...")
         time.sleep(40)
-        yaml_files = self.installer.collect_yaml_files()
-        self.jobs = self.installer.parse_jenkins_yaml_jobs(yaml_files)
+        # yaml_files = self.installer.collect_yaml_files()
+        # self.jobs = self.installer.parse_jenkins_yaml_jobs(yaml_files)
 
 
         

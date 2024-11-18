@@ -65,10 +65,10 @@ def main():
         )
         
         # Remove old agent info
-        agent_info_file = 'agent_vms_info.json'
-        if os.path.exists(agent_info_file):
-            os.remove(agent_info_file)
-        vm_manager.agent_vms = []
+        # agent_info_file = 'agent_vms_info.json'
+        # if os.path.exists(agent_info_file):
+        #     os.remove(agent_info_file)
+        # vm_manager.agent_vms = []
         
 
         # Wait for controller VM to be ready and configure Jenkins
