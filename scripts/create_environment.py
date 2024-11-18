@@ -38,7 +38,7 @@ def main():
     vm_manager = VMManager(api_token)
     
     # Loop to create Jenkins instances
-    for instance_number in range(1, num_instances + 1):
+    for instance_number in range(1, num_instances):
         domain = f"{subdomain}-{instance_number}.{zone_name}"
         print(f"Creating instance {instance_number}/{num_instances} for domain {domain}")
     
