@@ -55,7 +55,7 @@ def main():
         )
 
         # Create Controller-VM with unique name 
-        controller_name = f"jenkins-controller-{instance_number}-{int(time.time())}"
+        controller_name = f"jenkins-training-{instance_number}-{int(time.time())}"
         vm_manager.create_vm(
             vm_type="controller",
             os_type=os_type,
