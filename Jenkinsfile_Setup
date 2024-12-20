@@ -23,7 +23,8 @@ pipeline {
                     usernamePassword(credentialsId: 'jenkins-admin-credentials', usernameVariable: 'JENKINS_USER', passwordVariable: 'JENKINS_PASS'),
                     string(credentialsId: 'hetzner-api-token', variable: 'H_API_TOKEN'),
                     string(credentialsId: 'hetzner-dns-api-token', variable: 'H_DNS_API_TOKEN'),
-                    string(credentialsId: 'diffblue-license-key', variable: 'DIFFBLUE_LICENSE_KEY')
+                    string(credentialsId: 'diffblue-license-key', variable: 'DIFFBLUE_LICENSE_KEY'),
+                    usernamePassword(credentialsId: 'github-credentials', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_PASS'),
                 ]) {
                     script {
                         def branchParam = params.BRANCH ?: ''
