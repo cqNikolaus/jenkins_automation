@@ -10,7 +10,7 @@ pipeline {
     ZONE_NAME = "comquent.academy" 
     SSH_KEY_NAME = 'clemens.nikolaus@comquent.de'
     JOB_NAME = 'docker-test'
-    SSL_EMAIL = 'clemens.nikolaus@comquent.de'
+    SSL_EMAIL = 'clemens.nikolaus@sslemail.de'
     CONFIG_REPO = "${params.CONFIG_REPO}"
     SERVER_TYPE = "${params.SERVER_TYPE}"
 
