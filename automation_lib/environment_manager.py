@@ -93,29 +93,54 @@ class EnvironmentManager:
                 
                 
                 commands = [
-                    # 1) User anlegen + Passwort setzen
+                    # 1) Benutzer anlegen + Passwort setzen
                     f"sudo useradd -m -s /bin/bash {username} || echo 'User {username} exists'",
                     f"echo '{username}:{password}' | sudo chpasswd",
-                    
-                    # 2) SSH-Passwort-Login aktivieren (falls deaktiviert)
+
+                    # 2) SSH-Passwort-Login aktivieren
                     "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config",
                     "sudo sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config",
                     "sudo systemctl restart ssh",
-                    
-                    # 3) Tools installieren
+
+                    # 3) Nötige Pakete + Docker installieren
                     "sudo apt-get update -y",
-                    "sudo apt-get install -y openjdk-17-jdk maven git",
-                    # (Optional) Docker 
-                    "sudo apt-get install -y docker-ce docker-ce-cli containerd.io",
+                    "sudo apt-get -y install wget make gcc gawk bison python3 apt-transport-https ca-certificates curl gnupg2 software-properties-common lsb-release",
+
+                    # Docker Repository + Installation
+                    "sudo mkdir -p /etc/apt/keyrings",
+                    "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg",
+                    'echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu `lsb_release -cs` stable" | sudo tee /etc/apt/sources.list.d/docker.list',
+                    "sudo apt-get update && sudo apt-get -y install docker-ce docker-ce-cli containerd.io",
+
+                    # Jenkins-Agent User -> Docker-Gruppe
                     f"sudo usermod -aG docker {username}",
+
+                    # 4) Verzeichnisse anlegen wie im Dockerfile
+                    "sudo mkdir -p /usr/share/jenkins/tools/java",
+                    "sudo mkdir -p /usr/share/jenkins/tools/maven",
+
+                    # 5) Java 8 herunterladen/entpacken (wie im Dockerfile)
+                    #    (Achtung: direkter Download archivierter JDKs kann sich ändern, besser Mirror o.ä.)
+                    "cd /usr/share/jenkins/tools/java && sudo wget https://download.java.net/java/jdk8u192/archive/b04/binaries/jdk-8u192-ea-bin-b04-linux-x64-01_aug_2018.tar.gz",
+                    "cd /usr/share/jenkins/tools/java && sudo tar xzvf jdk-8u192-ea-bin-b04-linux-x64-01_aug_2018.tar.gz",
+
+                    # 6) Maven-Versionen herunterladen (3.5.4, 3.6.3, 3.8.8)
+                    "cd /usr/share/jenkins/tools/maven && sudo wget --no-check-certificate https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.5.4/apache-maven-3.5.4-bin.tar.gz",
+                    "cd /usr/share/jenkins/tools/maven && sudo tar xzvf apache-maven-3.5.4-bin.tar.gz",
                     
-                    # 4) Agent-Verzeichnis anlegen
-                    f"sudo mkdir -p /home/{username}/agent",
+                    "cd /usr/share/jenkins/tools/maven && sudo wget --no-check-certificate https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.6.3/apache-maven-3.6.3-bin.tar.gz",
+                    "cd /usr/share/jenkins/tools/maven && sudo tar xzvf apache-maven-3.6.3-bin.tar.gz",
+
+                    "cd /usr/share/jenkins/tools/maven && sudo wget --no-check-certificate https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.8.8/apache-maven-3.8.8-bin.tar.gz",
+                    "cd /usr/share/jenkins/tools/maven && sudo tar xzvf apache-maven-3.8.8-bin.tar.gz",
+
+                    # 7) Ownership für /home/{username} und /usr/share/jenkins/tools (optional)
                     f"sudo chown -R {username}:{username} /home/{username}",
-                    
-                    # 5) JAVA_HOME & PATH in /etc/environment setzen 
-                    "echo 'JAVA_HOME=\"/usr/lib/jvm/java-17-openjdk-amd64\"' | sudo tee -a /etc/environment",
-                    "echo 'PATH=\"/usr/lib/jvm/java-17-openjdk-amd64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\"' | sudo tee -a /etc/environment"
+                    "sudo chown -R root:root /usr/share/jenkins/tools",  # meist root-Owner
+
+                    # 8) Agent-Verzeichnis
+                    f"sudo mkdir -p /home/{username}/agent",
+                    f"sudo chown -R {username}:{username} /home/{username}/agent"
                 ]
                 
                 for cmd in commands:
