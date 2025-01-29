@@ -102,11 +102,9 @@ class EnvironmentManager:
                     "sudo sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config",
                     "sudo systemctl restart ssh",
                     
-                    # 3) Tools installieren
                     "sudo apt-get update -y",
-                    "sudo apt-get install -y openjdk-17-jdk maven git",
+                    "sudo apt-get -y install wget make gcc gawk bison python3 apt-transport-https ca-certificates curl gnupg2 software-properties-common lsb-release",
                     # (Optional) Docker 
-                    "sudo apt-get install -y docker-ce docker-ce-cli containerd.io",
                     f"sudo usermod -aG docker {username}",
                     
                     "sudo mkdir -p /home/jenkins/tools/java",
