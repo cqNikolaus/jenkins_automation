@@ -112,6 +112,10 @@ class EnvironmentManager:
                     # 4) Agent-Verzeichnis anlegen
                     f"sudo mkdir -p /home/{username}/agent",
                     f"sudo chown -R {username}:{username} /home/{username}"
+                    
+                    # 5) JAVA_HOME & PATH in /etc/environment setzen 
+                    "echo 'JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64' | sudo tee /etc/environment",
+                    "echo 'PATH=$JAVA_HOME/bin:$PATH' | sudo tee -a /etc/environment"
                 ]
                 
                 for cmd in commands:
