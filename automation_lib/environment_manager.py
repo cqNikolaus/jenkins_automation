@@ -117,7 +117,7 @@ class EnvironmentManager:
                 for cmd in commands:
                     self.ssh_manager.execute_command(cmd)
                 
-                print(f"User {username} created on agent VM {index} with password-based SSH.")
+                print(f"User {username} created with password.")
                 return True
         
     def get_num_agents(self):
