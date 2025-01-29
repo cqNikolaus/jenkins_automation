@@ -39,6 +39,7 @@ class EnvironmentManager:
         self.agent_ips = []
         self.agents = []
         self.jobs = []
+        self.agent_password = os.getenv('JENKINS_AGENT_PW')
         
         
     def wait_until_ready(self, vm_type, index=None, timeout=600):
@@ -86,7 +87,7 @@ class EnvironmentManager:
         # yaml_files = self.installer.collect_yaml_files()
         # self.jobs = self.installer.parse_jenkins_yaml_jobs(yaml_files)
 
-    def add_vm_user(self, username="jenkins-agent", password="SuperSecretPW"):
+    def add_vm_user(self, username="jenkins-agent"):
                 """
                 Erstellt einen neuen User auf der VM (vorgesehen für die Nutzung als Agent)
                 """
@@ -94,7 +95,7 @@ class EnvironmentManager:
                 commands = [
                     # 1) Benutzer anlegen + Passwort setzen
                     f"sudo useradd -m -s /bin/bash {username} || echo 'User {username} exists'",
-                    f"echo '{username}:{password}' | sudo chpasswd",
+                    f"echo '{username}:{self.agent_password}' | sudo chpasswd",
 
                     # 2) SSH-Passwort-Login aktivieren
                     "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config",
