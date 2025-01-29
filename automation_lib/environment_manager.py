@@ -109,26 +109,28 @@ class EnvironmentManager:
                     
                     "sudo mkdir -p /home/jenkins/tools/java",
                     "sudo mkdir -p /home/jenkins/tools/maven",
-                    
+                    "echo 'Lade Java JDK8 herunter",
                     # 5) Java 8 (jdk1.8.0_192) herunterladen und entpacken
                     "sudo wget https://download.java.net/java/jdk8u192/archive/b04/binaries/jdk-8u192-ea-bin-b04-linux-x64-01_aug_2018.tar.gz",
+                    "echo 'Entpacke Java JDK8",
                     "sudo tar xzvf jdk-8u192-ea-bin-b04-linux-x64-01_aug_2018.tar.gz",
+                    "echo 'Verschiebe Java JDK8",
                     # Verschieben in /home/jenkins/tools/java/jdk1.8.0_192
-                    "sudo mv /jdk1.8.0_192-ea-b04 /home/jenkins/tools/java/jdk1.8.0_192",
+                    "sudo mv jdk1.8.0_192-ea-b04 /home/jenkins/tools/java/jdk1.8.0_192",
                     
                     # 6) Maven-Versionen: 3.5.4, 3.6.3, 3.8.5 (wie im YAML)
                     #    => /home/jenkins/tools/maven/apache-maven-3.x.x
                     "sudo wget --no-check-certificate https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.5.4/apache-maven-3.5.4-bin.tar.gz",
                     "sudo tar xzvf apache-maven-3.5.4-bin.tar.gz",
-                    "sudo mv /apache-maven-3.5.4 /home/jenkins/tools/maven/apache-maven-3.5.4",
+                    "sudo mv apache-maven-3.5.4 /home/jenkins/tools/maven/apache-maven-3.5.4",
 
                     "sudo wget --no-check-certificate https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.6.3/apache-maven-3.6.3-bin.tar.gz",
                     "sudo tar xzvf apache-maven-3.6.3-bin.tar.gz",
-                    "sudo mv /apache-maven-3.6.3 /home/jenkins/tools/maven/apache-maven-3.6.3",
+                    "sudo mv apache-maven-3.6.3 /home/jenkins/tools/maven/apache-maven-3.6.3",
 
                     "sudo wget --no-check-certificate https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.8.5/apache-maven-3.8.5-bin.tar.gz",
                     "sudo tar xzvf apache-maven-3.8.5-bin.tar.gz",
-                    "sudo mv /apache-maven-3.8.5 /home/jenkins/tools/maven/apache-maven-3.8.5",
+                    "sudo mv apache-maven-3.8.5 /home/jenkins/tools/maven/apache-maven-3.8.5",
                     
                     # 4) Agent-Verzeichnis anlegen
                     f"sudo mkdir -p /home/{username}/agent",
