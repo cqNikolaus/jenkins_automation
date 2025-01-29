@@ -114,8 +114,8 @@ class EnvironmentManager:
                     f"sudo chown -R {username}:{username} /home/{username}"
                     
                     # 5) JAVA_HOME & PATH in /etc/environment setzen 
-                    "echo 'JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64' | sudo tee /etc/environment",
-                    "echo 'PATH=$JAVA_HOME/bin:$PATH' | sudo tee -a /etc/environment"
+                    "echo 'JAVA_HOME=\"/usr/lib/jvm/java-17-openjdk-amd64\"' | sudo tee -a /etc/environment",
+                    "echo 'PATH=\"/usr/lib/jvm/java-17-openjdk-amd64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\"' | sudo tee -a /etc/environment"
                 ]
                 
                 for cmd in commands:
