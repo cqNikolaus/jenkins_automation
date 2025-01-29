@@ -79,52 +79,46 @@ class EnvironmentManager:
         # self.installer.update_agent_ips_in_yaml(self.agents, self.agent_ips)
         self.installer.upload_config_repo()  
         self.installer.install_jenkins()
-        self.setup_agent_user()
+        self.add_vm_user()
         self.installer.cleanup_local_repo()
         print("Waiting for Jenkins to initialize...")
         time.sleep(40)
         # yaml_files = self.installer.collect_yaml_files()
         # self.jobs = self.installer.parse_jenkins_yaml_jobs(yaml_files)
 
-    def setup_agent_user(self, index=None, username="jenkins-agent", password="SuperSecretPW"):
-        """
-        Erstellt einen neuen User auf der eigenen VM für die Nutzung als Agent
-        """
-        agent_ip = self.vm_manager.get_vm_ip("agent", index=index)
-        if not agent_ip:
-            print(f"Could not retrieve IP for agent VM {index}")
-            return False
-        
-        ssh_manager = SSHManager(agent_ip, self.key_file)
-        
-        commands = [
-            # 1) User anlegen + Passwort setzen
-            f"sudo useradd -m -s /bin/bash {username} || echo 'User {username} exists'",
-            f"echo '{username}:{password}' | sudo chpasswd",
-            
-            # 2) SSH-Passwort-Login aktivieren (falls deaktiviert)
-            "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config",
-            "sudo sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config",
-            "sudo systemctl restart ssh",
-            
-            # 3) Tools installieren
-            "sudo apt-get update -y",
-            "sudo apt-get install -y openjdk-11-jdk maven git",
-            # (Optional) Docker 
-            "sudo apt-get install -y docker-ce docker-ce-cli containerd.io",
-            f"sudo usermod -aG docker {username}",
-            
-            # 4) Agent-Verzeichnis anlegen
-            f"sudo mkdir -p /home/{username}/agent",
-            f"sudo chown -R {username}:{username} /home/{username}"
-        ]
-        
-        for cmd in commands:
-            ssh_manager.execute_command(cmd)
-        
-        print(f"User {username} created on agent VM {index} with password-based SSH.")
-        return True
-
+    def add_vm_user(self, username="jenkins-agent", password="SuperSecretPW"):
+                """
+                Erstellt einen neuen User auf der VM (vorgesehen für die Nutzung als Agent)
+                """
+                
+                
+                commands = [
+                    # 1) User anlegen + Passwort setzen
+                    f"sudo useradd -m -s /bin/bash {username} || echo 'User {username} exists'",
+                    f"echo '{username}:{password}' | sudo chpasswd",
+                    
+                    # 2) SSH-Passwort-Login aktivieren (falls deaktiviert)
+                    "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config",
+                    "sudo sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config",
+                    "sudo systemctl restart ssh",
+                    
+                    # 3) Tools installieren
+                    "sudo apt-get update -y",
+                    "sudo apt-get install -y openjdk-11-jdk maven git",
+                    # (Optional) Docker 
+                    "sudo apt-get install -y docker-ce docker-ce-cli containerd.io",
+                    f"sudo usermod -aG docker {username}",
+                    
+                    # 4) Agent-Verzeichnis anlegen
+                    f"sudo mkdir -p /home/{username}/agent",
+                    f"sudo chown -R {username}:{username} /home/{username}"
+                ]
+                
+                for cmd in commands:
+                    self.ssh_manager.execute_command(cmd)
+                
+                print(f"User {username} created on agent VM {index} with password-based SSH.")
+                return True
         
     def get_num_agents(self):
         yaml_files = self.installer.collect_yaml_files()
