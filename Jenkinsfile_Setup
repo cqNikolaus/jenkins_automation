@@ -16,11 +16,6 @@ pipeline {
         SERVER_TYPE = "${params.SERVER_TYPE}"
     }
     stages {
-        stage('Cleanup Workspace') {
-            steps {
-                cleanWs()
-            }
-        }
         stage('Setup Environment') {
             steps {
                 withCredentials([
