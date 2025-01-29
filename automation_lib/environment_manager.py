@@ -113,7 +113,7 @@ class EnvironmentManager:
                     # Java 8 (JDK 8u192) herunterladen und entpacken
                     "sudo wget -O /tmp/jdk-8u192.tar.gz https://download.java.net/java/jdk8u192/archive/b04/binaries/jdk-8u192-ea-bin-b04-linux-x64-01_aug_2018.tar.gz",
                     "sudo tar xzvf /tmp/jdk-8u192.tar.gz -C /tmp",
-                    "sudo mv /tmp/jdk1.8.0_192-ea-b04 /home/jenkins/tools/java/jdk1.8.0_192",
+                    "sudo mv /tmp/jdk1.8.0_192 /home/jenkins/tools/java/jdk1.8.0_192",
                     
                     # Maven 3.5.4
                     "sudo wget -O /tmp/apache-maven-3.5.4-bin.tar.gz https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.5.4/apache-maven-3.5.4-bin.tar.gz",
