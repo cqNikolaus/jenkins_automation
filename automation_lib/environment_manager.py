@@ -92,29 +92,36 @@ class EnvironmentManager:
                 """
                 
                 commands = [
-                    # 1) User anlegen + Passwort setzen
+                    # 1) Benutzer anlegen + Passwort setzen
                     f"sudo useradd -m -s /bin/bash {username} || echo 'User {username} exists'",
                     f"echo '{username}:{password}' | sudo chpasswd",
-                    
-                    # 2) SSH-Passwort-Login aktivieren (falls deaktiviert)
+
+                    # 2) SSH-Passwort-Login aktivieren
                     "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config",
                     "sudo sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config",
                     "sudo systemctl restart ssh",
-                    
+
+                    # 3) Pakete installieren + Docker + OpenJDK 11
                     "sudo apt-get update -y",
-                    "sudo apt-get -y install wget make gcc gawk bison python3 apt-transport-https ca-certificates curl gnupg2 software-properties-common lsb-release",
-                    # (Optional) Docker 
+                    # Hier wird Java 11 installiert:
+                    "sudo apt-get -y install openjdk-11-jdk wget make gcc gawk bison python3 apt-transport-https ca-certificates curl gnupg2 software-properties-common lsb-release",
+
+                    # Jenkins-Agent User in die Docker-Gruppe aufnehmen (optional)
                     f"sudo usermod -aG docker {username}",
-                    
+
+                    # 4) Verzeichnisse für Java8 + Maven anlegen
                     "sudo mkdir -p /home/jenkins/tools/java",
                     "sudo mkdir -p /home/jenkins/tools/maven",
-                    "echo 'Lade Java JDK8 herunter'",
-                    
+
+                    "echo 'Installiere Java 8 (JDK8) in /home/jenkins/tools/java/jdk1.8.0_192'",
+
                     # Java 8 (JDK 8u192) herunterladen und entpacken
                     "sudo wget -O /tmp/jdk-8u192.tar.gz https://download.java.net/java/jdk8u192/archive/b04/binaries/jdk-8u192-ea-bin-b04-linux-x64-01_aug_2018.tar.gz",
                     "sudo tar xzvf /tmp/jdk-8u192.tar.gz -C /tmp",
                     "sudo mv /tmp/jdk1.8.0_192 /home/jenkins/tools/java/jdk1.8.0_192",
-                    
+
+                    "echo 'Installiere Maven-Versionen (3.5.4, 3.6.3, 3.8.5)'",
+
                     # Maven 3.5.4
                     "sudo wget -O /tmp/apache-maven-3.5.4-bin.tar.gz https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.5.4/apache-maven-3.5.4-bin.tar.gz",
                     "sudo tar xzvf /tmp/apache-maven-3.5.4-bin.tar.gz -C /tmp",
@@ -129,12 +136,8 @@ class EnvironmentManager:
                     "sudo wget -O /tmp/apache-maven-3.8.5-bin.tar.gz https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.8.5/apache-maven-3.8.5-bin.tar.gz",
                     "sudo tar xzvf /tmp/apache-maven-3.8.5-bin.tar.gz -C /tmp",
                     "sudo mv /tmp/apache-maven-3.8.5 /home/jenkins/tools/maven/apache-maven-3.8.5",
-                    
-                    "echo 'export JAVA_HOME=/home/jenkins/tools/java/jdk1.8.0_192' | sudo tee -a /etc/profile",
-                    "echo 'export PATH=$JAVA_HOME/bin:$PATH' | sudo tee -a /etc/profile",
-                    "source /etc/profile",
-                    
-                    # 4) Agent-Verzeichnis anlegen
+
+                    # 5) Agent-Verzeichnis anlegen (RemoteFS)
                     f"sudo mkdir -p /home/{username}/agent",
                     f"sudo chown -R {username}:{username} /home/{username}/agent"
                 ]
