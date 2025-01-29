@@ -112,14 +112,12 @@ class EnvironmentManager:
                     # 4) Verzeichnisse für Java8 + Maven anlegen
                     "sudo mkdir -p /home/jenkins/tools/java",
                     "sudo mkdir -p /home/jenkins/tools/maven",
-
                     "echo 'Installiere Java 8 (JDK8) in /home/jenkins/tools/java/jdk1.8.0_192'",
 
                     # Java 8 (JDK 8u192) herunterladen und entpacken
                     "sudo wget -O /tmp/jdk-8u192.tar.gz https://download.java.net/java/jdk8u192/archive/b04/binaries/jdk-8u192-ea-bin-b04-linux-x64-01_aug_2018.tar.gz",
                     "sudo tar xzvf /tmp/jdk-8u192.tar.gz -C /tmp",
                     "sudo mv /tmp/jdk1.8.0_192 /home/jenkins/tools/java/jdk1.8.0_192",
-
                     "echo 'Installiere Maven-Versionen (3.5.4, 3.6.3, 3.8.5)'",
 
                     # Maven 3.5.4
