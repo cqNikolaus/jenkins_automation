@@ -130,6 +130,10 @@ class EnvironmentManager:
                     "sudo tar xzvf /tmp/apache-maven-3.8.5-bin.tar.gz -C /tmp",
                     "sudo mv /tmp/apache-maven-3.8.5 /home/jenkins/tools/maven/apache-maven-3.8.5",
                     
+                    "echo 'export JAVA_HOME=/home/jenkins/tools/java/jdk1.8.0_192' | sudo tee -a /etc/profile",
+                    "echo 'export PATH=$JAVA_HOME/bin:$PATH' | sudo tee -a /etc/profile",
+                    "source /etc/profile",
+                    
                     # 4) Agent-Verzeichnis anlegen
                     f"sudo mkdir -p /home/{username}/agent",
                     f"sudo chown -R {username}:{username} /home/{username}/agent"
