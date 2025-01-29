@@ -104,7 +104,7 @@ class EnvironmentManager:
                     
                     # 3) Tools installieren
                     "sudo apt-get update -y",
-                    "sudo apt-get install -y openjdk-11-jdk maven git",
+                    "sudo apt-get install -y openjdk-17-jdk maven git",
                     # (Optional) Docker 
                     "sudo apt-get install -y docker-ce docker-ce-cli containerd.io",
                     f"sudo usermod -aG docker {username}",
