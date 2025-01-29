@@ -19,6 +19,7 @@ class JenkinsInstaller:
         self.dns_api_token = os.getenv('H_DNS_API_TOKEN')
         self.ssh_private_key = os.getenv('H_SSH_PRIVATE_KEY')
         self.local_repo_path = None
+        self.agent_password = os.getenv('JENKINS_AGENT_PW')
         
 
     def install_docker(self):
@@ -177,6 +178,7 @@ class JenkinsInstaller:
         api_token_escaped = shlex.quote(self.api_token)
         dns_api_token_escaped = shlex.quote(self.dns_api_token)
         ssh_key_escaped = shlex.quote(self.ssh_key_content)
+        agent_pass_escaped = shlex.quote(self.agent_password)
         self.ssh_manager.execute_command(
             f"sudo docker run -d --name jenkins "
             f"--restart=always "
@@ -189,6 +191,7 @@ class JenkinsInstaller:
             f"-e API_TOKEN={api_token_escaped} "
             f"-e DNS_API_TOKEN={dns_api_token_escaped} "
             f"-e SSH_PRIVATE_KEY={ssh_key_escaped} "
+            f"-e AGENT_PASS={agent_pass_escaped} "
             "jenkins-image"
         )
 
