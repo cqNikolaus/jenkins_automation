@@ -101,10 +101,10 @@ class EnvironmentManager:
                     "sudo sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config",
                     "sudo systemctl restart ssh",
 
-                    # 3) Pakete installieren + Docker + OpenJDK 11
+                    # 3) Pakete installieren + Docker + OpenJDK 17
                     "sudo apt-get update -y",
                     # Hier wird Java 11 installiert:
-                    "sudo apt-get -y install openjdk-11-jdk wget make gcc gawk bison python3 apt-transport-https ca-certificates curl gnupg2 software-properties-common lsb-release",
+                    "sudo apt-get -y install openjdk-17-jdk wget make gcc gawk bison python3 apt-transport-https ca-certificates curl gnupg2 software-properties-common lsb-release",
 
                     # Jenkins-Agent User in die Docker-Gruppe aufnehmen (optional)
                     f"sudo usermod -aG docker {username}",
