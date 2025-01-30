@@ -131,10 +131,10 @@ class EnvironmentManager:
                     "sudo tar xzvf /tmp/apache-maven-3.6.3-bin.tar.gz -C /tmp",
                     "sudo mv /tmp/apache-maven-3.6.3 /home/jenkins/tools/maven/apache-maven-3.6.3",
 
-                    # Maven 3.8.5
-                    "sudo wget -O /tmp/apache-maven-3.8.5-bin.tar.gz https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.8.5/apache-maven-3.8.5-bin.tar.gz",
-                    "sudo tar xzvf /tmp/apache-maven-3.8.5-bin.tar.gz -C /tmp",
-                    "sudo mv /tmp/apache-maven-3.8.5 /home/jenkins/tools/maven/apache-maven-3.8.5",
+                    # Maven 3.8.8
+                    "sudo wget -O /tmp/apache-maven-3.8.8-bin.tar.gz https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.8.8/apache-maven-3.8.8-bin.tar.gz",
+                    "sudo tar xzvf /tmp/apache-maven-3.8.8-bin.tar.gz -C /tmp",
+                    "sudo mv /tmp/apache-maven-3.8.8 /home/jenkins/tools/maven/apache-maven-3.8.8",
 
                     # 5) Agent-Verzeichnis anlegen (RemoteFS)
                     f"sudo mkdir -p /home/{username}/agent",
