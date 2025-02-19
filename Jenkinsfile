@@ -134,14 +134,5 @@ pipeline {
         }
       }
     }
-    post {
-        failure {
-            build job: 'analyze-log',
-                parameters: [
-                    string(name: 'FAILED_JOB_NAME', value: env.JOB_NAME),
-                    string(name: 'FAILED_BUILD_NUMBER', value: env.BUILD_NUMBER)
-                ]
-        }
-    }
   }
 }
